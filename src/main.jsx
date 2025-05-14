@@ -6,16 +6,17 @@ import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
 import './styles/index.css'
 // Cấu hình redux
 import { Provider } from 'react-redux';
-import { store } from './redux/store';
-
+import { store,persistor } from './redux/store';
+// Redux Persist - LocalStorage
+import { PersistGate } from 'redux-persist/integration/react'
 const queryClient = new QueryClient();
 createRoot(document.getElementById('root')).render(
   <QueryClientProvider client={queryClient}>
     <Provider store={store}>
 
-      <StrictMode>
+      <PersistGate loading={null} persistor={persistor}>
         <App />
-      </StrictMode>
+      </PersistGate>
     </Provider>
   </QueryClientProvider>,
   

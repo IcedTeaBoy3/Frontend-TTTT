@@ -84,7 +84,6 @@ const FormLogin = () => {
     const handleSubmitForm = (values) => {
         if(values.remember && !isRegister){
             localStorage.setItem('email', values.email);
-            localStorage.setItem('password', values.password);
         }
         mutation.mutate({
             email: values.email,
@@ -130,7 +129,7 @@ const FormLogin = () => {
                         },
                     ]}
                 >
-                    <Input placeholder="Email" />
+                    <Input placeholder="Email" autoComplete='username'/>
                 </Form.Item>
 
                 <Form.Item
@@ -156,7 +155,7 @@ const FormLogin = () => {
                         }
                     ]}
                 >
-                    <Input.Password placeholder="Password" />
+                    <Input.Password placeholder="Password" autoComplete='current-password'/>
                 </Form.Item>
                 {isRegister && (
 
@@ -180,7 +179,7 @@ const FormLogin = () => {
                             }),
                         ]}
                     >
-                        <Input.Password placeholder="Nhập lại mật khẩu" />
+                        <Input.Password placeholder="Nhập lại mật khẩu" autoComplete="new-password"/>
                     </Form.Item>
                 )}
                 {!isRegister && (
