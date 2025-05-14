@@ -1,15 +1,12 @@
-@import "tailwindcss";
-/* Reset một số style mặc định của trình duyệt */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+
+@import 'antd/dist/reset.css'; // phiên bản mới của Ant Design dùng reset.css
 
 /* Thiết lập font chữ chung */
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Poppins', sans-serif;
   background-color: #fff;
   color: #333;
-  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }

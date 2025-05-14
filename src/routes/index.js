@@ -1,5 +1,5 @@
-import HomePage from "../pages/HomePage"
-import AuthenticationPage from "../pages/AuthenticationPage"
+import HomePage from "../pages/HomePage/HomePage"
+import AuthenticationPage from "../pages/AuthenticationPage/AuthenticationPage"
 export const routes = [
     {
         path: '/',
