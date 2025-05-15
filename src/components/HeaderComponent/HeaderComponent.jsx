@@ -5,7 +5,7 @@ import { Row, Col,Image, Popover  } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { HeaderContainer,LogoSection,BrandTitle,NavButtons,PopupItem } from './style';
 import ButtonComponent from '../ButtonComponent/ButtonComponent';
-import { CustomerServiceOutlined, UserOutlined,InfoCircleFilled,SettingFilled,LogoutOutlined } from '@ant-design/icons';
+import { CustomerServiceOutlined, UserOutlined,InfoCircleFilled,SettingFilled,LogoutOutlined,CaretDownOutlined } from '@ant-design/icons';
 import { useSelector,useDispatch } from 'react-redux';
 import { logout,setUser } from '../../redux/Slice/authSlice';
 import * as Message from '../Message/Message';
@@ -49,7 +49,7 @@ const HeaderComponent = () => {
                 <Col span={12}>
                     <LogoSection onClick={() => navigate('/')}>
                         <Image
-                            width={70}
+                            width={55}
                             src="mylogo.webp"
                             preview={false}
                             style={{ cursor: 'pointer', borderRadius: '50%' }}
@@ -61,13 +61,13 @@ const HeaderComponent = () => {
                 <Col span={12}>
                     <NavButtons>
                         <ButtonComponent 
-                            size="large" 
+                            size="middle" 
                             icon={<CustomerServiceOutlined />}
                             styleButton={{ backgroundColor: '#fff',color: '#1890ff', border: '1px solid #1890ff' }}
                         >
                             Đặt khám
                         </ButtonComponent>
-                        <ButtonComponent size="large" onClick={() => navigate('/register')}>
+                        <ButtonComponent size="middle" onClick={() => navigate('/register')}>
                             Tin y tế
                         </ButtonComponent>
                         {user?.access_token ? (
@@ -80,15 +80,15 @@ const HeaderComponent = () => {
                                 placement="bottomRight"
                             >
                                 <ButtonComponent 
-                                    size="large" 
+                                    size="middle" 
                                     icon={<UserOutlined />}
-                                    styleButton={{ backgroundColor: '#fff',color: '#1890ff', border: '1px solid #1890ff' }}
+                                    styleButton={{  border: '1px solid #1890ff',backgroundColor: '#fff',color: '#1890ff' }}
                                 >
-                                    {user?.name || user?.email}
+                                    {user?.name || user?.email} <CaretDownOutlined />
                                 </ButtonComponent>
                             </Popover>
                         ) : (
-                            <ButtonComponent size="large" onClick={() => navigate('/authentication')}>
+                            <ButtonComponent size="middle" onClick={() => navigate('/authentication')}>
                                 Đăng nhập
                             </ButtonComponent>
                         )}

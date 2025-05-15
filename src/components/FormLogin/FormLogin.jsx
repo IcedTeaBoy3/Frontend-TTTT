@@ -8,13 +8,14 @@ import * as AuthService from '../../services/AuthService';
 import * as UserService from '../../services/UserService';
 import * as Message from '../Message/Message';
 import { useNavigate } from 'react-router-dom'
-import { useDispatch } from 'react-redux';
+import { useDispatch,useSelector } from 'react-redux';
 import { setUser } from '../../redux/Slice/authSlice';
 import {jwtDecode} from "jwt-decode";
 const FormLogin = () => {
     const [isRegister, setIsRegister] = useState(false);
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const user = useSelector((state) => state.auth.user);
 
     const mutation = useMutationHook((data) => {
         if(isRegister){
@@ -27,9 +28,7 @@ const FormLogin = () => {
     useEffect(() => {
         if(data?.status == 'success') {
             Message.success(data?.message);
-            if(isRegister){
-                setIsRegister(false);
-            }else{
+            if(!isRegister){
                 if(data?.access_token){
                     const decode = jwtDecode(data?.access_token) // Truy cập qua `.default`
                     const { id } = decode;
@@ -39,6 +38,7 @@ const FormLogin = () => {
                 }
                 navigate('/');
             }
+            setIsRegister((prev) => !prev);
             formLogin.resetFields();
             
         }else if(data?.status == 'error'){
@@ -64,7 +64,7 @@ const FormLogin = () => {
     }
 
     const onChange = key => {
-        setIsRegister(prev => !prev);
+        setIsRegister((prev) => !prev);
     };
     const items = [
         {
@@ -82,8 +82,10 @@ const FormLogin = () => {
     const email = Form.useWatch('email', formLogin);
     const password = Form.useWatch('password', formLogin);
     const handleSubmitForm = (values) => {
-        if(values.remember && !isRegister){
+        if(values.remember){
             localStorage.setItem('email', values.email);
+        }else{
+            localStorage.removeItem('email');
         }
         mutation.mutate({
             email: values.email,
@@ -106,8 +108,7 @@ const FormLogin = () => {
                 layout="vertical"
                 initialValues={{
                     email: localStorage.getItem('email') || '',
-                    password: localStorage.getItem('password') || '',
-                    confirmPassword: localStorage.getItem('confirmPassword') || '',
+                   
                     remember: true,
                 }}
                 onFinish={handleSubmitForm}
