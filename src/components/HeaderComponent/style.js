@@ -31,6 +31,9 @@ export const NavButtons = styled.div`
   align-items: center;
   gap: 16px;
   height: 100%;
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 export const PopupItem = styled.p`
@@ -38,11 +41,23 @@ export const PopupItem = styled.p`
   padding: 8px 16px;
   cursor: pointer;
   border-radius: 4px;
+  background-color: ${props => props.$isSelected ? '#f0f0f0' : 'transparent'};
+  color: ${props => props.$isSelected ? '#1890ff' : 'inherit'};
   &:not(:last-child) {
     border-bottom: 1px solid #f0f0f0;
   }
   &:hover {
     background-color: #f0f0f0;
     color: #1890ff;
+  }
+`;
+export const MobileMenuButton = styled.div`
+  display: none;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+  height: 100%;
+  @media (max-width: 768px) {
+    display: flex;
   }
 `;

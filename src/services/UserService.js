@@ -18,9 +18,9 @@ export const getAllUsers = async () => {
         throw error;
     }
 }
-export const deleteUser = async (data) => {
+export const deleteUser = async ({id}) => {
     try {
-        const response = await axiosInstance.delete(`/users/delete-user/${data.id}`);
+        const response = await axiosInstance.delete(`/users/delete-user/${id}`);
         return response.data;
     } catch (error) {
         console.error("Error deleting user:", error);

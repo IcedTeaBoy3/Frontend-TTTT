@@ -1,11 +1,10 @@
 import React from 'react';
 import { CustomButton } from './style';
 
-const ButtonComponent = ({ size = 'middle', children, type = 'primary',styleButton,disabled, onClick, ...rests }) => {
+const ButtonComponent = ({ size = 'middle', children,styleButton,disabled, onClick, ...rests }) => {
   return (
     <CustomButton 
       size={size} 
-      type={type} 
       onClick={onClick} 
       disabled={disabled}
       style={{

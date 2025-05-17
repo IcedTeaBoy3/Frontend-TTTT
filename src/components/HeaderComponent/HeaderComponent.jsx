@@ -1,20 +1,22 @@
 
 import React from 'react'
 import { useState,useMemo } from 'react'
-import { Row, Col,Image, Popover  } from 'antd';
+import { Row, Col,Image, Popover ,Drawer, Menu, Dropdown  } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { HeaderContainer,LogoSection,BrandTitle,NavButtons,PopupItem } from './style';
+import { HeaderContainer,LogoSection,BrandTitle,NavButtons,PopupItem,MobileMenuButton } from './style';
 import ButtonComponent from '../ButtonComponent/ButtonComponent';
-import { CustomerServiceOutlined, UserOutlined,InfoCircleFilled,SettingFilled,LogoutOutlined,CaretDownOutlined } from '@ant-design/icons';
+import { CustomerServiceOutlined, UserOutlined,InfoCircleFilled,SettingFilled,LogoutOutlined,CaretDownOutlined,MenuOutlined } from '@ant-design/icons';
 import { useSelector,useDispatch } from 'react-redux';
-import { logout,setUser } from '../../redux/Slice/authSlice';
+import { logout } from '../../redux/Slice/authSlice';
 import * as Message from '../Message/Message';
 import * as AuthService from '../../services/AuthService';
 const HeaderComponent = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch();
     const user = useSelector((state) => state.auth.user);
+    const isAdmin = user?.role === 'admin';
     const [isOpenPopupUser,setIsOpenPopupUser] = useState(false);
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const handleLogoutUser = async () => {
         const res = await AuthService.logoutUser();
         if(res?.status == 'success'){
@@ -26,15 +28,32 @@ const HeaderComponent = () => {
             Message.error(res?.message);
         }
     }
+    const menu = (
+        <Menu
+            items={[
+            { 
+                label: <PopupItem  onClick={() => navigate('/profile')} $isSelected={location.pathname === '/profile' }><InfoCircleFilled style={{fontSize:'15px',marginRight:'8px'}}/>
+                        Thông tin người dùng
+                    </PopupItem>, 
+                key: '1' },
+            isAdmin && { label: <PopupItem $isSelected={location.pathname === '/admin' } onClick={() => navigate('/admin')}><SettingFilled style={{fontSize:'15px',marginRight:'8px'}}/>Quản lý hệ thống</PopupItem>, key: '2' },
+            { label: <PopupItem onClick={() => navigate('/order')}><InfoCircleFilled style={{fontSize:'15px',marginRight:'8px'}}/>Đơn hàng của tôi</PopupItem>, key: '3' },
+            { label: <PopupItem onClick={handleLogoutUser}><LogoutOutlined style={{fontSize:'15px',marginRight:'8px'}}/>Đăng xuất</PopupItem>, key: '4' },
+            ]}
+        />
+    );
+
+    
     // Nội dung dropdown menu
     const content = useMemo(
         () => (
         <>
             <PopupItem  
                 onClick={() => navigate('/profile')}
-                className="hover:bg-gray-200 rounded-md"
+                $isSelected={location.pathname === '/profile' }
             >
                 <InfoCircleFilled style={{fontSize:'15px',marginRight:'8px'}}/>
+
                 Thông tin người dùng
             </PopupItem>
             {user?.role === "admin" && <PopupItem $isSelected={location.pathname === '/admin' } onClick={() => navigate('/admin')}><SettingFilled style={{fontSize:'15px',marginRight:'8px'}}/>Quản lý hệ thống</PopupItem>}
@@ -46,7 +65,7 @@ const HeaderComponent = () => {
     return (
         <HeaderContainer>
             <Row justify="space-between">
-                <Col span={12}>
+                <Col xs={12}>
                     <LogoSection onClick={() => navigate('/')}>
                         <Image
                             width={55}
@@ -58,16 +77,24 @@ const HeaderComponent = () => {
                         <BrandTitle>Medicare</BrandTitle>
                     </LogoSection>
                 </Col>
-                <Col span={12}>
+                {/* Desktop Menu */}
+                <Col xs={0} md={12} >
                     <NavButtons>
                         <ButtonComponent 
                             size="middle" 
+                            type="default"
                             icon={<CustomerServiceOutlined />}
-                            styleButton={{ backgroundColor: '#fff',color: '#1890ff', border: '1px solid #1890ff' }}
+                            
                         >
                             Đặt khám
                         </ButtonComponent>
-                        <ButtonComponent size="middle" onClick={() => navigate('/register')}>
+                        <ButtonComponent 
+                            type="default"
+                            icon={<CustomerServiceOutlined />}
+                            size="middle" 
+                            onClick={() => navigate('/register')}
+                            
+                        >
                             Tin y tế
                         </ButtonComponent>
                         {user?.access_token ? (
@@ -81,8 +108,8 @@ const HeaderComponent = () => {
                             >
                                 <ButtonComponent 
                                     size="middle" 
+                                    type="default"
                                     icon={<UserOutlined />}
-                                    styleButton={{  border: '1px solid #1890ff',backgroundColor: '#fff',color: '#1890ff' }}
                                 >
                                     {user?.name || user?.email} <CaretDownOutlined />
                                 </ButtonComponent>
@@ -95,7 +122,73 @@ const HeaderComponent = () => {
                        
                     </NavButtons>
                 </Col>
+                {/* Mobile Menu */}
+                <Col xs={12} md={0} >
+                    <MobileMenuButton>
+
+                        <ButtonComponent
+                            size="middle" 
+                            icon={<MenuOutlined />}
+                            onClick={() => setIsDrawerOpen(true)}
+                            styleButton={{ backgroundColor: '#fff',color: '#1890ff', border: '1px solid #1890ff' }}
+                            type="text"
+                        >
+                            
+                        </ButtonComponent>
+                    </MobileMenuButton>
+                    
+                </Col>
             </Row>
+            {/* Mobile Drawer Menu */}
+            <Drawer
+                title="Menu"
+                placement="right"
+                onClose={() => setIsDrawerOpen(false)}
+                open={isDrawerOpen}
+                forceRender
+            >
+                <ButtonComponent
+                    type="default"
+                    icon={<CustomerServiceOutlined />}
+                    style={{ width: '100%', marginBottom: 10 }}
+                >
+                Đặt khám
+                </ButtonComponent>
+                <ButtonComponent
+                    type="default"
+                    onClick={() => {
+                        navigate('/register');
+                        setIsDrawerOpen(false);
+                    }}
+                    style={{ width: '100%', marginBottom: 10 }}
+                >
+                Tin y tế
+                </ButtonComponent>
+                {user?.access_token ? (
+                    <Dropdown overlay={menu} trigger={['click']}>
+                        
+                        <ButtonComponent
+                            type="default"
+                            icon={<UserOutlined />}
+                            style={{ width: '100%', marginBottom: 10 }}
+                            
+                        >
+                            {user?.name || user?.email}  ▼
+                        </ButtonComponent>
+                    </Dropdown>
+                ) : (
+                <ButtonComponent
+                    size="middle"
+                    onClick={() => {
+                        navigate('/authentication');
+                        setIsDrawerOpen(false);
+                    }}
+                    style={{ width: '100%', marginBottom: 10 }}
+                >
+                    Đăng nhập
+                </ButtonComponent>
+                )}
+            </Drawer>
         </HeaderContainer>
 
     )

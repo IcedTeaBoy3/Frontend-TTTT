@@ -285,12 +285,13 @@ const Patient = () => {
   })
   return (
     <>
-      <Flex gap="middle" align="center" justify='space-between' style={{marginBottom:'20px'}}>
+      <Flex gap="middle" align="center" justify='space-between' style={{marginBottom:'20px', flexWrap: 'wrap' }}>
         <ButtonComponent
           size='small'
           disabled={selectedRowKeys.length == 0}
           icon={<DeleteOutlined></DeleteOutlined>}
           onClick={handleDeleteAllPatient}
+          danger
         >
           Xoá tất cả
         </ButtonComponent>
@@ -300,14 +301,18 @@ const Patient = () => {
             size='small'
             styleButton={{
 
-              backgroundColor: 'green'
-              
+              backgroundColor: '#52c41a',
+              color: '#fff',
             }}
           >
             Export
           </ButtonComponent>
           <ButtonComponent
             size='small'
+            styleButton={{
+              backgroundColor: '#1890ff',
+              color: '#fff',
+            }}
           >
             Import
           </ButtonComponent>
@@ -323,7 +328,9 @@ const Patient = () => {
           rowSelection={rowSelection} 
           rowKey={'key'}
           columns={columns} 
+          scroll={{ x: 'max-content' }}  // 👈 thêm dòng này
           dataSource={dataTable} 
+          locale={{ emptyText: 'Không có dữ liệu bệnh nhân' }}
           pagination={
             {
               position: ['bottomCenter'],
@@ -349,7 +356,7 @@ const Patient = () => {
         style={{ borderRadius: 0 }} 
       >
         <LoadingComponent isLoading={isPendingDelete}>
-          <p>Bạn có chắc chắn muốn người dùng này hay không ?</p>
+          <p>Bạn có chắc chắn muốn <strong>xóa</strong> người dùng này không?</p>
         </LoadingComponent>
       </ModalComponent>
       <DrawerComponent 
@@ -357,7 +364,7 @@ const Patient = () => {
         placement="right" 
         isOpen={isOpenDrawer} 
         onClose={() => setIsOpenDrawer(false)}
-        width={600}
+        width={window.innerWidth < 768 ? '100%' : 600}
         forceRender
       >
         <LoadingComponent isLoading={isPendingUpdate}>
@@ -471,9 +478,9 @@ const Patient = () => {
             </Form.Item> */}
             
             <Form.Item label={null} wrapperCol={{ offset: 20, span: 4 }}>
-              <Button type="primary"  htmlType="submit" size='large'>
+              <ButtonComponent type="primary"  htmlType="submit" size='large'>
                 Cập nhật
-              </Button>
+              </ButtonComponent>
             </Form.Item> 
           </Form>
         
