@@ -1,75 +1,80 @@
-import axios from 'axios';
-import { store } from '../redux/store'; // nơi chứa store Redux
-import * as AuthService from '../services/AuthService'; // nơi chứa các hàm gọi API
-import { logout,setUser } from '../redux/Slice/authSlice';
+import axios from "axios";
+import { store } from "../redux/store"; // nơi chứa store Redux
+import * as AuthService from "../services/AuthService"; // nơi chứa các hàm gọi API
+import { logout, setUser } from "../redux/Slice/authSlice";
 const axiosInstance = axios.create({
-  baseURL: `${import.meta.env.VITE_APP_BACKEND_URL}/api`,
-  withCredentials: true, // để gửi cookie lên nếu dùng HttpOnly
+    baseURL: `${import.meta.env.VITE_APP_BACKEND_URL}/api`,
+    withCredentials: true, // để gửi cookie lên nếu dùng HttpOnly
 });
 
 let isRefreshing = false;
 let failedQueue = [];
 
 const processQueue = (error, token = null) => {
-  failedQueue.forEach(prom => {
-    if (error) prom.reject(error);
-    else prom.resolve(token);
-  });
-  failedQueue = [];
+    failedQueue.forEach((prom) => {
+        if (error) prom.reject(error);
+        else prom.resolve(token);
+    });
+    failedQueue = [];
 };
 
 // Add access_token từ Redux
 axiosInstance.interceptors.request.use(
-  config => {
-    const accessToken = store.getState().auth?.user?.access_token;
-    if (accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
-    }
-    return config;
-  },
-  error => Promise.reject(error)
+    (config) => {
+        const accessToken = store.getState().auth?.user?.access_token;
+        if (accessToken) {
+            config.headers.Authorization = `Bearer ${accessToken}`;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error),
 );
 
 // Xử lý khi token hết hạn (401)
 axiosInstance.interceptors.response.use(
-  res => res,
-  async error => {
-    const originalRequest = error.config;
+    (res) => res,
+    async (error) => {
+        const originalRequest = error.config;
 
-    if (error.response?.data.message === 'jwt expired' && !originalRequest._retry) {
-        originalRequest._retry = true;
-        if (isRefreshing) {
-          return new Promise((resolve, reject) => {
-            failedQueue.push({ resolve, reject });
-          }).then(token => {
-            originalRequest.headers.Authorization = `Bearer ${token}`;
-            return axiosInstance(originalRequest);
-          });
-        }
-        isRefreshing = true;
-        try {
-            const res = await AuthService.refreshToken();
-            if (res?.status === 'error') {
-              store.dispatch(logout());
-              return Promise.reject(res);
-            } else if (res?.status === 'success'){
-              console.log('Token mới:', res?.access_token);
-              const user = store.getState().auth.user;
-              const newAccessToken = res.access_token;
-              store.dispatch(setUser({ ...user, access_token: newAccessToken }));
-              axiosInstance.defaults.headers.Authorization = `Bearer ${newAccessToken}`;
-              processQueue(null, newAccessToken);
-              return axiosInstance(originalRequest);
+        if (
+            error.response?.data.message === "jwt expired" &&
+            !originalRequest._retry
+        ) {
+            originalRequest._retry = true;
+            if (isRefreshing) {
+                return new Promise((resolve, reject) => {
+                    failedQueue.push({ resolve, reject });
+                }).then((token) => {
+                    originalRequest.headers.Authorization = `Bearer ${token}`;
+                    return axiosInstance(originalRequest);
+                });
             }
-        } catch (err) {
-          processQueue(err, null);
-          store.dispatch(logout());
-          return Promise.reject(err);
-        } finally {
-          isRefreshing = false;
+            isRefreshing = true;
+            try {
+                const res = await AuthService.refreshToken();
+                if (res?.status === "error") {
+                    store.dispatch(logout());
+                    return Promise.reject(res);
+                } else if (res?.status === "success") {
+                    console.log("Token mới:", res?.access_token);
+                    const user = store.getState().auth.user;
+                    const newAccessToken = res.access_token;
+                    store.dispatch(
+                        setUser({ ...user, access_token: newAccessToken }),
+                    );
+                    axiosInstance.defaults.headers.Authorization = `Bearer ${newAccessToken}`;
+                    processQueue(null, newAccessToken);
+                    return axiosInstance(originalRequest);
+                }
+            } catch (err) {
+                processQueue(err, null);
+                store.dispatch(logout());
+                return Promise.reject(err);
+            } finally {
+                isRefreshing = false;
+            }
         }
-    }
-    return Promise.reject(error);
-  }
+        return Promise.reject(error);
+    },
 );
 export default axiosInstance;

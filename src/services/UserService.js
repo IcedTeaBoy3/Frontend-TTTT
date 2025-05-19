@@ -8,7 +8,7 @@ export const getUser = async (id) => {
         console.error("Error fetching user data:", error);
         throw error;
     }
-}
+};
 export const getAllUsers = async () => {
     try {
         const response = await axiosInstance.get(`/users/get-all-users`);
@@ -17,8 +17,8 @@ export const getAllUsers = async () => {
         console.error("Error fetching all users data:", error);
         throw error;
     }
-}
-export const deleteUser = async ({id}) => {
+};
+export const deleteUser = async ({ id }) => {
     try {
         const response = await axiosInstance.delete(`/users/delete-user/${id}`);
         return response.data;
@@ -26,24 +26,30 @@ export const deleteUser = async ({id}) => {
         console.error("Error deleting user:", error);
         throw error;
     }
-}
+};
 export const updateUser = async (id, data) => {
     try {
-        const response = await axiosInstance.put(`/users/update-user/${id}`, data);
+        const response = await axiosInstance.put(
+            `/users/update-user/${id}`,
+            data,
+        );
         return response.data;
     } catch (error) {
         console.error("Error updating user:", error);
         throw error;
     }
-}
+};
 export const deleteManyUsers = async (ids) => {
     try {
         console.log(ids);
-        
-        const response = await axiosInstance.post(`/users/delete-all-users`, ids);
+
+        const response = await axiosInstance.post(
+            `/users/delete-all-users`,
+            ids,
+        );
         return response.data;
-    }catch (error) {
+    } catch (error) {
         console.error("Error updating user:", error);
         throw error;
     }
-}
+};

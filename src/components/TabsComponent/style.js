@@ -1,5 +1,5 @@
-import styled from 'styled-components'
-import { Tabs } from 'antd';
+import styled from "styled-components";
+import { Tabs } from "antd";
 export const CustomTabs = styled(Tabs)`
     & .ant-tabs-nav-list {
         margin: 0;
@@ -10,5 +10,4 @@ export const CustomTabs = styled(Tabs)`
         color: #1890ff;
         padding: 8px 30px;
     }
-    
-`
+`;

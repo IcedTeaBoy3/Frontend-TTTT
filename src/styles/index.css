@@ -1,12 +1,13 @@
+@import "antd/dist/reset.css";
 
-@import 'antd/dist/reset.css'; // phiên bản mới của Ant Design dùng reset.css
+// phiên bản mới của Ant Design dùng reset.css
 
 /* Thiết lập font chữ chung */
 body {
-  font-family: 'Poppins', sans-serif;
-  background-color: #fff;
-  color: #333;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+    background-color: #fff;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }

@@ -2,49 +2,67 @@ import axiosInstance from "../config/axiosInstance";
 
 export const createSpecialty = async (data) => {
     try {
-        const response = await axiosInstance.post('/specialties/create-specialty', data);
+        const response = await axiosInstance.post(
+            "/specialties/create-specialty",
+            data,
+        );
         return response.data;
     } catch (error) {
         throw error.response.data;
     }
-}
-export const getAllSpecialties = async (page,pageSize) => {
+};
+export const getAllSpecialties = async (page, pageSize) => {
     try {
-        const response = await axiosInstance.get('/specialties/get-all-specialties?page=' + page + '&limit=' + pageSize);
+        const response = await axiosInstance.get(
+            "/specialties/get-all-specialties?page=" +
+                page +
+                "&limit=" +
+                pageSize,
+        );
         return response.data;
     } catch (error) {
         throw error.response.data;
     }
-}
-export const deleteSpecialty = async ({id}) => {
+};
+export const deleteSpecialty = async ({ id }) => {
     try {
-        const response = await axiosInstance.delete(`/specialties/delete-specialty/${id}`);
+        const response = await axiosInstance.delete(
+            `/specialties/delete-specialty/${id}`,
+        );
         return response.data;
     } catch (error) {
         throw error.response.data;
     }
-}
+};
 export const getSpecialty = async (id) => {
     try {
-        const response = await axiosInstance.get(`/specialties/get-specialty/${id}`);
+        const response = await axiosInstance.get(
+            `/specialties/get-specialty/${id}`,
+        );
         return response.data;
     } catch (error) {
         throw error.response.data;
     }
-}
+};
 export const updateSpecialty = async (id, data) => {
     try {
-        const response = await axiosInstance.put(`/specialties/update-specialty/${id}`, data);
+        const response = await axiosInstance.put(
+            `/specialties/update-specialty/${id}`,
+            data,
+        );
         return response.data;
     } catch (error) {
         throw error.response.data;
     }
-}
+};
 export const deleteManySpecialties = async (ids) => {
     try {
-        const response = await axiosInstance.post(`/specialties/delete-all-specialties`, ids);
+        const response = await axiosInstance.post(
+            `/specialties/delete-all-specialties`,
+            ids,
+        );
         return response.data;
     } catch (error) {
         throw error.response.data;
     }
-}
+};

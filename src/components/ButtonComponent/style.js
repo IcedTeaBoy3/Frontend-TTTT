@@ -1,7 +1,6 @@
 import styled from "styled-components";
 import { Button } from "antd";
 export const CustomButton = styled(Button)`
-
     &:hover {
         background-color: #52c41a;
         color: white;
@@ -14,4 +13,4 @@ export const CustomButton = styled(Button)`
         background-color: #1890ff;
         color: #fff;
     }  */
-`
+`;
