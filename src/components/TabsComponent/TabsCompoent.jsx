@@ -4,7 +4,6 @@ const TabsCompoent = ({items,onChange,...rests}) => {
     
     return (
         <CustomTabs 
-            defaultActiveKey="1" 
             items={items} 
             onChange={onChange} 
             centered

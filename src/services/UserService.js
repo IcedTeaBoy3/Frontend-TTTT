@@ -1,4 +1,4 @@
-import axiosInstance from "../api/axiosInstance";
+import axiosInstance from "../config/axiosInstance";
 
 export const getUser = async (id) => {
     try {

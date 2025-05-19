@@ -1,12 +1,12 @@
 import React from 'react'
-import { useState } from 'react'
+import { useState,useRef } from 'react'
 import ButtonComponent from '../../components/ButtonComponent/ButtonComponent'
 import ModalComponent from '../../components/ModalComponent/ModalComponent'
 import LoadingComponent from '../../components/LoadingComponent/LoadingComponent'
 import DrawerComponent from '../../components/DrawerComponent/DrawerComponent'
-import { DeleteOutlined, PlusCircleFilled,ExportOutlined, ImportOutlined, UploadOutlined,EditOutlined } from '@ant-design/icons'
+import { DeleteOutlined, PlusCircleFilled,ExportOutlined, ImportOutlined, UploadOutlined,EditOutlined,SearchOutlined } from '@ant-design/icons'
 import * as Message from '../../components/Message/Message'
-import {Flex, Form, Input, Upload, Table,Space   } from 'antd'
+import {Flex, Form, Input, Upload, Table,Space, Pagination   } from 'antd'
 import { useMutation,useQuery } from '@tanstack/react-query'
 import * as SpecialtyService from '../../services/SpecialtyService'
 const Specialty = () => {
@@ -17,6 +17,14 @@ const Specialty = () => {
     const [isOpenAdd, setIsOpenAdd] = useState(false)
     const [formCreate] = Form.useForm();
     const [formUpdate] = Form.useForm();
+    const [searchText, setSearchText] = useState('');
+    const [searchedColumn, setSearchedColumn] = useState('');
+    const searchInput = useRef(null);
+    const [pagination, setPagination] = useState({
+        current: 1,
+        pageSize: 8,
+        total: 0,
+    });
     const rowSelection = {
         selectedRowKeys,
         onChange: (selectedKeys, selectedRows) => {
@@ -70,20 +78,98 @@ const Specialty = () => {
         }
     })
     const queryGetAllSpecialties = useQuery({
-        queryKey: ['getAllSpecialties'],
-        queryFn: SpecialtyService.getAllSpecialties,
+        queryKey: ['getAllSpecialties', pagination],
+        queryFn: () => SpecialtyService.getAllSpecialties(pagination.current,pagination.pageSize),
+        keepPreviousData: true, 
     })
+    const getColumnSearchProps = (dataIndex) => ({
+        filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+        <div style={{ padding: 8 }}>
+            <Input
+                ref={searchInput}
+                placeholder={`Tìm theo ${dataIndex}`}
+                value={selectedKeys[0]}
+                onChange={(e) =>
+                    setSelectedKeys(e.target.value ? [e.target.value] : [])
+                }
+                onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+                style={{ marginBottom: 8, display: 'block' }}
+            />
+            <Space>
+            <ButtonComponent
+                type="primary"
+                onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+                icon={<SearchOutlined />}
+                size="small"
+                style={{ width: 90 }}
+            >
+                Tìm
+            </ButtonComponent>
+            
+            <ButtonComponent
+                onClick={() => clearFilters && handleReset(clearFilters)}
+                size="small"
+                style={{
+                width: 90,
+                }}
+            >
+                Reset
+            </ButtonComponent>
+            <ButtonComponent
+                onClick={() => handleReset(clearFilters)}
+                size="small"
+                style={{ width: 90 }}
+            >
+                Xóa
+            </ButtonComponent>
+            </Space>
+        </div>
+        ),
+        filterIcon: (filtered) => (
+            <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />
+        ),
+        onFilter: (value, record) =>
+        record[dataIndex]
+            ?.toString()
+            .toLowerCase()
+            .includes(value.toLowerCase()),
+        filterDropdownProps: {
+        onOpenChange: (open) => {
+            if (open) {
+            setTimeout(() => searchInput.current?.select(), 100);
+            }
+        }
+        },
+        render: (text) =>
+        searchedColumn === dataIndex ? (
+            <span style={{ backgroundColor: '#ffc069', padding: 0 }}>{text}</span>
+        ) : (
+            text
+        ),
+    });
+    const handleSearch = (selectedKeys, confirm, dataIndex) => {
+        confirm();
+        setSearchText(selectedKeys[0]);
+        setSearchedColumn(dataIndex);
+    };
+
+    const handleReset = (clearFilters) => {
+        clearFilters();
+        setSearchText('');
+    };
+
     const columns = [
         {
             title: 'STT',
             dataIndex: 'index',
             key: 'index',
+            sorter: (a, b) => a.index - b.index,
         },
         {
             title: 'Tên chuyên khoa',
             dataIndex: 'name',
             key: 'name',
-            // ...getColumnSearchProps('name'),
+            ...getColumnSearchProps('name'),
             sorter: (a, b) => a.name.length - b.name.length,
         },
         {
@@ -106,6 +192,7 @@ const Specialty = () => {
             <Space size="middle">
             <ButtonComponent 
                 size='small' 
+                type='primary'
                 icon={<EditOutlined style={{fontSize:'15px'}}/>}
                 onClick={() => handleEditSpecialty(record.key)} 
             >
@@ -125,6 +212,7 @@ const Specialty = () => {
         },
     ];
     const { data: specialties, isLoading } = queryGetAllSpecialties
+    pagination.total = specialties?.total || 0;
     const dataTable = specialties?.data.map((item, index) => {
         return {
             key: item._id,
@@ -215,6 +303,12 @@ const Specialty = () => {
     const handleCloseAddSpecialty = () => {
         setIsOpenAdd(false)
     }
+    const handleChangePage = (page, pageSize) => {
+        setPagination({
+            current: page,
+            pageSize: pageSize,
+        });
+    };
     return (
         <>
             <Flex gap="middle" align="center" justify='space-between' style={{marginBottom:'20px', flexWrap: 'wrap' }}>
@@ -285,7 +379,6 @@ const Specialty = () => {
                 </Flex>
             </Flex>
             <LoadingComponent
-                size='large'
                 isLoading={isLoading}
                 delay={200}
             >
@@ -294,24 +387,28 @@ const Specialty = () => {
                     rowSelection={rowSelection} 
                     rowKey={'key'}
                     columns={columns} 
-                    scroll={{ x: 'max-content' }}  // 👈 thêm dòng này
+                    scroll={{ x: 'max-content' }} 
                     dataSource={dataTable} 
                     locale={{ emptyText: 'Không có dữ liệu bệnh nhân' }}
-                    pagination={
-                        {
-                            position: ['bottomCenter'],
-                            showTotal: (total, range) => `Tổng ${total} bệnh nhân`,
-                            pageSize: 8,              // Số dòng mỗi trang
-                            showSizeChanger: true,     // Cho phép chọn số dòng/trang
-                            pageSizeOptions: ['5', '10', '20', '50'], // Tuỳ chọn số dòng
-                        
-                        }
-                    }
+                    pagination={false}
                     onRow={(record) => ({
                         onClick: () => {
                             setRowSelected(record.key);
                         },
                     })}
+                />
+                <Pagination
+                    style={{ marginTop: '20px', textAlign: 'right' }}
+                    showQuickJumper 
+                    align="center"
+                    pageSizeOptions={['5','8' ,'10', '20', '50']}
+                    showSizeChanger
+                    current={pagination.current}
+                    pageSize={pagination.pageSize}
+                    total={pagination.total}
+                    defaultPageSize={pagination.pageSize}
+                    onChange={handleChangePage}
+                    showTotal={(total, range) => `${range[0]}-${range[1]} of ${total} items`}
                 />
             </LoadingComponent>
             <LoadingComponent isLoading={isPedingAdd} >
@@ -344,7 +441,7 @@ const Specialty = () => {
                                 },
                             ]}
                         >
-                        <Input name="name"/>
+                            <Input name="name" placeholder="Nhập vào tên chuyên khoa"/>
                         </Form.Item>
                         <Form.Item
                             label="Mô tả"
@@ -412,73 +509,80 @@ const Specialty = () => {
             >
                 <LoadingComponent isLoading={isPendingUpdate}>
 
-                <Form
-                    name="formUpdate"
-                    labelCol={{ span: 6}}
-                    wrapperCol={{span: 18}}
-                    style={{maxWidth: 600, padding: '20px'}}
-                    initialValues={{remember: true, }}
-                    onFinish={handleOnUpdateUser}
-                    autoComplete="off"
-                    form={formUpdate}
-                
-                >
-                    <Form.Item
-                        label="Name"
-                        name="name"
-                        rules={[
-                            {
-                                required: true,
-                                message: 'Vui lòng nhập tên chuyên khoa!',
-                            },
-                        ]}
+                    <Form
+                        name="formUpdate"
+                        labelCol={{ span: 6}}
+                        wrapperCol={{span: 18}}
+                        style={{maxWidth: 600, padding: '20px'}}
+                        initialValues={{remember: true, }}
+                        onFinish={handleOnUpdateUser}
+                        autoComplete="off"
+                        form={formUpdate}
+                    
                     >
-                        <Input name="name"/>
-                    </Form.Item>
-                    <Form.Item
-                        label="Mô tả"
-                        name="description"
-                        rules={[
-                            {
-                            required: true,
-                            message: 'Vui lòng nhập mô tả!',
-                            },
-                           
-                        ]}
-                    >
-                        <Input.TextArea name='description' rows={4} placeholder="Nhập mô tả chi tiết tại đây..." />
-                    </Form.Item>
-                    
-                    
-                    
-                    
-
-                   
-                    
-                    <Form.Item
-                        label="Ảnh"
-                        name="image"
-                        valuePropName="fileList"
-                        getValueFromEvent={e => (Array.isArray(e) ? e : e && e.fileList)}
-                        
-                    >
-                        <Upload 
-                            name="file" 
-                            beforeUpload={() => false} 
-                            maxCount={1}
-                            accept=".jpg, .jpeg, .png, .gif"
+                        <Form.Item
+                            label="Name"
+                            name="name"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: 'Vui lòng nhập tên chuyên khoa!',
+                                },
+                            ]}
                         >
-                            <ButtonComponent icon={<UploadOutlined />}>Chọn file</ButtonComponent>
-                        </Upload>
+                            <Input name="name"/>
+                        </Form.Item>
+                        <Form.Item
+                            label="Mô tả"
+                            name="description"
+                            rules={[
+                                {
+                                required: true,
+                                message: 'Vui lòng nhập mô tả!',
+                                },
+                            
+                            ]}
+                        >
+                            <Input.TextArea name='description' rows={4} placeholder="Nhập mô tả chi tiết tại đây..." />
+                        </Form.Item>
+                        
+                        
+                        
+                        
+
                     
-                    </Form.Item> 
-                    <Form.Item label={null} wrapperCol={{ offset: 20, span: 4 }}>
-                        <ButtonComponent type="primary"  htmlType="submit" size='large'>
-                            Cập nhật
-                        </ButtonComponent>
-                    </Form.Item> 
-                </Form>
-                
+                        
+                        <Form.Item
+                            label="Ảnh"
+                            name="image"
+                            valuePropName="fileList"
+                            getValueFromEvent={e => (Array.isArray(e) ? e : e && e.fileList)}
+                            
+                        >
+                            <Upload 
+                                name="file" 
+                                beforeUpload={() => false} 
+                                maxCount={1}
+                                accept=".jpg, .jpeg, .png, .gif"
+                            >
+                                <ButtonComponent icon={<UploadOutlined />}>Chọn file</ButtonComponent>
+                            </Upload>
+                        
+                        </Form.Item> 
+                        <Form.Item label={null} wrapperCol={{ offset: 20, span: 4 }}>
+                            <Flex gap="middle">
+                                
+                                <ButtonComponent type="default" onClick={() => setIsDrawerOpen(false)}>
+                                    Huỷ
+                                </ButtonComponent>
+                                <ButtonComponent type="primary"  htmlType="submit">
+                                    Lưu
+                                </ButtonComponent>
+                            </Flex>
+                        </Form.Item> 
+                        
+                    </Form>
+                    
                 </LoadingComponent>
             </DrawerComponent>
         </>

@@ -1,4 +1,4 @@
-import axiosInstance from "../api/axiosInstance";
+import axiosInstance from "../config/axiosInstance";
 
 export const createSpecialty = async (data) => {
     try {
@@ -8,9 +8,9 @@ export const createSpecialty = async (data) => {
         throw error.response.data;
     }
 }
-export const getAllSpecialties = async () => {
+export const getAllSpecialties = async (page,pageSize) => {
     try {
-        const response = await axiosInstance.get('/specialties/get-all-specialties');
+        const response = await axiosInstance.get('/specialties/get-all-specialties?page=' + page + '&limit=' + pageSize);
         return response.data;
     } catch (error) {
         throw error.response.data;

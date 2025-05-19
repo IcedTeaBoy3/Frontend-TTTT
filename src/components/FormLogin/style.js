@@ -16,7 +16,7 @@ export const FormContainer = styled.div`
     & .ant-input-outlined, .ant-input-password {
         
         font-size: 16px;
-        padding: 6px;
+        padding: 4px;
         :hover {
             border-color: #1890ff;
         }

@@ -37,8 +37,10 @@ const FormLogin = () => {
                     getDetailUser(id, data?.access_token);
                 }
                 navigate('/');
+            }else{
+
+                setIsRegister((prev) => !prev);
             }
-            setIsRegister((prev) => !prev);
             formLogin.resetFields();
             
         }else if(data?.status == 'error'){
@@ -99,6 +101,8 @@ const FormLogin = () => {
             <TabsCompoent
                 items={items}
                 onChange={onChange}
+                defaultActiveKey='2'
+                activeKey={isRegister ? '2' : '1'}
                 style={{width:'100%'}}
             />
             

@@ -2,7 +2,7 @@ import React from 'react'
 import { Space, Table, Input, Button,Form, Radio,Flex  } from 'antd';
 import * as UserService from '../../services/UserService';
 import ButtonComponent from '../../components/ButtonComponent/ButtonComponent';
-import { EditOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, SearchOutlined, ExportOutlined, ImportOutlined  } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { useState, useRef, useEffect } from 'react';
 import { useMutationHook } from '../../hooks/useMutationHook';
@@ -16,6 +16,11 @@ const Patient = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [formUpdate] = Form.useForm();
   const [rowSelected, setRowSelected] = useState(null);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 8,
+    total: 0,
+  });
   const rowSelection = {
     selectedRowKeys,
     onChange: (selectedKeys, selectedRows) => {
@@ -86,7 +91,7 @@ const Patient = () => {
     })
   }  
 
-  const handleDeleteAllPatient = () => {
+  const handleDeleteAllPatients = () => {
     mutationDeleteAllPatient.mutate({
       ids:selectedRowKeys
     },{
@@ -242,6 +247,7 @@ const Patient = () => {
         <Space size="middle">
           <ButtonComponent 
             size='small' 
+            type="primary"
             icon={<EditOutlined style={{fontSize:'15px'}}/>}
             onClick={() => handleEditUser(record.key)} 
           >
@@ -286,21 +292,40 @@ const Patient = () => {
   return (
     <>
       <Flex gap="middle" align="center" justify='space-between' style={{marginBottom:'20px', flexWrap: 'wrap' }}>
-        <ButtonComponent
-          size='small'
-          disabled={selectedRowKeys.length == 0}
-          icon={<DeleteOutlined></DeleteOutlined>}
-          onClick={handleDeleteAllPatient}
-          danger
+        <Flex 
+          gap="middle"
+          style={{
+            flexWrap: 'wrap',
+            flex: '1 1 300px', // cho responsive
+            justifyContent: 'flex-start',
+          }}
         >
-          Xoá tất cả
-        </ButtonComponent>
-        <Flex gap="middle">
 
           <ButtonComponent
             size='small'
+            disabled={selectedRowKeys.length == 0}
+            icon={<DeleteOutlined/>}
+            onClick={handleDeleteAllPatients}
+            danger
+            style={{ minWidth: '120px' }}
+          >
+            Xoá tất cả
+          </ButtonComponent>
+        </Flex>
+        <Flex 
+          gap="middle"
+          style={{
+            flexWrap: 'wrap',
+            flex: '1 1 300px', // cho responsive
+            justifyContent: 'flex-end',
+          }}
+        >
+          <ButtonComponent
+            size='small'
+            type='default'
+            icon={<ExportOutlined />}
             styleButton={{
-
+              minWidth: '120px',
               backgroundColor: '#52c41a',
               color: '#fff',
             }}
@@ -308,11 +333,14 @@ const Patient = () => {
             Export
           </ButtonComponent>
           <ButtonComponent
-            size='small'
-            styleButton={{
-              backgroundColor: '#1890ff',
-              color: '#fff',
-            }}
+              size='small'
+              type='primary'
+              icon={<ImportOutlined />}
+              styleButton={{
+                minWidth: '120px',
+                backgroundColor: '#1890ff',
+                color: '#fff',
+              }}
           >
             Import
           </ButtonComponent>
@@ -333,12 +361,16 @@ const Patient = () => {
           locale={{ emptyText: 'Không có dữ liệu bệnh nhân' }}
           pagination={
             {
+              current: pagination.current,
+              pageSize: pagination.pageSize,
               position: ['bottomCenter'],
               showTotal: (total, range) => `Tổng ${total} bệnh nhân`,
-              pageSize: 8,              // Số dòng mỗi trang
               showSizeChanger: true,     // Cho phép chọn số dòng/trang
-              pageSizeOptions: ['5', '10', '20', '50'], // Tuỳ chọn số dòng
-              
+              pageSizeOptions: ['5' ,'8' ,'10', '20', '50'], // Tuỳ chọn số dòng
+              showQuickJumper: true, // Cho phép nhảy đến trang
+              onChange: (page, pageSize) => {
+                setPagination({ current: page, pageSize: pageSize });
+              },
             }
           }
           onRow={(record) => ({
