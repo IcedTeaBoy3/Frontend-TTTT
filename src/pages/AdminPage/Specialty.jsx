@@ -21,6 +21,7 @@ const Specialty = () => {
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
     const [rowSelected, setRowSelected] = useState(null);
     const [isModalOpenDelete, setIsModalOpenDelete] = useState(false);
+    const [isModalOpenDeleteMany, setIsModalOpenDeleteMany] = useState(false);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [isOpenAdd, setIsOpenAdd] = useState(false);
     const [formCreate] = Form.useForm();
@@ -43,9 +44,14 @@ const Specialty = () => {
     const mutationAddSpecialty = useMutation({
         mutationFn: SpecialtyService.createSpecialty,
         onSuccess: (data) => {
-            Message.success(data.message);
-            formCreate.resetFields();
-            setIsOpenAdd(false);
+            if (data?.status == "success") {
+                Message.success(data.message);
+                setIsOpenAdd(false);
+                formCreate.resetFields();
+            }
+            else {
+                Message.error(data.message);
+            }
         },
         onError: (error) => {
             Message.error(error.message);
@@ -54,8 +60,13 @@ const Specialty = () => {
     const mutationDeleteSpecialty = useMutation({
         mutationFn: SpecialtyService.deleteSpecialty,
         onSuccess: (data) => {
-            Message.success(data.message);
-            setIsModalOpenDelete(false);
+            if (data?.status == "success") {
+                Message.success(data.message);
+                setIsModalOpenDelete(false);
+            }
+            else {
+                Message.error(data.message);
+            }
         },
         onError: (error) => {
             Message.error(error.message);
@@ -66,8 +77,13 @@ const Specialty = () => {
             return await SpecialtyService.updateSpecialty(id, formData);
         },
         onSuccess: (data) => {
-            Message.success(data.message);
-            setIsDrawerOpen(false);
+            if (data?.status == "success") {
+                Message.success(data.message);
+                setIsDrawerOpen(false);
+            }
+            else {
+                Message.error(data.message);
+            }
         },
         onError: (error) => {
             Message.error(error.message);
@@ -76,8 +92,14 @@ const Specialty = () => {
     const mutationDeleteManySpecialties = useMutation({
         mutationFn: SpecialtyService.deleteManySpecialties,
         onSuccess: (data) => {
-            setSelectedRowKeys([]);
-            Message.success(data.message);
+            if (data?.status == "success") {
+
+                setSelectedRowKeys([]);
+                Message.success(data.message);
+                setIsModalOpenDeleteMany(false);
+            } else {
+                Message.error(data.message);
+            }
         },
         onError: (error) => {
             Message.error(error.message);
@@ -201,8 +223,7 @@ const Specialty = () => {
             title: "Mô tả",
             dataIndex: "description",
             key: "description",
-            // ...getColumnSearchProps('email'),
-            sorter: (a, b) => a.description.length - b.description.length,
+            render: (text) => text.length > 60 ? text.substring(0, 50) + "..." : text,
         },
         {
             title: "Hình ảnh",
@@ -260,6 +281,7 @@ const Specialty = () => {
     const { isPending: isPedingAdd } = mutationAddSpecialty;
     const { isPending: isPendingDelete } = mutationDeleteSpecialty;
     const { isPending: isPendingUpdate } = mutaionUpdateSpecialty;
+    const { isPending: isPendingDeleteMany } = mutationDeleteManySpecialties;
     const handleAddSpecialty = () => {
         formCreate.validateFields().then((values) => {
             //  values.image là mảng file (do maxCount=1 thì vẫn là mảng 1 phần tử)
@@ -268,6 +290,8 @@ const Specialty = () => {
             formData.append("name", values.name);
             formData.append("description", values.description);
             formData.append("image", fileList?.[0]?.originFileObj); // originFileObj mới là File thực tế
+            console.log(fileList?.[0]?.originFileObj);
+
             mutationAddSpecialty.mutate(formData, {
                 onSettled: () => {
                     queryGetAllSpecialties.refetch();
@@ -287,6 +311,19 @@ const Specialty = () => {
     };
     const handleCancelDelete = () => {
         setIsModalOpenDelete(false);
+    };
+    const handleOkDeleteMany = () => {
+        mutationDeleteManySpecialties.mutate(
+            { ids: selectedRowKeys },
+            {
+                onSettled: () => {
+                    queryGetAllSpecialties.refetch();
+                },
+            },
+        );
+    }
+    const handleCancelDeleteMany = () => {
+        setIsModalOpenDeleteMany(false);
     };
     const handleOnUpdateUser = (values) => {
         const formData = new FormData();
@@ -330,16 +367,7 @@ const Specialty = () => {
         });
         setIsDrawerOpen(true);
     };
-    const handleDeleteAllSpecialties = () => {
-        mutationDeleteManySpecialties.mutate(
-            { ids: selectedRowKeys },
-            {
-                onSettled: () => {
-                    queryGetAllSpecialties.refetch();
-                },
-            },
-        );
-    };
+
     const handleCloseAddSpecialty = () => {
         setIsOpenAdd(false);
     };
@@ -349,6 +377,7 @@ const Specialty = () => {
             pageSize: pageSize,
         });
     };
+
     return (
         <>
             <Flex
@@ -369,7 +398,7 @@ const Specialty = () => {
                         size="small"
                         disabled={selectedRowKeys.length == 0}
                         icon={<DeleteOutlined />}
-                        onClick={handleDeleteAllSpecialties}
+                        onClick={() => setIsModalOpenDeleteMany(true)}
                         danger
                         style={{ minWidth: "120px" }}
                     >
@@ -506,23 +535,23 @@ const Specialty = () => {
                             getValueFromEvent={(e) =>
                                 Array.isArray(e) ? e : e && e.fileList
                             }
-                            rules={[
-                                {
-                                    required: true,
-                                    message: "Vui lòng chọn ảnh!",
-                                },
-                            ]}
+
                         >
+
+
                             <Upload
                                 name="file"
                                 beforeUpload={() => false}
                                 maxCount={1}
                                 accept=".jpg, .jpeg, .png, .gif"
+
                             >
                                 <ButtonComponent icon={<UploadOutlined />}>
                                     Chọn file
                                 </ButtonComponent>
                             </Upload>
+
+
                         </Form.Item>
                     </Form>
                 </ModalComponent>
@@ -541,8 +570,22 @@ const Specialty = () => {
                     </p>
                 </LoadingComponent>
             </ModalComponent>
+            <ModalComponent
+                title="Xoá chuyên khoa"
+                open={isModalOpenDeleteMany}
+                onOk={handleOkDeleteMany}
+                onCancel={handleCancelDeleteMany}
+                style={{ borderRadius: 0 }}
+            >
+                <LoadingComponent isLoading={isPendingDeleteMany}>
+                    <p>
+                        Bạn có chắc chắn muốn <strong>xóa</strong> nhiều chuyên khoa
+                        này không?
+                    </p>
+                </LoadingComponent>
+            </ModalComponent>
             <DrawerComponent
-                title="Chi tiết người dùng"
+                title="Chi tiết chuyên khoa"
                 placement="right"
                 isOpen={isDrawerOpen}
                 onClose={() => setIsDrawerOpen(false)}
@@ -561,7 +604,7 @@ const Specialty = () => {
                         form={formUpdate}
                     >
                         <Form.Item
-                            label="Name"
+                            label="Tên chuyên khoa"
                             name="name"
                             rules={[
                                 {
@@ -602,11 +645,13 @@ const Specialty = () => {
                                 beforeUpload={() => false}
                                 maxCount={1}
                                 accept=".jpg, .jpeg, .png, .gif"
+
                             >
                                 <ButtonComponent icon={<UploadOutlined />}>
                                     Chọn file
                                 </ButtonComponent>
                             </Upload>
+
                         </Form.Item>
                         <Form.Item
                             label={null}

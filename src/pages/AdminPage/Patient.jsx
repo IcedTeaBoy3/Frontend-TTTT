@@ -18,6 +18,7 @@ import DrawerComponent from "../../components/DrawerComponent/DrawerComponent";
 import * as Message from "../../components/Message/Message";
 const Patient = () => {
     const [isModalOpenDelete, setIsModalOpenDelete] = useState(false);
+    const [isModalOpenDeleteMany, setIsModalOpenDeleteMany] = useState(false);
     const [isOpenDrawer, setIsOpenDrawer] = useState(false);
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
     const [formUpdate] = Form.useForm();
@@ -31,7 +32,6 @@ const Patient = () => {
         selectedRowKeys,
         onChange: (selectedKeys, selectedRows) => {
             setSelectedRowKeys(selectedKeys);
-            console.log("Selected Rows:", selectedRows);
         },
         type: "checkbox",
     };
@@ -62,7 +62,7 @@ const Patient = () => {
         mutationUpdatePatient;
     const { data: dataDelete, isPending: isPendingDelete } =
         mutationDeletePatient;
-    const { data: dataDeleteAll, isPending: isPendingDeleteAll } =
+    const { data: dataDeleteMany, isPending: isPendingDeleteMany } =
         mutationDeleteAllPatient;
     const handleOkDelete = async () => {
         mutationDeletePatient.mutate(
@@ -108,18 +108,6 @@ const Patient = () => {
         );
     };
 
-    const handleDeleteAllPatients = () => {
-        mutationDeleteAllPatient.mutate(
-            {
-                ids: selectedRowKeys,
-            },
-            {
-                onSettled: () => {
-                    queryGetAllPatients.refetch();
-                },
-            },
-        );
-    };
     // Xử lý khi xoá người dùng thành công
     useEffect(() => {
         if (dataDelete?.status == "success") {
@@ -141,15 +129,16 @@ const Patient = () => {
     }, [dataUpdate]);
     // Xử lý khi xoá tất cả người dùng thành công
     useEffect(() => {
-        if (dataDeleteAll?.status == "success") {
+        if (dataDeleteMany?.status == "success") {
             setSelectedRowKeys([]);
-            Message.success(dataDeleteAll?.message);
-        } else if (dataDeleteAll?.status == "error") {
-            Message.error(dataDeleteAll?.message);
+            Message.success(dataDeleteMany?.message);
+            setIsModalOpenDeleteMany(false);
+        } else if (dataDeleteMany?.status == "error") {
+            Message.error(dataDeleteMany?.message);
         }
-    }, [dataDeleteAll]);
+    }, [dataDeleteMany]);
 
-    const { data, isLoading, isError } = queryGetAllPatients;
+    const { data: dataPatient, isLoading } = queryGetAllPatients;
     const [searchText, setSearchText] = useState("");
     const [searchedColumn, setSearchedColumn] = useState("");
     const searchInput = useRef(null);
@@ -233,18 +222,23 @@ const Patient = () => {
         clearFilters();
         setSearchText("");
     };
+    const hasName = dataPatient?.some((item) => item.name);
+    const hasPhone = dataPatient?.some((item) => item.phone);
+    const hasAddress = dataPatient?.some((item) => item.address);
     const columns = [
         {
             title: "STT",
             dataIndex: "index",
             key: "index",
+            sorter: (a, b) => a.index - b.index,
+
         },
-        {
+        hasName && {
             title: "Tên",
             dataIndex: "name",
             key: "name",
             ...getColumnSearchProps("name"),
-            sorter: (a, b) => a.name.length - b.name.length,
+            sorter: (a, b) => a.name?.length - b.name?.length,
         },
         {
             title: "Email",
@@ -253,12 +247,19 @@ const Patient = () => {
             ...getColumnSearchProps("email"),
             sorter: (a, b) => a.email.length - b.email.length,
         },
-        {
+        hasPhone && {
             title: "Số điện thoại",
             dataIndex: "phone",
             key: "phone",
             ...getColumnSearchProps("phone"),
-            sorter: (a, b) => a.phone.length - b.phone.length,
+        },
+        hasAddress && {
+            title: "Địa chỉ",
+            dataIndex: "address",
+            key: "address",
+            ...getColumnSearchProps("address"),
+
+
         },
         {
             title: "Role",
@@ -296,7 +297,7 @@ const Patient = () => {
                 </Space>
             ),
         },
-    ];
+    ].filter(Boolean);
     const convertRole = (role) => {
         switch (role) {
             case "admin":
@@ -309,17 +310,30 @@ const Patient = () => {
                 return role;
         }
     };
-    const dataTable = data?.map((item, index) => {
+    const dataTable = dataPatient?.map((item, index) => {
         return {
             key: item._id,
             index: index + 1,
-
             name: item.name,
             email: item.email,
             phone: item.phone,
+            address: item.address,
             role: convertRole(item.role),
         };
     });
+    const handleOkDeleteMany = () => {
+        mutationDeleteAllPatient.mutate(
+            { ids: selectedRowKeys },
+            {
+                onSettled: () => {
+                    queryGetAllPatients.refetch();
+                },
+            },
+        );
+    }
+    const handleCancelDeleteMany = () => {
+        setIsModalOpenDeleteMany(false);
+    };
     return (
         <>
             <Flex
@@ -340,7 +354,7 @@ const Patient = () => {
                         size="small"
                         disabled={selectedRowKeys.length == 0}
                         icon={<DeleteOutlined />}
-                        onClick={handleDeleteAllPatients}
+                        onClick={() => setIsModalOpenDeleteMany(true)}
                         danger
                         style={{ minWidth: "120px" }}
                     >
@@ -425,6 +439,20 @@ const Patient = () => {
                     </p>
                 </LoadingComponent>
             </ModalComponent>
+            <ModalComponent
+                title="Xoá người dùng"
+                open={isModalOpenDeleteMany}
+                onOk={handleOkDeleteMany}
+                onCancel={handleCancelDeleteMany}
+                style={{ borderRadius: 0 }}
+            >
+                <LoadingComponent isLoading={isPendingDeleteMany}>
+                    <p>
+                        Bạn có chắc chắn muốn <strong>xóa</strong> nhiều người dùng
+                        này không?
+                    </p>
+                </LoadingComponent>
+            </ModalComponent>
             <DrawerComponent
                 title="Chi tiết người dùng"
                 placement="right"
@@ -489,19 +517,7 @@ const Patient = () => {
                         >
                             <Input name="phone" />
                         </Form.Item>
-                        {/* <Form.Item
-              label="address"
-              name="address"
-              rules={[
-                {
-                  required: true,
-                  message: 'Please input your address!',
-                }
-                
-              ]}
-            >
-              <InputComponent value={stateUserDetail.address} onChange={handleOnchangeDetail} name="address"/>
-            </Form.Item> */}
+
 
                         <Form.Item
                             label="Role"

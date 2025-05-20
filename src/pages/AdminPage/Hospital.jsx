@@ -1,5 +1,5 @@
 import React from "react";
-import { Flex, Form, Input, Upload, Table, Space, Pagination } from "antd";
+import { Flex, Form, Input, Upload, Table, Space, Pagination, Button } from "antd";
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
 import LoadingComponent from "../../components/LoadingComponent/LoadingComponent";
 import ModalComponent from "../../components/ModalComponent/ModalComponent";
@@ -10,16 +10,18 @@ import {
     ImportOutlined,
     UploadOutlined,
     EditOutlined,
+    SearchOutlined
 } from "@ant-design/icons";
 import * as Message from "../../components/Message/Message";
 import { DeleteOutlined } from "@ant-design/icons";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import * as HospitalService from "../../services/HospitalService";
 import { useMutation, useQuery } from "@tanstack/react-query";
 const Hospital = () => {
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [isModalOpenDelete, setIsModalOpenDelete] = useState(false);
+    const [isModalOpenDeleteMany, setIsModalOpenDeleteMany] = useState(false);
     const [rowSelected, setRowSelected] = useState(null);
     const [isOpenAdd, setIsOpenAdd] = useState(false);
     const [formUpdate] = Form.useForm();
@@ -89,6 +91,7 @@ const Hospital = () => {
             if (data.status === "success") {
                 setSelectedRowKeys([]);
                 Message.success(data.message);
+                setIsModalOpenDeleteMany(false);
             } else {
                 Message.error(data.message);
             }
@@ -110,6 +113,7 @@ const Hospital = () => {
     const { isPending: isPendingAdd } = mutationAddHospital;
     const { isPending: isPendingUpdate } = mutationUpdateHospital;
     const { isPending: isPendingDelete } = mutationDeleteHospital;
+    const { isPending: isPendingDeleteMany } = mutationDeleteManyHospital;
 
     const handleAddHospital = () => {
         formCreate
@@ -156,7 +160,7 @@ const Hospital = () => {
         }
         setIsDrawerOpen(true);
     };
-    const handleOnUpdateUser = (values) => {
+    const handleOnUpdateHospital = (values) => {
         console.log("values", values);
         const formData = new FormData();
         formData.append("name", values.name);
@@ -197,8 +201,7 @@ const Hospital = () => {
         setIsModalOpenDelete(false);
         // setSelectedRowKeys([])
     };
-
-    const handleDeleteManyHospitals = () => {
+    const handleOkDeleteMany = () => {
         mutationDeleteManyHospital.mutate(
             { ids: selectedRowKeys },
             {
@@ -207,12 +210,99 @@ const Hospital = () => {
                 },
             },
         );
-    };
+    }
+    const handleCancelDeleteMany = () => {
+        setIsModalOpenDeleteMany(false);
+    }
+
     const handleChangePage = (page, pageSize) => {
         setPagination({
             current: page,
             pageSize: pageSize,
         });
+    };
+    const [searchText, setSearchText] = useState("");
+    const [searchedColumn, setSearchedColumn] = useState("");
+    const searchInput = useRef(null);
+
+    const getColumnSearchProps = (dataIndex) => ({
+        filterDropdown: ({
+            setSelectedKeys,
+            selectedKeys,
+            confirm,
+            clearFilters,
+        }) => (
+            <div style={{ padding: 8 }}>
+                <Input
+                    ref={searchInput}
+                    placeholder={`Tìm theo ${dataIndex}`}
+                    value={selectedKeys[0]}
+                    onChange={(e) =>
+                        setSelectedKeys(e.target.value ? [e.target.value] : [])
+                    }
+                    onPressEnter={() =>
+                        handleSearch(selectedKeys, confirm, dataIndex)
+                    }
+                    style={{ marginBottom: 8, display: "block" }}
+                />
+                <Space>
+                    <ButtonComponent
+                        type="primary"
+                        onClick={() =>
+                            handleSearch(selectedKeys, confirm, dataIndex)
+                        }
+                        icon={<SearchOutlined />}
+                        size="small"
+                        style={{ width: 90 }}
+                    >
+                        Tìm
+                    </ButtonComponent>
+                    <ButtonComponent
+                        onClick={() => handleReset(clearFilters)}
+                        size="small"
+                        style={{ width: 90 }}
+                    >
+                        Xóa
+                    </ButtonComponent>
+                </Space>
+            </div>
+        ),
+        filterIcon: (filtered) => (
+            <SearchOutlined
+                style={{ color: filtered ? "#1890ff" : undefined }}
+            />
+        ),
+        onFilter: (value, record) =>
+            record[dataIndex]
+                ?.toString()
+                .toLowerCase()
+                .includes(value.toLowerCase()),
+        filterDropdownProps: {
+            onOpenChange: (open) => {
+                if (open) {
+                    setTimeout(() => searchInput.current?.select(), 100);
+                }
+            },
+        },
+        render: (text) =>
+            searchedColumn === dataIndex ? (
+                <span style={{ backgroundColor: "#ffc069", padding: 0 }}>
+                    {text}
+                </span>
+            ) : (
+                text
+            ),
+    });
+
+    const handleSearch = (selectedKeys, confirm, dataIndex) => {
+        confirm();
+        setSearchText(selectedKeys[0]);
+        setSearchedColumn(dataIndex);
+    };
+
+    const handleReset = (clearFilters) => {
+        clearFilters();
+        setSearchText("");
     };
     const columns = [
         {
@@ -225,9 +315,7 @@ const Hospital = () => {
             title: "Tên bệnh viện",
             dataIndex: "name",
             key: "name",
-            render: (text) => (
-                <span style={{ fontWeight: "bold" }}>{text}</span>
-            ),
+            ...getColumnSearchProps("name"),
             sorter: (a, b) => a.name.length - b.name.length,
         },
         {
@@ -317,7 +405,7 @@ const Hospital = () => {
                         size="small"
                         disabled={selectedRowKeys.length === 0}
                         icon={<DeleteOutlined />}
-                        onClick={handleDeleteManyHospitals}
+                        onClick={() => setIsModalOpenDeleteMany(true)}
                         style={{ minWidth: "120px" }}
                     >
                         Xoá tất cả
@@ -478,13 +566,13 @@ const Hospital = () => {
                             getValueFromEvent={(e) =>
                                 Array.isArray(e) ? e : e && e.fileList
                             }
-                            // rules={[
-                            //     {
-                            //         required: true,
-                            //         message: 'Vui lòng chọn ảnh!',
-                            //     },
+                        // rules={[
+                        //     {
+                        //         required: true,
+                        //         message: 'Vui lòng chọn ảnh!',
+                        //     },
 
-                            // ]}
+                        // ]}
                         >
                             <Upload
                                 name="file"
@@ -501,7 +589,7 @@ const Hospital = () => {
                 </ModalComponent>
             </LoadingComponent>
             <DrawerComponent
-                title="Chi tiết người dùng"
+                title="Chi tiết bệnh viện"
                 placement="right"
                 isOpen={isDrawerOpen}
                 onClose={() => setIsDrawerOpen(false)}
@@ -515,7 +603,7 @@ const Hospital = () => {
                         wrapperCol={{ span: 18 }}
                         style={{ maxWidth: 600, padding: "20px" }}
                         initialValues={{ remember: true }}
-                        onFinish={handleOnUpdateUser}
+                        onFinish={handleOnUpdateHospital}
                         autoComplete="off"
                         form={formUpdate}
                     >
@@ -629,6 +717,20 @@ const Hospital = () => {
                 style={{ borderRadius: 0 }}
             >
                 <LoadingComponent isLoading={isPendingDelete}>
+                    <p>
+                        Bạn có chắc chắn muốn <strong>xóa</strong> bệnh viện này
+                        không?
+                    </p>
+                </LoadingComponent>
+            </ModalComponent>
+            <ModalComponent
+                title="Xoá bệnh viện"
+                open={isModalOpenDeleteMany}
+                onOk={handleOkDeleteMany}
+                onCancel={handleCancelDeleteMany}
+                style={{ borderRadius: 0 }}
+            >
+                <LoadingComponent isLoading={isPendingDeleteMany}>
                     <p>
                         Bạn có chắc chắn muốn <strong>xóa</strong> bệnh viện này
                         không?

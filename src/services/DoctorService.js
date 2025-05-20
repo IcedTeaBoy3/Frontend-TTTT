@@ -1,0 +1,52 @@
+import axiosInstance from "../config/axiosInstance";
+
+export const createDoctor = async (data) => {
+    try {
+        const response = await axiosInstance.post(
+            "/doctors/create-doctor",
+            data,
+        );
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
+};
+export const getAllDoctors = async (page, pageSize) => {
+    try {
+        const response = await axiosInstance.get(
+            `/doctors/get-all-doctors?page=${page}&limit=${pageSize}`,
+        );
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
+};
+export const updateDoctor = async (id, data) => {
+    try {
+        const response = await axiosInstance.put(
+            `/doctors/update-doctor/${id}`,
+            data,
+        );
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
+};
+export const deleteDoctor = async (id) => {
+    try {
+        const response = await axiosInstance.delete(
+            `/doctors/delete-doctor/${id}`,
+        );
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
+}
+export const deleteManyDoctors = async (ids) => {
+    try {
+        const response = await axiosInstance.post(`/doctors/delete-many-doctors`,{ids});
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
+}
