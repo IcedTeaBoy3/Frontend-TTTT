@@ -1,23 +1,23 @@
-import React from "react";
-import HeaderComponent from "../../components/HeaderComponent/HeaderComponent";
+
 import FormLogin from "../../components/FormLogin/FormLogin";
+import DefaultLayout from "../../components/DefaultLayout/DefaultLayout";
 const AuthenticationPage = () => {
     return (
-        <>
-            <HeaderComponent />
+        <DefaultLayout>
             <div
                 style={{
                     backgroundColor: "#e5e7eb",
-                    minHeight: "80vh",
+                    minHeight: "100vh",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-around",
+
                 }}
             >
                 <img src="mylogo.webp" alt="" width={400} />
                 <FormLogin />
             </div>
-        </>
+        </DefaultLayout>
     );
 };
 

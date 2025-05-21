@@ -1,6 +1,7 @@
 @import "antd/dist/reset.css";
-
-// phiên bản mới của Ant Design dùng reset.css
+/* React-slick */
+@import 'slick-carousel/slick/slick.css';
+@import 'slick-carousel/slick/slick-theme.css';
 
 /* Thiết lập font chữ chung */
 body {

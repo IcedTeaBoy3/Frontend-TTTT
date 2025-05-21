@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Form, Input, Checkbox, Button } from "antd";
-import TabsCompoent from "../TabsComponent/TabsCompoent";
+import TabsComponent from "../TabsComponent/TabsComponent";
 import ButtonComponent from "../ButtonComponent/ButtonComponent";
 import { FormContainer } from "./style";
 import { useMutationHook } from "../../hooks/useMutationHook";
@@ -94,7 +94,7 @@ const FormLogin = () => {
     };
     return (
         <FormContainer>
-            <TabsCompoent
+            <TabsComponent
                 items={items}
                 onChange={onChange}
                 defaultActiveKey="2"

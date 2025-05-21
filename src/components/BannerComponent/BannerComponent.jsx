@@ -1,5 +1,6 @@
 import React from "react";
 import InputComponent from "../InputComponent/InputComponent";
+import bannerImage from "../../assets/banner_nobackground.png";
 import { Grid } from "antd";
 const BannerComponent = () => {
     const { useBreakpoint } = Grid;
@@ -8,6 +9,7 @@ const BannerComponent = () => {
         <div
             style={{
                 backgroundColor: "#1890ff",
+                position: "relative",
                 minHeight: "500px",
                 display: "flex",
                 alignItems: "center",
@@ -16,14 +18,31 @@ const BannerComponent = () => {
                 padding: "20px",
             }}
         >
-            <h1 style={{ color: "white", textAlign: "center" }}>
+            <div
+                style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundImage: `url(${bannerImage})`,
+
+                    backgroundSize: "contain",
+                    backgroundRepeat: "no-repeat",
+                    backgroundPosition: "right",
+                    opacity: 0.7,
+                }}
+            >
+
+            </div>
+            <h1 style={{ color: "white", fontWeight: "bolder" }}>
                 Chào mừng bạn đến với MediCare
             </h1>
             <p
                 style={{
                     color: "white",
                     fontSize: "16px",
-                    textAlign: "center",
+
                 }}
             >
                 Đặt khám với hơn 1000 bác sĩ, 25 bệnh viện, 100 phòng khám trên

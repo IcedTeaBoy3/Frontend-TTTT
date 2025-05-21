@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, BrowserRouter } from "react-router-dom";
+import DefaultLayout from "../components/DefaultLayout/DefaultLayout";
 import HomePage from "../pages/HomePage/HomePage";
 import AuthenticationPage from "../pages/AuthenticationPage/AuthenticationPage";
 import UnauthorizedPage from "../pages/UnauthorizedPage/UnauthorizedPage";
@@ -19,36 +20,39 @@ const AppRoutes = () => {
     const user = useSelector((state) => state.auth.user);
 
     return (
-        <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/authentication" element={<AuthenticationPage />} />
-            <Route path="/unauthorized" element={<UnauthorizedPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
+        <BrowserRouter>
 
-            {/* Admin Routes */}
-            <Route
-                path="/admin"
-                element={
-                    user?.role === "admin" ? (
-                        <AdminLayout />
-                    ) : (
-                        <Navigate to="/unauthorized" />
-                    )
-                }
-            >
-                <Route path="dashboard" element={<Dashboard />} />
-                <Route path="appointments" element={<Appointment />} />
-                <Route path="doctors" element={<Doctor />} />
-                <Route path="patients" element={<Patient />} />
-                <Route path="hospitals" element={<Hospital />} />
-                <Route path="specilties" element={<Specialty />} />
-                {/* Các route con khác */}
-                <Route index element={<Navigate to="dashboard" />} />
-            </Route>
+            <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/authentication" element={<AuthenticationPage />} />
+                <Route path="/unauthorized" element={<UnauthorizedPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
 
-            {/* Route không khớp */}
-            <Route path="*" element={<NotFoundPage />} />
-        </Routes>
+                {/* Admin Routes */}
+                <Route
+                    path="/admin"
+                    element={
+                        user?.role === "admin" ? (
+                            <AdminLayout />
+                        ) : (
+                            <Navigate to="/unauthorized" />
+                        )
+                    }
+                >
+                    <Route path="dashboard" element={<Dashboard />} />
+                    <Route path="appointments" element={<Appointment />} />
+                    <Route path="doctors" element={<Doctor />} />
+                    <Route path="patients" element={<Patient />} />
+                    <Route path="hospitals" element={<Hospital />} />
+                    <Route path="specilties" element={<Specialty />} />
+                    {/* Các route con khác */}
+                    <Route index element={<Navigate to="dashboard" />} />
+                </Route>
+
+                {/* Route không khớp */}
+                <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+        </BrowserRouter>
     );
 };
 
