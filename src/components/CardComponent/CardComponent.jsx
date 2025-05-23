@@ -4,7 +4,7 @@ import { EditOutlined, EllipsisOutlined, SettingOutlined, UserOutlined, RightOut
 import { useState } from 'react';
 const { Meta } = Card;
 import { WarpperCardStyle, WarpperCardBottom } from './style'
-const CardComponent = ({ avatar, name, specialty, hospital }) => {
+const CardComponent = ({ avatar, name, specialty, hospital, onClick }) => {
     const [isHovered, setIsHovered] = useState(false);
     const description = <>
         <p style={{ margin: 0 }}>{specialty}</p>
@@ -13,7 +13,7 @@ const CardComponent = ({ avatar, name, specialty, hospital }) => {
     return (
         <WarpperCardStyle
             style={{ width: 260, textAlign: 'center' }}
-            hoverable
+            hoverable={true}
             actions={[
 
                 <div
@@ -30,6 +30,7 @@ const CardComponent = ({ avatar, name, specialty, hospital }) => {
             ]}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
+            onClick={onClick}
         >
 
             <Avatar

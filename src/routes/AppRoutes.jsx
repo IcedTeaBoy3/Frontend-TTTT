@@ -6,6 +6,7 @@ import UnauthorizedPage from "../pages/UnauthorizedPage/UnauthorizedPage";
 import NotFoundPage from "../pages/NotFoundPage/NotFoundPage";
 import AdminLayout from "../components/AdminLayout/AdminLayout";
 import ProfilePage from "../pages/ProfilePage/ProfilePage";
+import DetailDoctorPage from "../pages/DetailDoctorPage/DetailDoctorPage";
 import { useSelector } from "react-redux";
 // Các trang con trong admin
 import Dashboard from "../pages/AdminPage/Dashboard";
@@ -14,7 +15,7 @@ import Doctor from "../pages/AdminPage/Doctor";
 import Patient from "../pages/AdminPage/Patient";
 import Hospital from "../pages/AdminPage/Hospital";
 import Specialty from "../pages/AdminPage/Specialty";
-
+import WorkingSchedule from "../pages/AdminPage/WorkingSchedule";
 const AppRoutes = () => {
     // Giả lập user
     const user = useSelector((state) => state.auth.user);
@@ -25,6 +26,7 @@ const AppRoutes = () => {
             <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/authentication" element={<AuthenticationPage />} />
+                <Route path="/detail-doctor/:id" element={<DetailDoctorPage />} />
                 <Route path="/unauthorized" element={<UnauthorizedPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
 
@@ -45,6 +47,7 @@ const AppRoutes = () => {
                     <Route path="patients" element={<Patient />} />
                     <Route path="hospitals" element={<Hospital />} />
                     <Route path="specilties" element={<Specialty />} />
+                    <Route path="doctor-schedules" element={<WorkingSchedule />} />
                     {/* Các route con khác */}
                     <Route index element={<Navigate to="dashboard" />} />
                 </Route>

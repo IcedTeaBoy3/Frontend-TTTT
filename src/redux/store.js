@@ -3,6 +3,7 @@ import { combineReducers } from "redux";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import authReducer from "./Slice/authSlice";
+import appointmentReducer from "./Slice/appointmentSlice";
 
 // Cấu hình Redux Persist cho orderReducer
 const persistConfig = {
@@ -14,6 +15,7 @@ const persistConfig = {
 // Gộp reducer với persistReducer chỉ cho orderReducer
 const rootReducer = combineReducers({
     auth: authReducer,
+    appointment: appointmentReducer,
     // Các reducer khác nếu cần
 });
 

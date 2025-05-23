@@ -318,6 +318,8 @@ const Doctor = () => {
             title: "Mô tả",
             dataIndex: "description",
             key: "description",
+            render: (text) => text?.length > 60 ? text.substring(0, 50) + "..." : text,
+
         },
         {
             title: "Thao tác",
@@ -510,7 +512,7 @@ const Doctor = () => {
                 />
             </LoadingComponent>
             <DrawerComponent
-                title="Chi tiết bệnh viện"
+                title="Chi tiết bác sĩ"
                 placement="right"
                 isOpen={isDrawerOpen}
                 onClose={() => setIsDrawerOpen(false)}
@@ -661,7 +663,7 @@ const Doctor = () => {
                                 name="description"
                                 rows={4}
                                 showCount
-                                maxLength={100}
+                                maxLength={500}
                             />
 
                         </Form.Item>

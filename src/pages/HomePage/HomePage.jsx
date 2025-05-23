@@ -11,10 +11,12 @@ import * as HospitalService from "../../services/HospitalService";
 import * as DoctorService from "../../services/DoctorService";
 import LoadingComponent from "../../components/LoadingComponent/LoadingComponent";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import CardComponent from "../../components/CardComponent/CardComponent";
 const { Text } = Typography;
 const HomePage = () => {
     const [limit, setLimit] = useState(6)
+    const navigate = useNavigate();
     const queryGetAllSpecialties = useQuery({
         queryKey: ["getAllSpecialties", limit],
         queryFn: () => SpecialtyService.getAllSpecialties(0, limit),
@@ -43,6 +45,9 @@ const HomePage = () => {
     const { data: specialties, isLoading: isLoadingSpecialty } = queryGetAllSpecialties;
     const { data: hospitals, isLoading: isLoadingHospital } = queryGetAllHospitals;
     const { data: doctors, isLoading: isLoadingDoctor } = queryGetAllDoctors;
+    const handleNavigate = (path) => {
+        navigate(path);
+    };
     return (
         <>
             <DefaultLayout>
@@ -91,7 +96,7 @@ const HomePage = () => {
                             <h3 style={{ fontWeight: 'bold' }}>Đặt khám bác sĩ</h3>
                             <ButtonComponent
                                 type="primary"
-                                hoverable
+                                hoverable="true"
                             >
                                 Xem tất cả <RightOutlined />
                             </ButtonComponent>
@@ -107,7 +112,7 @@ const HomePage = () => {
                                             name={item.user.name}
                                             specialty={item.specialty.name}
                                             hospital={item.hospital.name}
-
+                                            onClick={() => handleNavigate(`/detail-doctor/${item._id}`)}
                                         >
 
                                         </CardComponent>
@@ -132,7 +137,7 @@ const HomePage = () => {
                             <h3 style={{ fontWeight: 'bold' }}>Đặt khám bệnh viện</h3>
                             <ButtonComponent
                                 type="primary"
-                                hoverable
+                                hoverable="true"
                             >
                                 Xem tất cả <RightOutlined />
                             </ButtonComponent>
@@ -144,9 +149,8 @@ const HomePage = () => {
                                 {hospitals?.data.map((item, index) => (
 
                                     <Card
-                                        hoverable
+                                        hoverable="true"
                                         key={item._id}
-                                        style={{ width: 200 }}
                                         cover={<img
                                             alt="example"
                                             src={`${import.meta.env.VITE_APP_BACKEND_URL}${item.image}`}
@@ -154,6 +158,7 @@ const HomePage = () => {
                                                 height: 200, // 👈 chỉnh chiều cao nhỏ lại
                                             }}
                                         />}
+
                                     >
                                         <Card.Meta title={item.name} description={item.address} />
 
@@ -180,7 +185,7 @@ const HomePage = () => {
                             <Row gutter={[16, 24]} justify="center" style={{ marginTop: '20px' }}>
                                 {specialties?.data.map((item, index) => (
                                     <Col key={item._id} xs={12} sm={8} md={8} lg={4} xl={4}>
-                                        <Card hoverable style={{ width: '100%', textAlign: 'center' }}>
+                                        <Card hoverable="true" style={{ width: '100%', textAlign: 'center' }}>
                                             <img
                                                 alt="example"
                                                 src={`${import.meta.env.VITE_APP_BACKEND_URL}${item.image}`}
@@ -198,7 +203,7 @@ const HomePage = () => {
 
                                 <ButtonComponent
                                     type="primary"
-                                    hoverable
+                                    hoverable="true"
                                     onClick={handleLoadMore}
                                 >
                                     Xem thêm
@@ -208,7 +213,7 @@ const HomePage = () => {
                             <Flex justify="center" align="center" style={{ marginTop: '20px' }}>
                                 <ButtonComponent
                                     type="primary"
-                                    hoverable
+                                    hoverable="true"
                                     onClick={() => setLimit(6)}
                                 >
                                     Thu hẹp danh sách

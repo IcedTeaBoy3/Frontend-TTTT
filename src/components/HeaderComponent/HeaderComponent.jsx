@@ -42,103 +42,63 @@ const HeaderComponent = () => {
             Message.error(res?.message);
         }
     };
-    const menu = (
-        <Menu
-            items={[
-                {
-                    label: (
-                        <PopupItem
-                            onClick={() => navigate("/profile")}
-                            $isSelected={location.pathname === "/profile"}
-                        >
-                            <InfoCircleFilled
-                                style={{ fontSize: "15px", marginRight: "8px" }}
-                            />
-                            Thông tin người dùng
-                        </PopupItem>
-                    ),
-                    key: "1",
-                },
-                isAdmin && {
-                    label: (
-                        <PopupItem
-                            $isSelected={location.pathname === "/admin"}
-                            onClick={() => navigate("/admin")}
-                        >
-                            <SettingFilled
-                                style={{ fontSize: "15px", marginRight: "8px" }}
-                            />
-                            Quản lý hệ thống
-                        </PopupItem>
-                    ),
-                    key: "2",
-                },
-                {
-                    label: (
-                        <PopupItem onClick={() => navigate("/order")}>
-                            <InfoCircleFilled
-                                style={{ fontSize: "15px", marginRight: "8px" }}
-                            />
-                            Đơn hàng của tôi
-                        </PopupItem>
-                    ),
-                    key: "3",
-                },
-                {
-                    label: (
-                        <PopupItem onClick={handleLogoutUser}>
-                            <LogoutOutlined
-                                style={{ fontSize: "15px", marginRight: "8px" }}
-                            />
-                            Đăng xuất
-                        </PopupItem>
-                    ),
-                    key: "4",
-                },
-            ]}
-        />
-    );
-
-    // Nội dung dropdown menu
-    const content = useMemo(
-        () => (
-            <>
-                <PopupItem
-                    onClick={() => navigate("/profile")}
-                    $isSelected={location.pathname === "/profile"}
-                >
-                    <InfoCircleFilled
-                        style={{ fontSize: "15px", marginRight: "8px" }}
-                    />
-                    Thông tin người dùng
-                </PopupItem>
-                {user?.role === "admin" && (
+    const menuItems = useMemo(() => {
+        const items = [
+            {
+                key: "1",
+                label: (
                     <PopupItem
-                        $isSelected={location.pathname === "/admin"}
-                        onClick={() => navigate("/admin")}
+                        onClick={() => navigate("/profile")}
+                        $isSelected={location.pathname === "/profile"}
                     >
-                        <SettingFilled
-                            style={{ fontSize: "15px", marginRight: "8px" }}
-                        />
+                        <InfoCircleFilled style={{ fontSize: 15, marginRight: 8 }} />
+                        Thông tin người dùng
+                    </PopupItem>
+                ),
+            },
+            isAdmin && {
+                key: "2",
+                label: (
+                    <PopupItem
+                        onClick={() => navigate("/admin")}
+                        $isSelected={location.pathname === "/admin"}
+                    >
+                        <SettingFilled style={{ fontSize: 15, marginRight: 8 }} />
                         Quản lý hệ thống
                     </PopupItem>
-                )}
-                <PopupItem onClick={() => navigate("/order")}>
-                    <InfoCircleFilled
-                        style={{ fontSize: "15px", marginRight: "8px" }}
-                    />
-                    Đơn hàng của tôi
-                </PopupItem>
-                <PopupItem onClick={handleLogoutUser}>
-                    <LogoutOutlined
-                        style={{ fontSize: "15px", marginRight: "8px" }}
-                    />
-                    Đăng xuất
-                </PopupItem>
-            </>
-        ),
-        [user?.role],
-    );
+                ),
+            },
+            {
+                key: "3",
+                label: (
+                    <PopupItem onClick={() => navigate("/order")}>
+                        <InfoCircleFilled style={{ fontSize: 15, marginRight: 8 }} />
+                        Đơn hàng của tôi
+                    </PopupItem>
+                ),
+            },
+            {
+                key: "4",
+                label: (
+                    <PopupItem onClick={handleLogoutUser}>
+                        <LogoutOutlined style={{ fontSize: 15, marginRight: 8 }} />
+                        Đăng xuất
+                    </PopupItem>
+                ),
+            },
+        ].filter(Boolean); // loại bỏ false nếu isAdmin === false
+
+        return items;
+    }, [navigate, location.pathname, isAdmin, handleLogoutUser]);
+    const dropdownMenu = useMemo(() => <Menu items={menuItems} />, [menuItems]);
+
+    const popupContent = useMemo(() => (
+        <>
+            {menuItems.map((item) => (
+                <div key={item.key}>{item.label}</div>
+            ))}
+        </>
+    ), [menuItems])
     return (
         <HeaderContainer>
             <Row justify="space-between">
@@ -146,7 +106,7 @@ const HeaderComponent = () => {
                     <LogoSection onClick={() => navigate("/")}>
                         <Image
                             width={55}
-                            src="mylogo.webp"
+                            src="http://localhost:4000/mylogo.webp"
                             preview={false}
                             style={{ cursor: "pointer", borderRadius: "50%" }}
                         />
@@ -173,12 +133,13 @@ const HeaderComponent = () => {
                         </ButtonComponent>
                         {user?.access_token ? (
                             <Popover
-                                content={content}
+                                content={popupContent}
                                 open={isOpenPopupUser}
                                 onOpenChange={(visible) =>
                                     setIsOpenPopupUser(visible)
                                 }
                                 placement="bottomRight"
+                                getPopupContainer={(trigger) => trigger.parentNode}
                             >
                                 <ButtonComponent
                                     size="middle"
@@ -242,7 +203,11 @@ const HeaderComponent = () => {
                     Tin y tế
                 </ButtonComponent>
                 {user?.access_token ? (
-                    <Dropdown overlay={menu} trigger={["click"]}>
+                    <Dropdown
+                        menu={dropdownMenu}
+                        trigger={["click"]}
+                        getPopupContainer={(trigger) => trigger.parentNode}
+                    >
                         <ButtonComponent
                             type="default"
                             icon={<UserOutlined />}

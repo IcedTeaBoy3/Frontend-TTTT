@@ -1,0 +1,29 @@
+import axiosInstance from "../config/axiosInstance";
+
+export const getAllWorkingSchedules = async (page, pageSize) => {
+    try {
+        const response = await axiosInstance.get(`/working-schedules/get-all-working-schedules?page=${page}&limit=${pageSize}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching working schedules:", error);
+        throw error;
+    }
+}
+export const createWorkingSchedule = async (data) => {
+    try {
+        const response = await axiosInstance.post(`/working-schedules/create-working-schedule`, data);
+        return response.data;
+    } catch (error) {
+        console.error("Error creating working schedule:", error);
+        throw error;
+    }
+}
+export const getWorkingScheduleByDoctor = async (doctorId) => {
+    try {
+        const response = await axiosInstance.get(`/working-schedules/get-working-schedule-by-doctor/${doctorId}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching working schedule by doctor:", error);
+        throw error;
+    }
+}

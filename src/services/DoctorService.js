@@ -32,6 +32,16 @@ export const updateDoctor = async (id, data) => {
         throw error.response.data;
     }
 };
+export const getDoctor = async (id) => {
+    try {
+        const response = await axiosInstance.get(
+            `/doctors/get-doctor/${id}`,
+        );
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
+};
 export const deleteDoctor = async (id) => {
     try {
         const response = await axiosInstance.delete(

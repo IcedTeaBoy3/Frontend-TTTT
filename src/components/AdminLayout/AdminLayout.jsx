@@ -47,6 +47,7 @@ const AdminLayout = () => {
         "/admin/hospitals": "Bệnh viện",
         "/admin/specilties": "Chuyên khoa",
         "/admin/patients": "Người dùng",
+        "/admin/doctor-schedules": "Lịch làm việc",
     };
 
     const pathSnippets = location.pathname.split("/").filter((i) => i);
@@ -85,6 +86,7 @@ const AdminLayout = () => {
             children: [
                 { key: "/admin/doctors", label: "Bác sĩ" },
                 { key: "/admin/specilties", label: "Chuyên khoa" },
+                { key: "/admin/doctor-schedules", label: "Lịch làm việc" },
             ],
         },
         {
