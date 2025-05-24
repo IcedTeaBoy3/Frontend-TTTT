@@ -1,6 +1,6 @@
 
-import { useParams } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useLayoutEffect } from 'react';
 import DefaultLayout from '../../components/DefaultLayout/DefaultLayout';
 import { Avatar } from 'antd';
 import { Typography, Divider, Card, Flex } from 'antd';
@@ -9,17 +9,19 @@ import * as DoctorService from '../../services/DoctorService';
 import * as WorkingScheduleService from '../../services/WorkingScheduleService';
 import { CheckCircleOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query'
-import LoadingComponent from '../../components/LoadingComponent/LoadingComponent';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-dayjs.extend(utc)
 import { useDispatch, useSelector } from 'react-redux';
 import { updateAppointment, setAppointment } from '../../redux/Slice/appointmentSlice';
+import WorkingSchedule from '../../components/WorkingSchedule/WorkingSchedule';
+import TimeSlot from '../../components/TimeSlot/TimeSlot';
+dayjs.extend(utc)
 const { Title, Text } = Typography;
 const DetailDoctorPage = () => {
     const { id } = useParams(); // id ở đây chính là từ /user/:id
-    const [workingTime, setWorkingTime] = useState([]);
+    const [timeSlots, setTimeSlots] = useState([]);
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const appointment = useSelector((state) => state.appointment);
     const queryGetWorkingScheduleByDoctor = useQuery({
         queryKey: ["getWorkingScheduleByDoctor", id],
@@ -36,23 +38,27 @@ const DetailDoctorPage = () => {
 
     useEffect(() => {
         if (
-            workingSchedules?.status === "success"
+            workingSchedules?.status === "success" &&
+            doctor?.status === "success" &&
+            workingSchedules?.data.length > 0
         ) {
             const schedule = workingSchedules.data[0];
-            if (
-                schedule &&
-                appointment.selectedDate !== schedule.workDate // chỉ update khi khác ngày
-            ) {
-                dispatch(setAppointment({
-                    doctor: doctor.data,
-                    schedule: schedule,
-                    selectedDate: schedule.workDate,
-                }));
-                const startTime = schedule.startTime;
-                const endTime = schedule.endTime;
-                const timeSlots = generateTimeSlots(startTime, endTime);
-                setWorkingTime(timeSlots);
+
+            dispatch(setAppointment({
+                doctor: doctor.data,
+                schedule: schedule,
+            }));
+
+            // Cập nhật ngày nếu khác
+            if (schedule && appointment.selectedDate !== schedule.workDate) {
+                dispatch(updateAppointment({ selectedDate: schedule.workDate }));
             }
+
+            // Luôn generate timeSlots
+            const startTime = schedule.startTime;
+            const endTime = schedule.endTime;
+            const timeSlots = generateTimeSlots(startTime, endTime);
+            setTimeSlots(timeSlots);
         }
     }, [workingSchedules, doctor]);
     function generateTimeSlots(start, end, duration = 30) {
@@ -74,7 +80,7 @@ const DetailDoctorPage = () => {
         const endTime = schedule.endTime;
         const timeSlots = generateTimeSlots(startTime, endTime);
         dispatch(updateAppointment({ selectedDate: schedule.workDate }))
-        setWorkingTime(timeSlots);
+        setTimeSlots(timeSlots);
     }
     const handleCheckTime = (selectedDate, time) => {
         if (!selectedDate || !time) return false;
@@ -91,20 +97,9 @@ const DetailDoctorPage = () => {
         // 
         return fullSelectedTime.diff(now, 'minute') < 60;
     };
-    const handleSelectedTime = () => {
-        const selectedTime = workingTime.find((time) => !handleCheckTime(appointment.selectedDate, time));
-        if (selectedTime) {
-            dispatch(updateAppointment({ selectedTime }));
-        }
-    }
-    function addMinutesToTime(timeStr, minutesToAdd) {
-        const [hours, minutes] = timeStr.split(":").map(Number);
-        const date = new Date(0, 0, 0, hours, minutes);
-        date.setMinutes(date.getMinutes() + minutesToAdd);
-
-        const resultHours = String(date.getHours()).padStart(2, "0");
-        const resultMinutes = String(date.getMinutes()).padStart(2, "0");
-        return `${resultHours}:${resultMinutes}`;
+    const handleSelectedTime = (time) => {
+        dispatch(updateAppointment({ selectedTime: time }));
+        navigate("/booking");
     }
     return (
         <DefaultLayout>
@@ -122,7 +117,6 @@ const DetailDoctorPage = () => {
                     style={{
                         backgroundColor: "#fff",
                         borderRadius: 16,
-
                         boxShadow: "0 8px 24px rgba(0,0,0,0.1)",
                         padding: 32,
                         display: "flex",
@@ -158,59 +152,23 @@ const DetailDoctorPage = () => {
                     {/* Lịch làm việc */}
                     <div>
                         <Title level={4}>Lịch làm việc</Title>
-                        <LoadingComponent isLoading={isLoadingWorkingSchedule}>
-                            <div style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 8 }}>
-                                {workingSchedules?.data?.map((schedule) => {
-                                    const days = ["CN", "Th2", "Th3", "Th4", "Th5", "Th6", "Th7"];
-                                    const dateObj = new Date(schedule.workDate);
-                                    const workDay = days[dateObj.getDay()];
-                                    const workDate = dayjs(dateObj).format("DD-MM");
-
-                                    return (
-                                        <Card
-                                            key={schedule._id}
-                                            hoverable={true}
-                                            onClick={() => handleCreateWorkingTime(schedule)}
-                                            style={{ minWidth: 150, flexShrink: 0 }}
-                                        >
-                                            <Card.Meta
-                                                title={`${workDay}, ${workDate}`}
-                                                description={`${schedule.startTime} - ${schedule.endTime}`}
-                                            />
-                                        </Card>
-                                    );
-                                })}
-                            </div>
-                        </LoadingComponent>
+                        <WorkingSchedule
+                            selectedDate={appointment.selectedDate}
+                            isLoading={isLoadingWorkingSchedule}
+                            workingSchedules={workingSchedules}
+                            handleCreateWorkingTime={handleCreateWorkingTime}
+                        />
                     </div>
 
                     {/* Giờ làm việc */}
                     <div>
                         <Title level={4}>Chọn khung giờ</Title>
-                        <div
-                            style={{
-                                display: "flex",
-                                flexWrap: "wrap",
-                                gap: 12,
-                                maxHeight: 160,
-                                overflowY: "auto",
-                                paddingRight: 4,
-                            }}
-                        >
-                            {workingTime?.map((time, index) => (
-                                <ButtonComponent
-                                    hoverable="true"
-                                    key={index}
-                                    type="primary"
-                                    size="large"
-                                    disabled={handleCheckTime(appointment?.selectedDate, time)}
-                                    style={{ width: 100 }}
-                                    onClick={handleSelectedTime}
-                                >
-                                    {`${time}-${addMinutesToTime(time, 30)}`}
-                                </ButtonComponent>
-                            ))}
-                        </div>
+                        <TimeSlot
+                            timeSlots={timeSlots}
+                            selectedDate={appointment.selectedDate}
+                            handleCheckTime={handleCheckTime}
+                            handleSelectedTime={handleSelectedTime}
+                        />
                     </div>
 
                     <div>
@@ -266,6 +224,8 @@ const DetailDoctorPage = () => {
                                 fontWeight: "bold",
                                 fontSize: 16,
                             }}
+                            onClick={() => navigate("/booking")}
+
                         >
                             Đặt lịch khám
                         </ButtonComponent>

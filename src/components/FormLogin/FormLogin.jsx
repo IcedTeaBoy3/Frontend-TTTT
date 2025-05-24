@@ -49,7 +49,7 @@ const FormLogin = () => {
     const getDetailUser = async (id, access_token) => {
         const res = await UserService.getUser(id);
         if (res?.status == "success") {
-            const { email, name, role, phone, address } = res?.data;
+            const { email, name, role, phone, address, dateOfBirth, gender, avatar, ethnic, idCard, insuranceCode, job } = res?.data;
             const user = {
                 id,
                 access_token,
@@ -58,6 +58,13 @@ const FormLogin = () => {
                 role,
                 phone,
                 address,
+                dateOfBirth,
+                gender,
+                avatar,
+                ethnic,
+                idCard,
+                insuranceCode,
+                job,
             };
             dispatch(setUser(user));
         }

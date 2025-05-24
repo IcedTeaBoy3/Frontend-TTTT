@@ -10,7 +10,7 @@ const persistConfig = {
     key: "root",
     version: 1,
     storage,
-    whitelist: ["auth"],
+    whitelist: ["auth", "appointment"], // Chỉ lưu trữ authReducer và appointmentReducer
 };
 // Gộp reducer với persistReducer chỉ cho orderReducer
 const rootReducer = combineReducers({

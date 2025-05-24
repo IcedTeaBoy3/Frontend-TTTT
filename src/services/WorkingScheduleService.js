@@ -27,3 +27,21 @@ export const getWorkingScheduleByDoctor = async (doctorId) => {
         throw error;
     }
 }
+export const updateWorkingSchedule = async (id, data) => {
+    try {
+        const response = await axiosInstance.put(`/working-schedules/update-working-schedule/${id}`, data);
+        return response.data;
+    } catch (error) {
+        console.error("Error updating working schedule:", error);
+        throw error;
+    }
+}
+export const deleteWorkingSchedule = async (id) => {
+    try {
+        const response = await axiosInstance.delete(`/working-schedules/delete-working-schedule/${id}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error deleting working schedule:", error);
+        throw error;
+    }
+}

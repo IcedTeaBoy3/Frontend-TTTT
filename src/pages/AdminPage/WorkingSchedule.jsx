@@ -7,12 +7,16 @@ import LoadingComponent from "../../components/LoadingComponent/LoadingComponent
 import * as DoctorService from "../../services/DoctorService";
 import * as Message from "../../components/Message/Message";
 import * as WorkingScheduleService from "../../services/WorkingScheduleService";
+import DrawerComponent from "../../components/DrawerComponent/DrawerComponent";
 import dayjs from 'dayjs';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useState, useMemo } from "react";
 const WorkingSchedule = () => {
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
     const [isModalOpenDeleteMany, setIsModalOpenDeleteMany] = useState(false);
+    const [isModalOpenDelete, setIsModalOpenDelete] = useState(false);
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
     const [rowSelected, setRowSelected] = useState(null);
     const [isOpenAdd, setIsOpenAdd] = useState(false);
     const [pagination, setPagination] = useState({
@@ -21,6 +25,7 @@ const WorkingSchedule = () => {
         total: 0,
     });
     const [formCreate] = Form.useForm();
+    const [formUpdate] = Form.useForm();
     const { Option } = Select;
     const rowSelection = {
         selectedRowKeys,
@@ -39,6 +44,7 @@ const WorkingSchedule = () => {
         queryFn: () => WorkingScheduleService.getAllWorkingSchedules(pagination.current, pagination.pageSize),
         refetchOnWindowFocus: false,
         refetchInterval: 10000,
+        keepPreviousData: true,
     })
     const mutationCrateWorkingSchedule = useMutation({
         mutationFn: (data) => WorkingScheduleService.createWorkingSchedule(data),
@@ -56,9 +62,56 @@ const WorkingSchedule = () => {
             Message.error("Có lỗi xảy ra, vui lòng thử lại sau!");
         },
     })
+    const mutationUpdateWorkingSchedule = useMutation({
+        mutationFn: (data) => {
+            const { id, ...rest } = data;
+            return WorkingScheduleService.updateWorkingSchedule(id, rest);
+        },
+        onSuccess: (res) => {
+            if (res.status === "success") {
+                Message.success(res.message);
+                setIsDrawerOpen(false);
+                formUpdate.resetFields();
+            } else {
+                Message.error(res.message);
+            }
+        },
+        onError: (error) => {
+            Message.error("Có lỗi xảy ra, vui lòng thử lại sau!" + error);
+        },
+    })
+    const mutationDeleteWorkingSchedule = useMutation({
+        mutationFn: (id) => WorkingScheduleService.deleteWorkingSchedule(id),
+        onSuccess: (res) => {
+            if (res.status === "success") {
+                Message.success(res.message);
+                setIsModalOpenDelete(false);
+                setRowSelected(null);
+            } else {
+                Message.error(res.message);
+            }
+        },
+        onError: (error) => {
+            Message.error("Có lỗi xảy ra, vui lòng thử lại sau!" + error);
+        },
+    })
     const { data: doctors, isLoading: isLoadingDoctors } = queryGetAllDoctors;
     const { data: workingSchedules, isLoading: isLoadingWorkingSchedules } = queryGetAllWorkingSchedule;
     const { isPending: isPendingCreateWorkingSchedule } = mutationCrateWorkingSchedule;
+    const { isPending: isPendingDelete } = mutationDeleteWorkingSchedule;
+    const { isPending: isPendingUpdate } = mutationUpdateWorkingSchedule;
+    const handleEditWorkingSchedule = (id) => {
+        const workingSchedule = workingSchedules?.data?.find((item) => item._id === id);
+        if (workingSchedule) {
+            formUpdate.setFieldsValue({
+                name: workingSchedule.doctor._id,
+                date: dayjs(workingSchedule.workDate),
+                startTime: dayjs(workingSchedule.startTime, "HH:mm"),
+                endTime: dayjs(workingSchedule.endTime, "HH:mm"),
+            });
+            setIsDrawerOpen(true);
+        }
+    }
     const columns = [
         {
             title: "STT",
@@ -110,7 +163,7 @@ const WorkingSchedule = () => {
                         size="small"
                         type="primary"
                         icon={<EditOutlined style={{ fontSize: "15px" }} />}
-                    // onClick={() => handleEditDoctor(record.key)}
+                        onClick={() => handleEditWorkingSchedule(record.key)}
                     >
                         Sửa
                     </ButtonComponent>
@@ -118,7 +171,7 @@ const WorkingSchedule = () => {
                         icon={<DeleteOutlined style={{ fontSize: "15px" }} />}
                         styleButton={{ backgroundColor: "red", color: "white" }}
                         size="small"
-                    // onClick={() => setIsModalOpenDelete(true)}
+                        onClick={() => setIsModalOpenDelete(true)}
                     >
                         Xoá
                     </ButtonComponent>
@@ -139,6 +192,7 @@ const WorkingSchedule = () => {
         }
         return [];
     }, [workingSchedules]);
+    pagination.total = workingSchedules?.total || 0;
     const handleAddDoctor = () => {
         formCreate.validateFields().then(async (values) => {
             const data = {
@@ -161,6 +215,36 @@ const WorkingSchedule = () => {
     const handleCloseAddDoctor = () => {
 
         setIsOpenAdd(false);
+    }
+    const handleOnUpdateUser = () => {
+        formUpdate.validateFields().then(async (values) => {
+            console.log(values);
+
+            const data = {
+                id: rowSelected,
+                doctor: values.name,
+                workDate: values.date.toDate(),
+                startTime: values.startTime.format("HH:mm"),
+                endTime: values.endTime.format("HH:mm"),
+            }
+            mutationUpdateWorkingSchedule.mutate(data, {
+                onSettled: () => {
+                    queryGetAllWorkingSchedule.refetch();
+                }
+            });
+        }).catch((error) => {
+            console.log(error);
+        })
+    }
+    const handleOkDelete = () => {
+        mutationDeleteWorkingSchedule.mutate(rowSelected, {
+            onSettled: () => {
+                queryGetAllWorkingSchedule.refetch();
+            }
+        });
+    }
+    const handleCancelDelete = () => {
+        setIsModalOpenDelete(false);
     }
     const handleChangePage = (page, pageSize) => {
         setPagination({ current: page, pageSize });
@@ -342,24 +426,162 @@ const WorkingSchedule = () => {
                                 format="HH:mm"
                                 style={{ width: '100%' }}
                                 placeholder="Chọn thời gian bắt đầu"
-                                disabledHours={() => {
+                                disabledTime={() => {
                                     const selectedDate = formCreate.getFieldValue('date');
                                     const isToday = selectedDate && dayjs().isSame(selectedDate, 'day');
                                     const now = dayjs();
 
-                                    if (!isToday) return [];
-                                    return Array.from({ length: 24 }, (_, i) => i).filter((hour) => hour < now.hour());
+                                    return {
+                                        disabledHours: () => {
+                                            if (!isToday) return [];
+                                            return Array.from({ length: 24 }, (_, i) => i).filter(hour => hour < now.hour());
+                                        },
+                                        disabledMinutes: (selectedHour) => {
+                                            if (!isToday) return [];
+                                            if (selectedHour === now.hour()) {
+                                                return Array.from({ length: 60 }, (_, i) => i).filter(minute => minute < now.minute());
+                                            }
+                                            return [];
+                                        },
+                                        disabledSeconds: () => [] // Bạn có thể giữ trống nếu không cần disable giây
+                                    };
                                 }}
-                                disabledMinutes={(selectedHour) => {
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Thời gian kết thúc"
+                            name="endTime"
+                            dependencies={['startTime', 'date']}
+                            rules={[
+                                { required: true, message: "Vui lòng chọn thời gian kết thúc!" },
+                                ({ getFieldValue }) => ({
+                                    validator(_, value) {
+                                        const start = getFieldValue('startTime');
+                                        if (!value || !start || value.isAfter(start)) {
+                                            return Promise.resolve();
+                                        }
+                                        return Promise.reject(new Error('Giờ kết thúc phải sau giờ bắt đầu!'));
+                                    },
+                                }),
+                            ]}
+                        >
+                            <TimePicker
+                                format="HH:mm"
+                                style={{ width: '100%' }}
+                                placeholder="Chọn thời gian kết thức"
+                                disabledTime={() => {
                                     const selectedDate = formCreate.getFieldValue('date');
                                     const isToday = selectedDate && dayjs().isSame(selectedDate, 'day');
                                     const now = dayjs();
 
-                                    if (!isToday) return [];
-                                    if (selectedHour === now.hour()) {
-                                        return Array.from({ length: 60 }, (_, i) => i).filter((minute) => minute < now.minute());
-                                    }
-                                    return [];
+                                    return {
+                                        disabledHours: () => {
+                                            if (!isToday) return [];
+                                            return Array.from({ length: 24 }, (_, i) => i).filter(hour => hour < now.hour());
+                                        },
+                                        disabledMinutes: (selectedHour) => {
+                                            if (!isToday) return [];
+                                            if (selectedHour === now.hour()) {
+                                                return Array.from({ length: 60 }, (_, i) => i).filter(minute => minute < now.minute());
+                                            }
+                                            return [];
+                                        },
+                                        disabledSeconds: () => [] // Bạn có thể giữ trống nếu không cần disable giây
+                                    };
+                                }}
+                            />
+                        </Form.Item>
+                    </Form>
+                </ModalComponent>
+            </LoadingComponent>
+            <DrawerComponent
+                title="Chi tiết chuyên khoa"
+                placement="right"
+                isOpen={isDrawerOpen}
+                onClose={() => setIsDrawerOpen(false)}
+                width={window.innerWidth < 768 ? "100%" : 600}
+                forceRender
+            >
+                <LoadingComponent isLoading={isPendingUpdate}>
+                    <Form
+                        name="formUpdate"
+                        labelCol={{ span: 6 }}
+                        wrapperCol={{ span: 18 }}
+                        style={{ maxWidth: 600, padding: "20px" }}
+                        initialValues={{ remember: true }}
+                        onFinish={handleOnUpdateUser}
+                        autoComplete="off"
+                        form={formUpdate}
+                    >
+                        <Form.Item
+                            label="Tên bác sĩ"
+                            name="name"
+                            rules={[{ required: true, message: "Vui lòng nhập tên!" }]}
+                        >
+                            <Select
+                                showSearch
+                                placeholder="Chọn bác sĩ"
+                                optionFilterProp="children"
+                                filterOption={(input, option) =>
+                                    (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+                                }
+                            >
+                                {doctors?.data?.map((doctor) => (
+                                    <Option key={doctor._id} value={doctor._id} label={doctor?.user?.name}>
+                                        <div style={{ display: "flex", alignItems: "center" }}>
+                                            <img
+                                                src={doctor.image}
+                                                alt={doctor?.user?.name}
+                                                style={{ width: 30, height: 30, borderRadius: "50%", marginRight: 10 }}
+                                            />
+                                            {doctor?.user?.name}
+                                        </div>
+                                    </Option>
+                                ))}
+                            </Select>
+                        </Form.Item>
+                        <Form.Item
+                            label="Ngày làm việc"
+                            name="date"
+                            rules={[{ required: true, message: "Vui lòng chọn ngày làm việc!" }]}
+                        >
+                            <DatePicker
+                                style={{ width: '100%' }}
+                                format="DD/MM/YYYY"
+                                disabledDate={(current) => current && current < dayjs().startOf('day')}
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Thời gian bắt đầu"
+                            name="startTime"
+                            dependencies={['date']}
+                            rules={[{ required: true, message: "Vui lòng chọn thời gian bắt đầu!" }]}
+                        >
+                            <TimePicker
+                                format="HH:mm"
+                                style={{ width: '100%' }}
+                                placeholder="Chọn thời gian bắt đầu"
+                                disabledTime={() => {
+                                    const selectedDate = formUpdate.getFieldValue('date');
+                                    const isToday = selectedDate && dayjs().isSame(selectedDate, 'day');
+                                    const now = dayjs();
+
+                                    return {
+                                        disabledHours: () => {
+                                            if (!isToday) return [];
+                                            return Array.from({ length: 24 }, (_, i) => i).filter(hour => hour < now.hour());
+                                        },
+                                        disabledMinutes: (selectedHour) => {
+                                            if (!isToday) return [];
+                                            if (selectedHour === now.hour()) {
+                                                return Array.from({ length: 60 }, (_, i) => i).filter(minute => minute < now.minute());
+                                            }
+                                            return [];
+                                        },
+                                        disabledSeconds: () => [] // Bạn có thể giữ trống nếu không cần disable giây
+                                    };
                                 }}
                             />
                         </Form.Item>
@@ -385,30 +607,66 @@ const WorkingSchedule = () => {
                                 format="HH:mm"
                                 style={{ width: '100%' }}
                                 placeholder="Chọn thời gian kết thúc"
-                                disabledHours={() => {
-                                    const selectedDate = formCreate.getFieldValue('date');
+                                disabledTime={() => {
+                                    const selectedDate = formUpdate.getFieldValue('date');
                                     const isToday = selectedDate && dayjs().isSame(selectedDate, 'day');
                                     const now = dayjs();
 
-                                    if (!isToday) return [];
-                                    return Array.from({ length: 24 }, (_, i) => i).filter((hour) => hour < now.hour());
-                                }}
-                                disabledMinutes={(selectedHour) => {
-                                    const selectedDate = formCreate.getFieldValue('date');
-                                    const isToday = selectedDate && dayjs().isSame(selectedDate, 'day');
-                                    const now = dayjs();
-
-                                    if (!isToday) return [];
-                                    if (selectedHour === now.hour()) {
-                                        return Array.from({ length: 60 }, (_, i) => i).filter((minute) => minute < now.minute());
-                                    }
-                                    return [];
+                                    return {
+                                        disabledHours: () => {
+                                            if (!isToday) return [];
+                                            return Array.from({ length: 24 }, (_, i) => i).filter(hour => hour < now.hour());
+                                        },
+                                        disabledMinutes: (selectedHour) => {
+                                            if (!isToday) return [];
+                                            if (selectedHour === now.hour()) {
+                                                return Array.from({ length: 60 }, (_, i) => i).filter(minute => minute < now.minute());
+                                            }
+                                            return [];
+                                        },
+                                        disabledSeconds: () => [] // Bạn có thể giữ trống nếu không cần disable giây
+                                    };
                                 }}
                             />
                         </Form.Item>
+
+
+                        <Form.Item
+                            label={null}
+                            wrapperCol={{ offset: 20, span: 4 }}
+                        >
+                            <Flex gap="middle">
+                                <ButtonComponent
+                                    type="default"
+                                    onClick={() => setIsDrawerOpen(false)}
+                                >
+                                    Huỷ
+                                </ButtonComponent>
+                                <ButtonComponent
+                                    type="primary"
+                                    htmlType="submit"
+                                >
+                                    Lưu
+                                </ButtonComponent>
+                            </Flex>
+                        </Form.Item>
                     </Form>
-                </ModalComponent>
-            </LoadingComponent>
+                </LoadingComponent>
+            </DrawerComponent >
+            <ModalComponent
+                title="Xoá chuyên khoa"
+                open={isModalOpenDelete}
+                onOk={handleOkDelete}
+                onCancel={handleCancelDelete}
+                style={{ borderRadius: 0 }}
+            >
+                <LoadingComponent isLoading={isPendingDelete}>
+                    <p>
+                        Bạn có chắc chắn muốn <strong>xóa</strong> chuyên khoa
+                        này không?
+                    </p>
+                </LoadingComponent>
+            </ModalComponent>
         </>
     )
 }

@@ -22,8 +22,10 @@ import {
 } from "@ant-design/icons";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../redux/Slice/authSlice";
+import { resetAppointment } from "../../redux/Slice/appointmentSlice";
 import * as Message from "../Message/Message";
 import * as AuthService from "../../services/AuthService";
+
 const HeaderComponent = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -37,6 +39,7 @@ const HeaderComponent = () => {
             Message.success(res?.message);
             setIsOpenPopupUser(false);
             dispatch(logout());
+            dispatch(resetAppointment());
             navigate("/");
         } else if (res?.status == "error") {
             Message.error(res?.message);

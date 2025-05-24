@@ -7,6 +7,8 @@ import NotFoundPage from "../pages/NotFoundPage/NotFoundPage";
 import AdminLayout from "../components/AdminLayout/AdminLayout";
 import ProfilePage from "../pages/ProfilePage/ProfilePage";
 import DetailDoctorPage from "../pages/DetailDoctorPage/DetailDoctorPage";
+import BookingPage from "../pages/BookingPage/BookingPage";
+import BookingSuccess from "../pages/BookingSuccess/BookingSuccess";
 import { useSelector } from "react-redux";
 // Các trang con trong admin
 import Dashboard from "../pages/AdminPage/Dashboard";
@@ -29,7 +31,8 @@ const AppRoutes = () => {
                 <Route path="/detail-doctor/:id" element={<DetailDoctorPage />} />
                 <Route path="/unauthorized" element={<UnauthorizedPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
-
+                <Route path="/booking" element={user?.access_token ? (<BookingPage />) : <Navigate to="/authentication" />} />
+                <Route path="/booking-success" element={<BookingSuccess />} />
                 {/* Admin Routes */}
                 <Route
                     path="/admin"
