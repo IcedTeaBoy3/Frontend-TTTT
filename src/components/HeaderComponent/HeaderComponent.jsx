@@ -36,11 +36,14 @@ const HeaderComponent = () => {
     const handleLogoutUser = async () => {
         const res = await AuthService.logoutUser();
         if (res?.status == "success") {
-            Message.success(res?.message);
             setIsOpenPopupUser(false);
             dispatch(logout());
             dispatch(resetAppointment());
-            navigate("/");
+            navigate("/", {
+                state: {
+                    message: "Đăng xuất thành công",
+                },
+            });
         } else if (res?.status == "error") {
             Message.error(res?.message);
         }

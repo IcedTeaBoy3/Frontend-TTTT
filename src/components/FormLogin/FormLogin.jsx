@@ -1,75 +1,22 @@
-import React, { useState, useEffect } from "react";
-import { Form, Input, Checkbox, Button } from "antd";
+
+import { Form, Input, Checkbox } from "antd";
 import TabsComponent from "../TabsComponent/TabsComponent";
+import { MailOutlined, LockOutlined } from "@ant-design/icons";
 import ButtonComponent from "../ButtonComponent/ButtonComponent";
+import LoadingComponent from "../LoadingComponent/LoadingComponent";
 import { FormContainer } from "./style";
-import { useMutationHook } from "../../hooks/useMutationHook";
-import * as AuthService from "../../services/AuthService";
-import * as UserService from "../../services/UserService";
-import * as Message from "../Message/Message";
-import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { setUser } from "../../redux/Slice/authSlice";
-import { jwtDecode } from "jwt-decode";
-const FormLogin = () => {
-    const [isRegister, setIsRegister] = useState(false);
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
-    const user = useSelector((state) => state.auth.user);
-
-    const mutation = useMutationHook((data) => {
-        if (isRegister) {
-            return AuthService.registerUser(data);
-        } else {
-            return AuthService.loginUser(data);
-        }
-    });
-    const { data, isPending, isError, error } = mutation;
+import { useLocation } from "react-router-dom";
+import { useEffect } from "react";
+const FormLogin = ({ isRegister, setIsRegister, onSubmit, isPending }) => {
+    const location = useLocation();
+    const [formLogin] = Form.useForm();
     useEffect(() => {
-        if (data?.status == "success") {
-            Message.success(data?.message);
-            if (!isRegister) {
-                if (data?.access_token) {
-                    const decode = jwtDecode(data?.access_token); // Truy cập qua `.default`
-                    const { id } = decode;
-                    // Có thể lưu sơ bộ trước nếu cần
-                    dispatch(setUser({ id, access_token: data.access_token }));
-                    getDetailUser(id, data?.access_token);
-                }
-                navigate("/");
-            } else {
-                setIsRegister((prev) => !prev);
-            }
-            formLogin.resetFields();
-        } else if (data?.status == "error") {
-            Message.error(data?.message);
+        if (location.state?.email) {
+            formLogin.setFieldsValue({
+                email: location.state.email
+            });
         }
-    }, [data]);
-
-    const getDetailUser = async (id, access_token) => {
-        const res = await UserService.getUser(id);
-        if (res?.status == "success") {
-            const { email, name, role, phone, address, dateOfBirth, gender, avatar, ethnic, idCard, insuranceCode, job } = res?.data;
-            const user = {
-                id,
-                access_token,
-                email,
-                name,
-                role,
-                phone,
-                address,
-                dateOfBirth,
-                gender,
-                avatar,
-                ethnic,
-                idCard,
-                insuranceCode,
-                job,
-            };
-            dispatch(setUser(user));
-        }
-    };
-
+    }, [location.state?.email])
     const onChange = (key) => {
         setIsRegister((prev) => !prev);
     };
@@ -83,7 +30,7 @@ const FormLogin = () => {
             label: "Đăng ký",
         },
     ];
-    const [formLogin] = Form.useForm();
+
     // Theo dõi giá trị email và password
     const email = Form.useWatch("email", formLogin);
     const password = Form.useWatch("password", formLogin);
@@ -93,11 +40,12 @@ const FormLogin = () => {
         } else {
             localStorage.removeItem("email");
         }
-        mutation.mutate({
+        const data = {
             email: values.email,
             password: values.password,
-            ...(isRegister && { confirmPassword: values.confirmPassword }),
-        });
+            confirmPassword: values.confirmPassword,
+        }
+        onSubmit(data);
     };
     return (
         <FormContainer>
@@ -124,6 +72,7 @@ const FormLogin = () => {
                 <Form.Item
                     label="Email"
                     name="email"
+
                     hasFeedback
                     rules={[
                         {
@@ -136,12 +85,13 @@ const FormLogin = () => {
                         },
                     ]}
                 >
-                    <Input placeholder="Email" autoComplete="username" />
+                    <Input placeholder="Email" autoComplete="username" prefix={<MailOutlined />} />
                 </Form.Item>
 
                 <Form.Item
                     label="Mật khẩu"
                     name="password"
+
                     hasFeedback
                     rules={[
                         {
@@ -165,6 +115,7 @@ const FormLogin = () => {
                 >
                     <Input.Password
                         placeholder="Password"
+                        prefix={<LockOutlined />}
                         autoComplete="current-password"
                     />
                 </Form.Item>
@@ -215,22 +166,24 @@ const FormLogin = () => {
                         </span>
                     </Form.Item>
                 )}
+                <LoadingComponent isLoading={isPending} >
 
-                <Form.Item>
-                    <ButtonComponent
-                        type="primary"
-                        htmlType="submit"
-                        size="large"
-                        disabled={!email || !password}
-                        styleButton={{
-                            width: "100%",
-                            backgroundColor: "#1890ff",
-                            fontWeight: 500,
-                        }}
-                    >
-                        {isRegister ? "Đăng ký" : "Đăng nhập"}
-                    </ButtonComponent>
-                </Form.Item>
+                    <Form.Item>
+                        <ButtonComponent
+                            type="primary"
+                            htmlType="submit"
+                            size="large"
+                            disabled={!email || !password}
+                            styleButton={{
+                                width: "100%",
+                                backgroundColor: "#1890ff",
+                                fontWeight: 500,
+                            }}
+                        >
+                            {isRegister ? "Đăng ký" : "Đăng nhập"}
+                        </ButtonComponent>
+                    </Form.Item>
+                </LoadingComponent>
             </Form>
         </FormContainer>
     );

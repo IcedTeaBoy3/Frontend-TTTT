@@ -1,6 +1,6 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState, useEffect, useLayoutEffect } from 'react';
+import { useState, useEffect } from 'react';
 import DefaultLayout from '../../components/DefaultLayout/DefaultLayout';
 import { Avatar } from 'antd';
 import { Typography, Divider, Card, Flex } from 'antd';
@@ -15,6 +15,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { updateAppointment, setAppointment } from '../../redux/Slice/appointmentSlice';
 import WorkingSchedule from '../../components/WorkingSchedule/WorkingSchedule';
 import TimeSlot from '../../components/TimeSlot/TimeSlot';
+import * as Message from '../../components/Message/Message';
 dayjs.extend(utc)
 const { Title, Text } = Typography;
 const DetailDoctorPage = () => {
@@ -23,6 +24,7 @@ const DetailDoctorPage = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const appointment = useSelector((state) => state.appointment);
+    const user = useSelector((state) => state.auth.user);
     const queryGetWorkingScheduleByDoctor = useQuery({
         queryKey: ["getWorkingScheduleByDoctor", id],
         queryFn: () => WorkingScheduleService.getWorkingScheduleByDoctor(id),
@@ -44,7 +46,7 @@ const DetailDoctorPage = () => {
         ) {
             const schedule = workingSchedules.data[0];
 
-            dispatch(setAppointment({
+            dispatch(updateAppointment({
                 doctor: doctor.data,
                 schedule: schedule,
             }));
@@ -98,8 +100,26 @@ const DetailDoctorPage = () => {
         return fullSelectedTime.diff(now, 'minute') < 60;
     };
     const handleSelectedTime = (time) => {
+        if (!user?.access_token) {
+            navigate("/authentication", {
+                state: {
+                    message: "Vui lòng đăng nhập để đặt lịch khám",
+                }
+            })
+            return;
+        }
         dispatch(updateAppointment({ selectedTime: time }));
         navigate("/booking");
+    }
+    const handleBookingDoctor = () => {
+        if (!user?.access_token) {
+            navigate("/authentication", {
+                state: {
+                    message: "Vui lòng đăng nhập để đặt lịch khám",
+                }
+            })
+            return;
+        }
     }
     return (
         <DefaultLayout>
@@ -224,7 +244,7 @@ const DetailDoctorPage = () => {
                                 fontWeight: "bold",
                                 fontSize: 16,
                             }}
-                            onClick={() => navigate("/booking")}
+                            onClick={handleBookingDoctor}
 
                         >
                             Đặt lịch khám

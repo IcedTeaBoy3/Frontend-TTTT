@@ -9,6 +9,7 @@ import ProfilePage from "../pages/ProfilePage/ProfilePage";
 import DetailDoctorPage from "../pages/DetailDoctorPage/DetailDoctorPage";
 import BookingPage from "../pages/BookingPage/BookingPage";
 import BookingSuccess from "../pages/BookingSuccess/BookingSuccess";
+import VerifyEmail from "../pages/VerifyEmail/VerifyEmail";
 import { useSelector } from "react-redux";
 // Các trang con trong admin
 import Dashboard from "../pages/AdminPage/Dashboard";
@@ -33,6 +34,7 @@ const AppRoutes = () => {
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/booking" element={user?.access_token ? (<BookingPage />) : <Navigate to="/authentication" />} />
                 <Route path="/booking-success" element={<BookingSuccess />} />
+                <Route path="/verify-email" element={<VerifyEmail />} />
                 {/* Admin Routes */}
                 <Route
                     path="/admin"

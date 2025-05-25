@@ -4,7 +4,6 @@ const appointmentSlice = createSlice({
     name: "appointment",
     initialState: {
         doctor: null,
-        patient: null,
         schedule: null,
         timeSlot: null,
         selectedDate: null,
@@ -13,9 +12,8 @@ const appointmentSlice = createSlice({
     },
     reducers: {
         setAppointment: (state, action) => {
-            const { doctor, patient, schedule, timeSlot, selectedDate, selectedTime, reason } = action.payload;
+            const { doctor, schedule, timeSlot, selectedDate, selectedTime, reason } = action.payload;
             state.doctor = doctor;
-            state.patient = patient;
             state.schedule = schedule;
             state.timeSlot = timeSlot;
             state.selectedDate = selectedDate;
@@ -27,7 +25,6 @@ const appointmentSlice = createSlice({
         },
         resetAppointment: (state) => {
             state.doctor = null;
-            state.patient = null;
             state.schedule = null;
             state.timeSlot = null;
             state.selectedDate = null;

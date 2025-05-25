@@ -9,14 +9,22 @@ import { useQuery } from "@tanstack/react-query";
 import * as SpecialtyService from "../../services/SpecialtyService";
 import * as HospitalService from "../../services/HospitalService";
 import * as DoctorService from "../../services/DoctorService";
+import * as Message from "../../components/Message/Message";
 import LoadingComponent from "../../components/LoadingComponent/LoadingComponent";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import CardComponent from "../../components/CardComponent/CardComponent";
 const { Text } = Typography;
 const HomePage = () => {
     const [limit, setLimit] = useState(6)
     const navigate = useNavigate();
+    const location = useLocation();
+    useEffect(() => {
+        if (location.state?.message) {
+            Message.success(location.state.message);
+        }
+    }, [location.state])
+
     const queryGetAllSpecialties = useQuery({
         queryKey: ["getAllSpecialties", limit],
         queryFn: () => SpecialtyService.getAllSpecialties(0, limit),

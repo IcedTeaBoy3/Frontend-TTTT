@@ -32,3 +32,13 @@ export const refreshToken = async () => {
         throw error?.response?.data || error.message;
     }
 };
+export const verifyEmail = async (token) => {
+    try {
+        const response = await axiosInstance.get(`/auth/verify-email`, {
+            params: { token }
+        });
+        return response.data;
+    } catch (error) {
+        throw error?.response?.data || error.message;
+    }
+}
