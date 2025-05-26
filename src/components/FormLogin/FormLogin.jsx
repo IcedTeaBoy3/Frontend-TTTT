@@ -147,6 +147,7 @@ const FormLogin = ({ isRegister, setIsRegister, onSubmit, isPending }) => {
                     >
                         <Input.Password
                             placeholder="Nhập lại mật khẩu"
+                            prefix={<LockOutlined />}
                             autoComplete="new-password"
                         />
                     </Form.Item>

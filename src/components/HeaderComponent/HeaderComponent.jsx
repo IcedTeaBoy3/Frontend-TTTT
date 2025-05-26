@@ -36,14 +36,11 @@ const HeaderComponent = () => {
     const handleLogoutUser = async () => {
         const res = await AuthService.logoutUser();
         if (res?.status == "success") {
+            Message.success(res?.message);
             setIsOpenPopupUser(false);
             dispatch(logout());
             dispatch(resetAppointment());
-            navigate("/", {
-                state: {
-                    message: "Đăng xuất thành công",
-                },
-            });
+            navigate("/authentication");
         } else if (res?.status == "error") {
             Message.error(res?.message);
         }
@@ -79,7 +76,7 @@ const HeaderComponent = () => {
                 label: (
                     <PopupItem onClick={() => navigate("/order")}>
                         <InfoCircleFilled style={{ fontSize: 15, marginRight: 8 }} />
-                        Đơn hàng của tôi
+                        Lịch sử đặt khám
                     </PopupItem>
                 ),
             },

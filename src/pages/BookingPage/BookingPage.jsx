@@ -10,6 +10,7 @@ import WorkingSchedule from '../../components/WorkingSchedule/WorkingSchedule'
 import { Collapse } from "antd";
 import { useState, useEffect } from 'react';
 import * as WorkingScheduleService from '../../services/workingScheduleService'
+import * as AppointmentService from '../../services/AppointmentService'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 import { updateAppointment } from '../../redux/Slice/appointmentSlice'
@@ -20,18 +21,23 @@ import ModalUpdateUser from '../../components/ModalUpdateUser/ModalUpdateUser'
 import * as Message from '../../components/Message/Message';
 import * as UserService from '../../services/UserService';
 import dayjs from 'dayjs'
+import LoadingComponent from '../../components/LoadingComponent/LoadingComponent'
+import { convertGender } from '../../utils/convertGender'
 
 const { Title, Text } = Typography;
 const BookingPage = () => {
     const doctor = useSelector((state) => state.appointment.doctor);
     const patient = useSelector((state) => state.auth.user);
+
     const appointment = useSelector((state) => state.appointment);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [reason, setReason] = useState('');
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [timeSlots, setTimeSlots] = useState([]);
+    const [availableSlots, setAvailableSlots] = useState([]);
     const [activeKey, setActiveKey] = useState(appointment?.selectedTime ? ['2'] : ['1']);
+    const [isLoaded, setIsLoaded] = useState(false); // 👈 THÊM nè!
     const [currentStep, setCurrentStep] = useState(appointment?.selectedTime ? 1 : 0);
     const onChange = key => {
         setActiveKey(key);
@@ -62,7 +68,30 @@ const BookingPage = () => {
             Message.error(error?.response?.data?.message || "Có lỗi xảy ra");
         }
     })
+    const mutationCreateAppointment = useMutation({
+        mutationFn: (data) => {
+            return AppointmentService.createAppointment(data);
+        },
+        onSuccess: (res) => {
+            if (res?.status === "success") {
+                Message.success(res?.message);
+                setCurrentStep(3);
+                navigate('/booking-success');
+            } else if (res?.status === "error") {
+                setCurrentStep(0);
+                setAvailableSlots(res?.availableSlots || []);
+                setActiveKey(['1']);
+                Message.error(res?.message);
+            }
+            setIsLoaded(true); // Đánh dấu đã load xong
+        },
+        onError: (error) => {
+            Message.error("Có lỗi xảy ra " + error?.message);
+            setIsLoaded(true); // cũng đánh dấu xong để tránh disable toàn bộ
+        }
+    })
     const { data: workingSchedules, isLoading: isLoadingWorkingSchedule } = queryGetWorkingScheduleByDoctor
+    const { data: appointmentSchedule, isPending: isPendingCreate } = mutationCreateAppointment
     const { isPending: isPendingUpdateProfile } = mutationUpdateUpdateProfile
     useEffect(() => {
         if (
@@ -89,6 +118,18 @@ const BookingPage = () => {
             setTimeSlots(timeSlots);
         }
     }, [workingSchedules, doctor]);
+    const handleCreateWorkingTime = (schedule) => {
+
+        const startTime = schedule.startTime;
+        const endTime = schedule.endTime;
+        const timeSlots = generateTimeSlots(startTime, endTime);
+        setIsLoaded(false); // reset khi đổi ngày
+        setTimeSlots(timeSlots);
+        dispatch(updateAppointment({
+            selectedDate: schedule.workDate,
+        }));
+
+    }
     useEffect(() => {
         if (appointment?.selectedDate) {
             const schedule = workingSchedules?.data?.find(item => item.workDate === appointment.selectedDate);
@@ -111,34 +152,44 @@ const BookingPage = () => {
         }
         return slots;
     }
-    const handleCreateWorkingTime = (schedule) => {
 
-        const startTime = schedule.startTime;
-        const endTime = schedule.endTime;
-        const timeSlots = generateTimeSlots(startTime, endTime);
-        setTimeSlots(timeSlots);
-        dispatch(updateAppointment({
-            selectedDate: schedule.workDate,
-        }));
-
-    }
     const handleCheckTime = (selectedDate, time) => {
+        if (!isLoaded) return false; // 👈 Lúc chưa load → cho phép click (hoặc có thể return true nếu muốn disable)
+        if (!Array.isArray(availableSlots) || availableSlots.length === 0) {
+            return true; // disable nếu đã load xong mà không có slot
+        }
         if (!selectedDate || !time) return false;
-        const selectedDay = dayjs(selectedDate).utc().local(); // selectedDate đã là local (vì là từ schedule)
+        // Chuyển về local timezone nếu cần
+        const selectedDay = dayjs(selectedDate).utc().local();
         const now = dayjs();
 
-        // Nếu ngày được chọn KHÔNG PHẢI hôm nay → cho phép (không disable)
-        if (!selectedDay.isSame(now, 'day')) return false;
+        // Nếu không phải hôm nay → không disable
+        if (!selectedDay.isSame(now, 'day')) {
+            // Nhưng vẫn cần kiểm tra slot có nằm trong danh sách available không (nếu có)
+            return false;
+        }
 
-        // Ghép ngày và giờ lại để kiểm tra khoảng cách thời gian
+        // Nếu là hôm nay → kiểm tra thời gian + availableSlots
+
+        // Ghép ngày và giờ lại để so sánh
         const fullSelectedTime = dayjs(`${selectedDay.format('YYYY-MM-DD')} ${time}`, 'YYYY-MM-DD HH:mm');
+        const isTooClose = fullSelectedTime.diff(now, 'minute') < 60;
 
-        // Nếu khung giờ < 60 phút so với hiện tại → disable
-        // 
-        return fullSelectedTime.diff(now, 'minute') < 60;
+        if (availableSlots.length > 0) {
+            const isAvailable = availableSlots.includes(time);
+            // Nếu slot không có trong danh sách → disable
+            if (!isAvailable) return true;
+
+            // Nếu có trong danh sách mà quá sát giờ → disable
+            return isTooClose;
+        }
+        // trường hợp availableSlots là mảng rỗng hoặc không có thì phải disable hết
+
+        // Nếu không có availableSlots → chỉ kiểm tra thời gian
+        return isTooClose;
     };
     const handleSelectedTime = (time) => {
-        setActiveKey(['2']); // Mở tab Hồ sơ bệnh nhân khi chọn giờ khám
+        setCurrentStep(1); // Cập nhật bước hiện tại
         // Cập nhật giờ khám đã chọn
         dispatch(updateAppointment({ selectedTime: time }));
 
@@ -146,6 +197,7 @@ const BookingPage = () => {
 
 
     const handleEditProfile = () => {
+        setActiveKey(['3']); // Mở tab Hồ sơ bệnh nhân
         setIsModalOpen(true);
     }
     const handleUpdateProfile = (data) => {
@@ -153,20 +205,35 @@ const BookingPage = () => {
     }
     const handleBookingSchedule = () => {
         if (!appointment?.selectedTime) {
-            Message.error("Vui lòng chọn giờ khám trước khi đặt lịch");
+            Message.info("Vui lòng chọn giờ khám trước khi đặt lịch");
             return;
         }
 
         const { name, email, phone, dateOfBirth, gender, address, ethnic, idCard, insuranceCode, job } = patient;
         if (!name || !email || !phone || !dateOfBirth || !gender || !address || !ethnic || !idCard || !insuranceCode || !job) {
-            Message.error("Vui lòng cập nhật hồ sơ bệnh nhân trước khi đặt lịch khám");
+            Message.info("Vui lòng cập nhật hồ sơ bệnh nhân trước khi đặt lịch khám");
             handleEditProfile();
+            return;
+        }
+        if (!reason) {
+            Message.info("Vui lòng nhập lý do khám bệnh trước khi đặt lịch");
+            setActiveKey(['3']); // Mở tab nhập lý do khám
+            setCurrentStep(2);
             return;
         }
         dispatch(updateAppointment({
             reason: reason,
         }))
-        navigate('/booking-success');
+
+
+        mutationCreateAppointment.mutate({
+            patientId: patient.id,
+            doctorId: doctor._id,
+            scheduleId: appointment.schedule._id,
+            timeSlot: appointment.selectedTime,
+            reason: reason,
+        })
+
     }
     const itemsStep = [
         {
@@ -203,13 +270,14 @@ const BookingPage = () => {
                         workingSchedules={workingSchedules}
                         isLoading={isLoadingWorkingSchedule}
                         timeSlots={timeSlots}
-                        selectedDate={appointment?.selectedDate}
+                        selectedDate={appointment.selectedDate}
                         handleCreateWorkingTime={handleCreateWorkingTime}
                     />
                     <Text strong>Chọn giờ khám</Text>
                     <TimeSlot
                         timeSlots={timeSlots}
-                        selectedTime={appointment?.selectedTime}
+                        selectedTime={appointment.selectedTime}
+                        selectedDate={appointment.selectedDate}
                         handleCheckTime={handleCheckTime}
                         handleSelectedTime={handleSelectedTime}
                     />
@@ -235,7 +303,7 @@ const BookingPage = () => {
                     <Flex justify='space-between' align='center' style={{ paddingBottom: "12px", borderBottom: "1px solid #f0f0f0" }}>
 
                         <Text strong>Giới tính</Text>
-                        <Text>{patient?.gender}</Text>
+                        <Text>{convertGender(patient?.gender)}</Text>
                     </Flex>
                     <Flex justify='space-between' align='center' style={{ paddingBottom: "12px", borderBottom: "1px solid #f0f0f0" }}>
                         <Text strong>Ngày sinh</Text>
@@ -392,16 +460,20 @@ const BookingPage = () => {
                                 <Text strong style={{ fontSize: "18px" }}>{patient?.name}</Text>
                             </Flex>
                         </div>
-
-                        <ButtonComponent
-                            type="primary"
-                            size="large"
-                            style={{ width: "100%", borderRadius: 8 }}
-                            disabled={!appointment?.selectedTime}
-                            onClick={handleBookingSchedule}
+                        <LoadingComponent
+                            isLoading={isPendingCreate}
                         >
-                            Đặt lịch
-                        </ButtonComponent>
+
+                            <ButtonComponent
+                                type="primary"
+                                size="large"
+                                style={{ width: "100%", borderRadius: 8 }}
+                                disabled={!appointment?.selectedTime}
+                                onClick={handleBookingSchedule}
+                            >
+                                Đặt lịch
+                            </ButtonComponent>
+                        </LoadingComponent>
                     </div>
                 </div>
             </div>

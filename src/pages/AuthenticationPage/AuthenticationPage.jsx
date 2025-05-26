@@ -6,7 +6,7 @@ import { useLocation } from "react-router-dom";
 import * as Message from "../../components/Message/Message";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import * as AuthService from "../../services/AuthService";
 import * as UserService from "../../services/UserService";
 import { setUser, updateUser } from "../../redux/Slice/authSlice";
@@ -16,9 +16,23 @@ const AuthenticationPage = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const [isRegister, setIsRegister] = useState(false);
+    const user = useSelector((state) => state.auth.user);
     useEffect(() => {
         if (location.state?.message) {
-            Message.warning(location.state.message);
+            switch (location.state?.status) {
+                case "success":
+                    Message.success(location.state?.message);
+                    break;
+                case "info":
+                    Message.info(location.state?.message);
+                    break;
+                case "warning":
+                    Message.warning(location.state?.message);
+                    break;
+                case "error":
+                    Message.error(location.state?.message);
+                    break;
+            }
         }
     }, [location.state]);
     const mutationAuth = useMutation({
@@ -29,17 +43,23 @@ const AuthenticationPage = () => {
                 return AuthService.loginUser(data);
             }
         },
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
             if (data?.status === "success") {
                 Message.success(data?.message);
                 if (!isRegister) {
                     if (data?.access_token) {
+
                         const decode = jwtDecode(data?.access_token);
                         const { id } = decode;
                         dispatch(setUser({ id, access_token: data.access_token }));
-                        getDetailUser(id, data?.access_token);
+                        const user = await getDetailUser(id, data?.access_token);
+                        dispatch(updateUser(user));
+                        if (user.role === "admin") {
+                            navigate("/admin/dashboard");
+                        } else {
+                            navigate("/");
+                        }
                     }
-                    navigate("/");
                 } else {
                     setIsRegister((prev) => !prev);
                 }
@@ -72,7 +92,7 @@ const AuthenticationPage = () => {
                 insuranceCode,
                 job,
             };
-            dispatch(updateUser(user));
+            return user;
         }
     };
     return (

@@ -19,7 +19,7 @@ export const LogoSection = styled.div`
 
 export const BrandTitle = styled.h3`
     font-weight: bold;
-    font-size: 28px;
+    font-size: 22px;
     color: #1890ff;
     margin: 0;
     font-family: "Poppins", sans-serif;

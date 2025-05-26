@@ -29,6 +29,7 @@ import { useState } from "react";
 import ModalUpdateUser from "../../components/ModalUpdateUser/ModalUpdateUser";
 import { useMutation } from "@tanstack/react-query";
 import { formatDateToDDMMYYYY } from "../../utils/dateUtils";
+import { convertGender } from "../../utils/convertGender";
 const { Title, Text, Paragraph } = Typography;
 
 const items = [
@@ -106,7 +107,7 @@ const ProfilePage = () => {
                                 <Text style={{ fontSize: 16 }}><strong><MailOutlined /> Email:</strong> {user?.email || "--"}</Text>
                                 <Text style={{ fontSize: 16 }}><strong><PhoneOutlined /> Số điện thoại:</strong> {user?.phone || "--"}</Text>
                                 <Text style={{ fontSize: 16 }}><strong><CalendarOutlined /> Ngày sinh:</strong> {formatDateToDDMMYYYY(user?.dateOfBirth) || "--"}</Text>
-                                <Text style={{ fontSize: 16 }}><strong>	<ManOutlined /> Giới tính:</strong> {user?.gender || "--"}</Text>
+                                <Text style={{ fontSize: 16 }}><strong>	<ManOutlined /> Giới tính:</strong> {convertGender(user?.gender) || "--"}</Text>
                                 <Text style={{ fontSize: 16 }}><strong><EnvironmentOutlined /> Địa chỉ:</strong> {user?.address || "--"}</Text>
                             </Flex>
 

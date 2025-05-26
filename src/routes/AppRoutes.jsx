@@ -1,5 +1,4 @@
 import { Routes, Route, Navigate, BrowserRouter } from "react-router-dom";
-import DefaultLayout from "../components/DefaultLayout/DefaultLayout";
 import HomePage from "../pages/HomePage/HomePage";
 import AuthenticationPage from "../pages/AuthenticationPage/AuthenticationPage";
 import UnauthorizedPage from "../pages/UnauthorizedPage/UnauthorizedPage";
@@ -10,6 +9,7 @@ import DetailDoctorPage from "../pages/DetailDoctorPage/DetailDoctorPage";
 import BookingPage from "../pages/BookingPage/BookingPage";
 import BookingSuccess from "../pages/BookingSuccess/BookingSuccess";
 import VerifyEmail from "../pages/VerifyEmail/VerifyEmail";
+import ProtectedRoute from "../components/ProtectedRoute/ProtectedRoute";
 import { useSelector } from "react-redux";
 // Các trang con trong admin
 import Dashboard from "../pages/AdminPage/Dashboard";
@@ -39,11 +39,9 @@ const AppRoutes = () => {
                 <Route
                     path="/admin"
                     element={
-                        user?.role === "admin" ? (
+                        <ProtectedRoute allowedRoles={["admin"]}>
                             <AdminLayout />
-                        ) : (
-                            <Navigate to="/unauthorized" />
-                        )
+                        </ProtectedRoute>
                     }
                 >
                     <Route path="dashboard" element={<Dashboard />} />

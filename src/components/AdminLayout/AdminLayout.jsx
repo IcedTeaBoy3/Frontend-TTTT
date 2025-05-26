@@ -7,33 +7,38 @@ import {
     Badge,
     Popover,
     Grid,
+    Image,
+    Typography,
 } from "antd";
 import {
     DashboardOutlined,
     CalendarOutlined,
     TeamOutlined,
-    SettingOutlined,
     LogoutOutlined,
     UserOutlined,
-    CaretDownOutlined,
     BellOutlined,
     InfoCircleFilled,
-    CaretRightOutlined,
     SettingFilled,
     MedicineBoxOutlined,
     SolutionOutlined,
 } from "@ant-design/icons";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import ButtonComponent from "../ButtonComponent/ButtonComponent";
-
 import { useState, useMemo } from "react";
 import { PopupItem } from "./style";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "../../redux/Slice/authSlice";
+import { resetAppointment } from "../../redux/Slice/appointmentSlice";
+import * as AuthService from "../../services/AuthService";
+import * as Message from "../Message/Message";
+
 const { Header, Sider, Content, Footer } = Layout;
+const { Text, Paragraph } = Typography;
 
 const AdminLayout = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const dispatch = useDispatch();
     const { useBreakpoint } = Grid;
     const screens = useBreakpoint();
     const [collapsed, setCollapsed] = useState(false);
@@ -104,17 +109,29 @@ const AdminLayout = () => {
     ];
 
     const handleMenuClick = ({ key }) => {
+        console.log("Menu item clicked:", key);
+
         if (key === "/logout") {
-            // Xử lý logout nếu cần
+            handleLogoutUser();
             return;
         }
         navigate(key);
     };
-    const handleLogoutUser = () => {
-        localStorage.removeItem("user");
-        navigate("/login");
-    };
-    // Nội dung dropdown menu
+    const handleLogoutUser = async () => {
+        try {
+            const res = await AuthService.logoutUser();
+            if (res.status === "success") {
+                dispatch(logout());
+                dispatch(resetAppointment());
+                Message.success(res.message || "Đăng xuất thành công");
+                navigate("/authentication");
+            } else {
+                Message.error(res.message || "Đăng xuất không thành công");
+            }
+        } catch (error) {
+            Message.error(error.message);
+        }
+    }
     const content = useMemo(
         () => (
             <>
@@ -160,21 +177,45 @@ const AdminLayout = () => {
                 collapsed={collapsed}
                 collapsedWidth={0} // Ẩn hoàn toàn khi nhỏ hơn lg
                 onCollapse={(collapsed) => setCollapsed(collapsed)}
+                style={{
+                    backgroundColor: "#fff",
+                }}
             >
                 <div
-                    className="logo"
                     style={{
-                        padding: 16,
-                        fontSize: 20,
-                        textAlign: "center",
-                        fontWeight: "bold",
-                        color: "#1890ff",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 16, // Khoảng cách giữa logo và tên
+                        padding: "5px 0px",
+                        borderRadius: 8,
+                        cursor: "pointer",
                     }}
+                    onClick={() => navigate("/")}
                 >
-                    Medicare
+                    <Image
+                        width={55}
+                        src="http://localhost:4000/mylogo.webp"
+                        preview={false}
+                        style={{
+                            borderRadius: "50%",
+                            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                        }}
+                        alt="Logo Medicare"
+                    />
+                    <Paragraph
+                        style={{
+                            margin: 0,
+                            fontSize: 22,
+                            fontWeight: 'bolder',
+                            color: "#1890ff",
+                        }}
+                    >
+                        Medicare
+                    </Paragraph>
                 </div>
                 <Menu
-                    theme="dark"
+                    theme="light"
                     mode="inline"
                     onClick={handleMenuClick}
                     defaultSelectedKeys={["/admin/dashboard"]}
@@ -184,10 +225,15 @@ const AdminLayout = () => {
             <Layout>
                 <Header
                     style={{
-                        background: "#fff",
+                        background: "rgb(25 117 220)",
                         padding: 0,
                         textAlign: "right",
-                        paddingRight: 24,
+                        paddingRight: 20,
+                        borderBottom: "1px solid #e8e8e8",
+                        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 1000,
                     }}
                 >
                     {screens.md && (
@@ -196,15 +242,13 @@ const AdminLayout = () => {
                             icon={
                                 <Badge count={1}>
                                     <BellOutlined
-                                        style={{ fontSize: "25px" }}
+                                        style={{ fontSize: "20px" }}
                                     />
                                 </Badge>
                             }
                             styleButton={{
                                 marginRight: "16px",
-                                border: "1px solid #1890ff",
                             }}
-                            size="middle"
                         />
                     )}
 
@@ -221,16 +265,10 @@ const AdminLayout = () => {
                                 type="default"
                                 size="middle"
                                 styleButton={{
-                                    border: "1px solid #1890ff",
+
                                     marginRight: "16px",
                                 }}
-                                icon={
-                                    <Avatar
-                                        size={35}
-                                        icon={<UserOutlined />}
-                                        style={{ backgroundColor: "#87d068" }}
-                                    />
-                                }
+                                icon={<UserOutlined />}
                                 onClick={() => navigate("/profile")}
                             >
                                 {user?.name ||

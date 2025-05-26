@@ -23,7 +23,7 @@ const ModalUpdateUser = ({ isModalOpen, isPendingUpdateProfile, handleUpdateProf
                 phone: patient?.phone,
                 dataOfBirth: patient?.dateOfBirth ? dayjs(patient?.dateOfBirth) : null,
                 gender: patient?.gender,
-                address: patient?.address,
+                specific_address: patient?.address,
                 idCard: patient?.idCard,
                 ethnic: patient?.ethnic,
                 insuranceCode: patient?.insuranceCode,
@@ -38,7 +38,6 @@ const ModalUpdateUser = ({ isModalOpen, isPendingUpdateProfile, handleUpdateProf
         res.then((data) => { setProvinces(data); });
     }, [])
     const handleProvinceChange = async (provinceCode) => {
-        const provinceName = getNameByCode(provinces, provinceCode);
         const res = await AddressService.getDistrictsByProvince(provinceCode);
 
         setDistricts(res);
@@ -48,37 +47,34 @@ const ModalUpdateUser = ({ isModalOpen, isPendingUpdateProfile, handleUpdateProf
         formUpdate.setFieldsValue({
             district: undefined,
             ward: undefined,
-            address: `${provinceName || ''}`,
         });
     };
     const handleDistrictChange = async (districtCode) => {
-        const provinceCode = formUpdate.getFieldValue('province');
-        const districtName = getNameByCode(districts, districtCode);
-        const provinceName = getNameByCode(provinces, provinceCode);
+
         const res = await AddressService.getWardsByDistrict(districtCode);
         setWards(res);
         formUpdate.setFieldsValue({
             ward: undefined,
-            address: `${districtName || ''},${provinceName}`,
         });
     };
     const handleWardChange = (wardCode) => {
-        const districtCode = formUpdate.getFieldValue('district');
-        const provinceCode = formUpdate.getFieldValue('province');
-        const wardName = getNameByCode(wards, wardCode);
-        const districtName = getNameByCode(districts, districtCode);
-        const provinceName = getNameByCode(provinces, provinceCode);
-        const fullAddress = `${wardName || ''}, ${districtName}, ${provinceName}`;
+        // Không cần làm gì thêm ở đây, chỉ cần cập nhật ward trong form
         formUpdate.setFieldsValue({
-            address: fullAddress,
+            ward: wardCode,
         });
+
     };
     const handleOkUpdate = () => {
         formUpdate.validateFields()
             .then((values) => {
+                const wardName = getNameByCode(wards, values.ward);
+                const districtName = getNameByCode(districts, values.district);
+                const provinceName = getNameByCode(provinces, values.province);
+                const address = `${values.specific_address}, ${wardName}, ${districtName}, ${provinceName}`;
                 const updatedData = {
                     ...values,
                     id: patient?.id,
+                    address: address,
                     dateOfBirth: values.dataOfBirth ? values.dataOfBirth.format('YYYY-MM-DD') : null,
                 };
                 handleUpdateProfile(updatedData);
@@ -272,7 +268,7 @@ const ModalUpdateUser = ({ isModalOpen, isPendingUpdateProfile, handleUpdateProf
                         <Col span={8}>
                             <Form.Item
                                 label="Địa chỉ cụ thể"
-                                name="address"
+                                name="specific_address"
                                 rules={[{ required: true, message: 'Vui lòng nhập địa chỉ' }]}
                             >
                                 <Input.TextArea placeholder="Số nhà, tên đường" rows={4} />
@@ -301,7 +297,6 @@ const ModalUpdateUser = ({ isModalOpen, isPendingUpdateProfile, handleUpdateProf
                             <Form.Item
                                 label="Dân tộc"
                                 name="ethnic"
-                                rules={[{ required: true, message: 'Vui lòng chọn' }]}
                             >
                                 <Select
                                     placeholder="Chọn dân tộc"
@@ -345,10 +340,6 @@ const ModalUpdateUser = ({ isModalOpen, isPendingUpdateProfile, handleUpdateProf
                                 name="insuranceCode"
                                 rules={[
                                     {
-                                        required: true,
-                                        message: 'Vui lòng nhập mã số BHYT',
-                                    },
-                                    {
                                         pattern: /^[A-Z]{2}[0-9][0-9]{2}[0-9]{10}$/,
                                         message: 'Mã BHYT không đúng định dạng (VD: TE401234567890)',
                                     },
@@ -361,7 +352,6 @@ const ModalUpdateUser = ({ isModalOpen, isPendingUpdateProfile, handleUpdateProf
                             <Form.Item
                                 label="Nghề nghiệp"
                                 name="job"
-                                rules={[{ required: true, message: 'Vui lòng nhập Nghề nghiệp' }]}
                             >
                                 <Select
                                     placeholder="Chọn Nghề nghiệp"

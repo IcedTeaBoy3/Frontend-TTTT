@@ -103,6 +103,7 @@ const DetailDoctorPage = () => {
         if (!user?.access_token) {
             navigate("/authentication", {
                 state: {
+                    status: "info",
                     message: "Vui lòng đăng nhập để đặt lịch khám",
                 }
             })
@@ -115,11 +116,13 @@ const DetailDoctorPage = () => {
         if (!user?.access_token) {
             navigate("/authentication", {
                 state: {
+                    status: "info",
                     message: "Vui lòng đăng nhập để đặt lịch khám",
                 }
             })
             return;
         }
+        navigate("/booking")
     }
     return (
         <DefaultLayout>
@@ -186,6 +189,7 @@ const DetailDoctorPage = () => {
                         <TimeSlot
                             timeSlots={timeSlots}
                             selectedDate={appointment.selectedDate}
+                            selectedTime={appointment.selectedTime}
                             handleCheckTime={handleCheckTime}
                             handleSelectedTime={handleSelectedTime}
                         />
