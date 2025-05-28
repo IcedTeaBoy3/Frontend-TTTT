@@ -1,6 +1,6 @@
 import { message } from "antd";
 const success = (content = "Success") => {
-    message.success(content);
+    message.success({ content, duration: 5 }) // giây);
 };
 const error = (content = "Error") => {
     message.error(content);

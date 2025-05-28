@@ -53,3 +53,15 @@ export const deleteManyUsers = async (ids) => {
         throw error;
     }
 };
+export const insertManyUsers = async (users) => {
+    try {
+        const response = await axiosInstance.post(
+            `/users/insert-many-users`,
+            users,
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error inserting many users:", error);
+        throw error;
+    }
+}

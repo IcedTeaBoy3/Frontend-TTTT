@@ -83,7 +83,7 @@ const AdminLayout = () => {
         {
             key: "/admin/patients",
             icon: <TeamOutlined />,
-            label: "Quản lý người dùng",
+            label: "Quản lý bệnh nhân",
         },
         {
             icon: <SolutionOutlined />,
@@ -109,8 +109,6 @@ const AdminLayout = () => {
     ];
 
     const handleMenuClick = ({ key }) => {
-        console.log("Menu item clicked:", key);
-
         if (key === "/logout") {
             handleLogoutUser();
             return;

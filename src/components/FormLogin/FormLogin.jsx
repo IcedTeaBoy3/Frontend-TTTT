@@ -7,7 +7,7 @@ import LoadingComponent from "../LoadingComponent/LoadingComponent";
 import { FormContainer } from "./style";
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
-const FormLogin = ({ isRegister, setIsRegister, onSubmit, isPending }) => {
+const FormLogin = ({ isRegister, onSubmit, onChangeForm, isPending }) => {
     const location = useLocation();
     const [formLogin] = Form.useForm();
     useEffect(() => {
@@ -18,7 +18,7 @@ const FormLogin = ({ isRegister, setIsRegister, onSubmit, isPending }) => {
         }
     }, [location.state?.email])
     const onChange = (key) => {
-        setIsRegister((prev) => !prev);
+        onChangeForm();
     };
     const items = [
         {

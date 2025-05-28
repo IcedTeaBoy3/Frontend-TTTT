@@ -211,13 +211,15 @@ const HeaderComponent = () => {
                         trigger={["click"]}
                         getPopupContainer={(trigger) => trigger.parentNode}
                     >
-                        <ButtonComponent
-                            type="default"
-                            icon={<UserOutlined />}
-                            style={{ width: "100%", marginBottom: 10 }}
-                        >
-                            {user?.name || user?.email} ▼
-                        </ButtonComponent>
+                        <>
+                            <ButtonComponent
+                                type="default"
+                                icon={<UserOutlined />}
+                                style={{ width: "100%", marginBottom: 10 }}
+                            >
+                                {user?.name || user?.email} ▼
+                            </ButtonComponent>
+                        </>
                     </Dropdown>
                 ) : (
                     <ButtonComponent

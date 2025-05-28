@@ -45,3 +45,12 @@ export const deleteWorkingSchedule = async (id) => {
         throw error;
     }
 }
+export const deleteManyWorkingSchedules = async (ids) => {
+    try {
+        const response = await axiosInstance.post(`/working-schedules/delete-many-working-schedules`, { ids });
+        return response.data;
+    } catch (error) {
+        console.error("Error deleting many working schedules:", error);
+        throw error;
+    }
+}

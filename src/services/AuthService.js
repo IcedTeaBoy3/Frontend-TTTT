@@ -42,3 +42,11 @@ export const verifyEmail = async (token) => {
         throw error?.response?.data || error.message;
     }
 }
+export const changePassword = async (data) => {
+    try {
+        const response = await axiosInstance.post(`/auth/change-password`, data);
+        return response.data;
+    } catch (error) {
+        throw error?.response?.data || error.message;
+    }
+}

@@ -1,38 +1,37 @@
-import React from "react";
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
-import { Flex, Form, Input, Select, Table, Space, Pagination, Upload } from "antd";
+import { Form, Input, Select, Table, Space } from "antd";
 import {
     DeleteOutlined,
-    ExportOutlined,
-    ImportOutlined,
-    PlusCircleFilled,
-    UploadOutlined,
     EditOutlined,
     SearchOutlined
 } from "@ant-design/icons";
 import ModalComponent from "../../components/ModalComponent/ModalComponent";
 import LoadingComponent from "../../components/LoadingComponent/LoadingComponent";
 import DrawerComponent from "../../components/DrawerComponent/DrawerComponent";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import * as SpecialtyService from "../../services/SpecialtyService";
-import * as HospitalService from "../../services/HospitalService";
-import * as  DoctorService from "../../services/DoctorService";
-import * as Message from "../../components/Message/Message";
+import ActionButtonGroup from "../../components/ActionButtonGroup/ActionButtonGroup";
+import { useDoctorData } from "../../hooks/useDoctorData";
+import { useSpecialtyData } from "../../hooks/useSpecialtyData";
+import { useHospitalData } from "../../hooks/useHospitalData";
 import { useState, useRef } from "react";
 const Doctor = () => {
-    const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-    const [rowSelected, setRowSelected] = useState(null);
+    const [isModalOpenCreate, setIsModalOpenCreate] = useState(false);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [isModalOpenDelete, setIsModalOpenDelete] = useState(false);
-    const [isOpenAdd, setIsOpenAdd] = useState(false);
+    const [isModalOpenDeleteMany, setIsModalOpenDeleteMany] = useState(false);
+    const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+    const [rowSelected, setRowSelected] = useState(null);
     const [formCreate] = Form.useForm();
     const [formUpdate] = Form.useForm();
-    const [isModalOpenDeleteMany, setIsModalOpenDeleteMany] = useState(false);
+    const fileInputRef = useRef(null);
+    const [fileType, setFileType] = useState(null); // "csv" hoặc "excel"
+
     const [pagination, setPagination] = useState({
         current: 1,
         pageSize: 10,
-        total: 0,
     });
+    const [searchText, setSearchText] = useState("");
+    const [searchedColumn, setSearchedColumn] = useState("");
+    const searchInput = useRef(null);
     const rowSelection = {
         selectedRowKeys,
         onChange: (selectedKeys, selectedRows) => {
@@ -40,111 +39,33 @@ const Doctor = () => {
         },
         type: "checkbox",
     };
-    const queryGetAllSpecialties = useQuery({
-        queryKey: ["getAllSpecialties"],
-        queryFn: SpecialtyService.getAllSpecialties,
-        keepPreviousData: true,
-    })
-    const queryGetAllHospitals = useQuery({
-        queryKey: ["getAllHospitals"],
-        queryFn: HospitalService.getAllHospitals,
-        keepPreviousData: true,
-    })
-    const queryGetAllDoctors = useQuery({
-        queryKey: ["getAllDoctors"],
-        queryFn: () => DoctorService.getAllDoctors(pagination.current, pagination.pageSize),
-        keepPreviousData: true,
-    })
-    const mutaionAddDoctor = useMutation({
-        mutationFn: (data) => {
-            return DoctorService.createDoctor(data);
-        },
-        onSuccess: (data) => {
-            if (data.status === "success") {
-                Message.success(data.message);
-                formCreate.resetFields();
-                setIsOpenAdd(false);
-            } else {
-                Message.error(data.message);
-            }
-        },
-        onError: (error) => {
-            if (error.response && error.response.status === 400) {
-                Message.error(error.response.data.message);
-            } else {
-                Message.error("Đã xảy ra lỗi, vui lòng thử lại sau.");
-            }
-        },
-    })
-    const mutaionUpdateDoctor = useMutation({
-        mutationFn: (data) => {
-            const { id, ...rests } = data;
-            return DoctorService.updateDoctor(id, rests);
-        },
-        onSuccess: (data) => {
-            if (data.status === "success") {
-                Message.success(data.message);
-                setIsDrawerOpen(false);
-            } else {
-                Message.error(data.message);
-            }
-        },
-        onError: (error) => {
-            if (error.response && error.response.status === 400) {
-                Message.error(error.response.data.message);
-            } else {
-                Message.error("Đã xảy ra lỗi, vui lòng thử lại sau.");
-            }
-        },
-    })
-    const mutationDeleteDoctor = useMutation({
-        mutationFn: (data) => DoctorService.deleteDoctor(data),
-        onSuccess: (data) => {
-            if (data.status === "success") {
-                Message.success(data.message);
-                setIsModalOpenDelete(false);
-            } else {
-                Message.error(data.message);
-            }
-        },
-        onError: (error) => {
-            if (error.response && error.response.status === 400) {
-                Message.error(error.response.data.message);
-            } else {
-                Message.error("Đã xảy ra lỗi, vui lòng thử lại sau.");
-            }
-        },
-    })
-    const mutationDeleteManyDoctors = useMutation({
-        mutationFn: (ids) => DoctorService.deleteManyDoctors(ids),
-        onSuccess: (data) => {
-            if (data.status === "success") {
-                Message.success(data.message);
-                setSelectedRowKeys([]);
-                setIsModalOpenDeleteMany(false);
-            } else {
-                Message.error(data.message);
-            }
-        },
-        onError: (error) => {
-            if (error.response && error.response.status === 400) {
-                Message.error(error.response.data.message);
-            } else {
-                Message.error("Đã xảy ra lỗi, vui lòng thử lại sau.");
-            }
-        },
-    })
+    const { queryGetAllSpecialties } = useSpecialtyData({});
+    const { queryGetAllHospitals } = useHospitalData({});
+
+    const {
+        queryGetAllDoctors,
+        mutationCreateDoctor,
+        mutationDeleteDoctor,
+        mutationUpdateDoctor,
+        mutationDeleteManyDoctors,
+    } = useDoctorData({
+        setIsModalOpenCreate,
+        setIsDrawerOpen,
+        setIsModalOpenDeleteMany,
+        setIsModalOpenDelete,
+        setSelectedRowKeys,
+        setRowSelected,
+    });
     const { data: specialties, isLoading: isLoadingSpecialty } = queryGetAllSpecialties;
     const { data: hospitals, isLoading: isLoadingHospital } = queryGetAllHospitals;
     const { data: doctors, isLoading: isLoadingDoctor } = queryGetAllDoctors;
-
-    const { isPending: isPendingAdd } = mutaionAddDoctor;
-    const { isPending: isPendingUpdate } = mutaionUpdateDoctor;
+    const { isPending: isPendingAdd } = mutationCreateDoctor;
+    const { isPending: isPendingUpdate } = mutationUpdateDoctor;
     const { isPending: isPendingDelete } = mutationDeleteDoctor;
     const { isPending: isPendingDeleteMany } = mutationDeleteManyDoctors;
     const handleAddDoctor = () => {
         formCreate.validateFields().then((values) => {
-            mutaionAddDoctor.mutate({
+            mutationCreateDoctor.mutate({
                 name: values.name,
                 email: values.email,
                 password: values.password,
@@ -154,18 +75,14 @@ const Doctor = () => {
                 position: values.position,
                 experience: values.experience,
                 description: values.description,
-            }, {
-                onSettled: () => {
-                    queryGetAllDoctors.refetch();
-                }
             })
-
         }).catch((error) => {
-            console.log(error);
+            console.error("Validation failed:", error);
+            // Handle validation errors if needed
         });
     };
     const handleCloseAddDoctor = () => {
-        setIsOpenAdd(false);
+        setIsModalOpenCreate(false);
     };
     const handleEditDoctor = (id) => {
 
@@ -184,10 +101,6 @@ const Doctor = () => {
         }
         setIsDrawerOpen(true);
     }
-    const [searchText, setSearchText] = useState("");
-    const [searchedColumn, setSearchedColumn] = useState("");
-    const searchInput = useRef(null);
-
     const getColumnSearchProps = (dataIndex) => ({
         filterDropdown: ({
             setSelectedKeys,
@@ -346,7 +259,6 @@ const Doctor = () => {
             ),
         },
     ];
-    pagination.total = doctors?.total || 0;
     const dataTable = doctors?.data?.map((item, index) => ({
         key: item._id,
         index: index + 1,
@@ -358,17 +270,9 @@ const Doctor = () => {
         experience: item.experience,
         description: item.description,
     })) || [];
-    const handleChangePage = (page, pageSize) => {
-        setPagination({
-            ...pagination,
-            current: page,
-            pageSize: pageSize,
-        });
-    }
 
     const handleOnUpdateDoctor = (values) => {
-
-        mutaionUpdateDoctor.mutate({
+        mutationUpdateDoctor.mutate({
             id: rowSelected,
             name: values.name,
             email: values.email,
@@ -378,109 +282,49 @@ const Doctor = () => {
             position: values.position,
             experience: values.experience,
             description: values.description,
-        }, {
-            onSettled: () => {
-                queryGetAllDoctors.refetch();
-            }
         })
     }
     const handleOkDelete = () => {
-        mutationDeleteDoctor.mutate(rowSelected, {
-            onSettled: () => {
-                queryGetAllDoctors.refetch();
-            }
-        })
+        mutationDeleteDoctor.mutate(rowSelected)
     };
     const handleCancelDelete = () => {
         setIsModalOpenDelete(false);
     };
     const handleOkDeleteMany = () => {
-        mutationDeleteManyDoctors.mutate(selectedRowKeys, {
-            onSettled: () => {
-                queryGetAllDoctors.refetch();
-            }
-        })
+        mutationDeleteManyDoctors.mutate(selectedRowKeys)
     };
     const handleCancelDeleteMany = () => {
         setIsModalOpenDeleteMany(false);
     };
+    const handleChooseFile = (type) => {
+
+    }
+    const handleFileChange = (e) => {
+
+    }
+    const handleExportExcel = () => {
+
+    }
+    const handleExportCSV = () => {
+
+    }
     return (
         <>
-            <Flex
-                gap="middle"
-                align="center"
-                justify="space-between"
-                style={{
-                    marginBottom: "20px",
-                    flexWrap: "wrap",
-                    rowGap: "16px",
-                }}
+            <ActionButtonGroup
+                selectedRowKeys={selectedRowKeys}
+                dataTable={dataTable}
+                onExportCSV={handleExportCSV}
+                onExportExcel={handleExportExcel}
+                onImportCSV={() => handleChooseFile("csv")}
+                onImportExcel={() => handleChooseFile("excel")}
+                fileInputRef={fileInputRef}
+                fileType={fileType}
+                onFileChange={handleFileChange}
+                onDeleteMany={() => setIsModalOpenDeleteMany(true)}
+                onCreateNew={() => setIsModalOpenCreate(true)}
             >
-                {/* Left side buttons */}
-                <Flex
-                    gap="middle"
-                    style={{
-                        flex: "1 1 300px",
-                        justifyContent: "flex-start",
-                        flexWrap: "wrap",
-                    }}
-                >
-                    <ButtonComponent
-                        danger
-                        size="small"
-                        disabled={selectedRowKeys.length === 0}
-                        icon={<DeleteOutlined />}
-                        onClick={() => setIsModalOpenDeleteMany(true)}
-                        style={{ minWidth: "120px" }}
-                    >
-                        Xoá tất cả
-                    </ButtonComponent>
-                    <ButtonComponent
-                        size="small"
-                        icon={<PlusCircleFilled />}
-                        type="primary"
-                        onClick={() => setIsOpenAdd(true)}
-                        style={{ minWidth: "120px" }}
-                    >
-                        Thêm mới
-                    </ButtonComponent>
-                </Flex>
 
-                {/* Right side buttons */}
-                <Flex
-                    gap="middle"
-                    style={{
-                        flex: "1 1 300px",
-                        justifyContent: "flex-end",
-                        flexWrap: "wrap",
-                    }}
-                >
-                    <ButtonComponent
-                        size="small"
-                        type="default"
-                        icon={<ExportOutlined />}
-                        styleButton={{
-                            minWidth: "120px",
-                            backgroundColor: "#52c41a",
-                            color: "#fff",
-                        }}
-                    >
-                        Export
-                    </ButtonComponent>
-                    <ButtonComponent
-                        size="small"
-                        type="primary"
-                        icon={<ImportOutlined />}
-                        styleButton={{
-                            minWidth: "120px",
-                            backgroundColor: "#1890ff",
-                            color: "#fff",
-                        }}
-                    >
-                        Import
-                    </ButtonComponent>
-                </Flex>
-            </Flex>
+            </ActionButtonGroup>
             <LoadingComponent isLoading={isLoadingDoctor} delay={200}>
                 <Table
                     rowSelection={rowSelection}
@@ -488,27 +332,29 @@ const Doctor = () => {
                     columns={columns}
                     scroll={{ x: "max-content" }}
                     dataSource={dataTable}
-                    locale={{ emptyText: "Không có dữ liệu bệnh viện" }}
-                    pagination={false}
+                    locale={{
+                        emptyText: "Không có dữ liệu bác sĩ"
+                    }}
+                    pagination={{
+                        current: pagination.current,
+                        pageSize: pagination.pageSize,
+                        position: ["bottomCenter"],
+                        showTotal: (total, range) => `Hiển thị ${range[0]}-${range[1]} trong tổng số ${total} bác sĩ`,
+                        showSizeChanger: true, // Cho phép chọn số dòng/trang
+                        pageSizeOptions: ["5", "8", "10", "20", "50"], // Tuỳ chọn số dòng
+                        showQuickJumper: true, // Cho phép nhảy đến trang
+                        onChange: (page, pageSize) => {
+                            setPagination({
+                                current: page,
+                                pageSize: pageSize,
+                            });
+                        },
+                    }}
                     onRow={(record) => ({
                         onClick: () => {
                             setRowSelected(record.key);
                         },
                     })}
-                />
-                <Pagination
-                    style={{ marginTop: "20px", textAlign: "right" }}
-                    showQuickJumper
-                    align="center"
-                    pageSizeOptions={["5", "8", "10", "20", "50"]}
-                    showSizeChanger
-                    current={pagination.current}
-                    pageSize={pagination.pageSize}
-                    total={pagination.total}
-                    onChange={handleChangePage}
-                    showTotal={(total, range) =>
-                        `${range[0]}-${range[1]} of ${total} items`
-                    }
                 />
             </LoadingComponent>
             <DrawerComponent
@@ -669,7 +515,7 @@ const Doctor = () => {
                         </Form.Item>
                         <Form.Item
                             label={null}
-                            wrapperCol={{ offset: 20, span: 4 }}
+                            wrapperCol={{ offset: 18, span: 6 }}
                         >
                             <Space>
                                 <ButtonComponent
@@ -692,7 +538,7 @@ const Doctor = () => {
             <LoadingComponent isLoading={isPendingAdd}>
                 <ModalComponent
                     title="Thêm mới bác sĩ"
-                    open={isOpenAdd}
+                    open={isModalOpenCreate}
                     onOk={handleAddDoctor}
                     onCancel={handleCloseAddDoctor}
                     width={600}
@@ -906,7 +752,7 @@ const Doctor = () => {
                 onCancel={handleCancelDelete}
                 style={{ borderRadius: 0 }}
             >
-                <LoadingComponent isLoading={isPendingDeleteMany}>
+                <LoadingComponent isLoading={isPendingDelete}>
                     <p>
                         Bạn có chắc chắn muốn <strong>xóa</strong> bác sĩ này không?
                     </p>
@@ -919,7 +765,7 @@ const Doctor = () => {
                 onCancel={handleCancelDeleteMany}
                 style={{ borderRadius: 0 }}
             >
-                <LoadingComponent isLoading={isPendingDelete}>
+                <LoadingComponent isLoading={isPendingDeleteMany}>
                     <p>
                         Bạn có chắc chắn muốn <strong>xóa</strong> bác sĩ này không?
                     </p>

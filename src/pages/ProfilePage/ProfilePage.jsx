@@ -4,32 +4,20 @@ import {
     InfoCircleOutlined,
     LoginOutlined,
     UserOutlined,
-    WarningOutlined,
-    MailOutlined,
-    PhoneOutlined,
-    ManOutlined,
-    IdcardOutlined,
-    CreditCardOutlined,
-    FlagOutlined,
-    ToolOutlined,
-    EnvironmentOutlined,
-    CalendarOutlined
 } from "@ant-design/icons";
 import { Menu, Avatar, Typography, Divider, Flex } from "antd";
-import { useSelector } from "react-redux";
-import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
 import * as AuthService from "../../services/AuthService";
 import * as UserService from "../../services/UserService";
 import * as Message from "../../components/Message/Message";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { logout, updateUser } from "../../redux/Slice/authSlice";
 import { resetAppointment } from "../../redux/Slice/appointmentSlice";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import ModalUpdateUser from "../../components/ModalUpdateUser/ModalUpdateUser";
 import { useMutation } from "@tanstack/react-query";
-import { formatDateToDDMMYYYY } from "../../utils/dateUtils";
-import { convertGender } from "../../utils/convertGender";
+import PersonalProfile from "../../components/PersonalProfile/PersonalProfile";
+import AccountInfor from "../../components/AccountInfor/AccountInfor";
 const { Title, Text, Paragraph } = Typography;
 
 const items = [
@@ -59,7 +47,6 @@ const items = [
 
 const ProfilePage = () => {
     const user = useSelector((state) => state.auth.user);
-    const patient = useSelector((state) => state.appointment.patient);
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -89,50 +76,15 @@ const ProfilePage = () => {
         switch (selectedKey) {
             case "profile":
                 return (
-                    <>
-                        <Title level={3}>Thông tin của bạn</Title>
-                        <Text type="secondary">
-                            Đây là nơi bạn có thể xem và chỉnh sửa thông tin cá nhân của mình.
-                        </Text>
-                        {/* Nội dung chi tiết từng mục sẽ hiển thị tại đây */}
-                        <Paragraph style={{ backgroundColor: "#fed7aa", padding: "10px" }}>
-                            <WarningOutlined /> Hoàn thiện thông tin để đặt khám và quản lý hồ sơ y tế được tốt hơn.
-                        </Paragraph>
-                        <Divider></Divider>
-                        <Flex justify="space-between" align="flex-start" style={{ gap: 48 }}>
-                            {/* Cột Thông tin cơ bản */}
-                            <Flex vertical style={{ flex: 1, borderRight: '1px solid #dfdfdf' }} gap={8}>
-                                <Title level={4}>Thông tin cơ bản</Title>
-                                <Text style={{ fontSize: 16 }}><strong><UserOutlined /> Họ và tên:</strong> {user?.name || "--"}</Text>
-                                <Text style={{ fontSize: 16 }}><strong><MailOutlined /> Email:</strong> {user?.email || "--"}</Text>
-                                <Text style={{ fontSize: 16 }}><strong><PhoneOutlined /> Số điện thoại:</strong> {user?.phone || "--"}</Text>
-                                <Text style={{ fontSize: 16 }}><strong><CalendarOutlined /> Ngày sinh:</strong> {formatDateToDDMMYYYY(user?.dateOfBirth) || "--"}</Text>
-                                <Text style={{ fontSize: 16 }}><strong>	<ManOutlined /> Giới tính:</strong> {convertGender(user?.gender) || "--"}</Text>
-                                <Text style={{ fontSize: 16 }}><strong><EnvironmentOutlined /> Địa chỉ:</strong> {user?.address || "--"}</Text>
-                            </Flex>
-
-                            {/* Cột Thông tin bổ sung */}
-                            <Flex vertical style={{ flex: 1 }} gap={8}>
-                                <Title level={4}>Thông tin bổ sung</Title>
-                                <Text style={{ fontSize: 16 }}><strong><IdcardOutlined /> Mã BHYT:</strong> {user?.insuranceCode || "--"}</Text>
-                                <Text style={{ fontSize: 16 }}><strong><CreditCardOutlined /> Số CMND/CCCD:</strong> {user?.idCard || "--"}</Text>
-                                <Text style={{ fontSize: 16 }}><strong><FlagOutlined /> Dân tộc:</strong> {user?.ethnic || "--"}</Text>
-                                <Text style={{ fontSize: 16 }}><strong><ToolOutlined /> Nghề nghiệp:</strong> {user?.job || "--"}</Text>
-                            </Flex>
-                        </Flex>
-                        <ButtonComponent
-                            type="primary"
-                            style={{ marginTop: 24, width: "30%" }}
-                            size="large"
-                            onClick={() => setIsModalOpen(true)}
-                        >
-                            <UserOutlined style={{ marginRight: 8 }} />
-                            Chỉnh sửa thông tin
-                        </ButtonComponent>
-                    </>
+                    <PersonalProfile user={user} onClick={() => setIsModalOpen(true)} />
                 )
             case "account":
-                return <div>💳 Thông tin bảo hiểm</div>;
+                return (
+                    <AccountInfor
+                        user={user}
+                        handleChangeProfile={() => setSelectedKey('profile')}
+                    />
+                )
             case "appointments":
                 return <div>📅 Lịch sử khám</div>;
             default:
@@ -230,6 +182,7 @@ const ProfilePage = () => {
                 isModalOpen={isModalOpen}
                 handleUpdateProfile={handleUpdateProfile}
                 isPendingUpdateProfile={isPendingUpdateProfile}
+                patient={user}
                 onCancel={() => setIsModalOpen(false)}
             />
         </DefaultLayout>

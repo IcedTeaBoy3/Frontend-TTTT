@@ -5,10 +5,8 @@ import { Form, Input, Select, DatePicker, Radio, Row, Col } from "antd";
 import AddressService from "../../services/AddressService";
 import ethnicGroups from '../../data/ethnicGroups';
 import occupations from '../../data/occupations';
-import { useSelector } from "react-redux";
 import dayjs from "dayjs";
-const ModalUpdateUser = ({ isModalOpen, isPendingUpdateProfile, handleUpdateProfile, onCancel }) => {
-    const patient = useSelector((state) => state.auth.user);
+const ModalUpdateUser = ({ isModalOpen, isPendingUpdateProfile, patient, handleUpdateProfile, onCancel }) => {
     const [formUpdate] = Form.useForm();
     const [provinces, setProvinces] = useState([]);
     const [districts, setDistricts] = useState([]);

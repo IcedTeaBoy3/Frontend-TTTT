@@ -7,13 +7,13 @@ export const WrapperSliderStyle = styled(Slider)`
         top: 50%;
 
         &::before {
-        font-size: 40px;
-        color: #ccc; /* ❄️ Màu mặc định là trắng */
-        transition: color 0.3s ease;
+            font-size: 40px;
+            color: #ccc; /* ❄️ Màu mặc định là trắng */
+            transition: color 0.3s ease;
         }
 
         &:hover::before {
-        color: #1890ff; /* 💙 Khi hover chuyển sang xanh */
+            color: #1890ff; /* 💙 Khi hover chuyển sang xanh */
         }
     }
 

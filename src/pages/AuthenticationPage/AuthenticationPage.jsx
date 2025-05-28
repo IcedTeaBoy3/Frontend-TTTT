@@ -6,17 +6,17 @@ import { useLocation } from "react-router-dom";
 import * as Message from "../../components/Message/Message";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import * as AuthService from "../../services/AuthService";
 import * as UserService from "../../services/UserService";
 import { setUser, updateUser } from "../../redux/Slice/authSlice";
+import backgroundImage from "../../assets/anh_dang_nhap.png";
 import { jwtDecode } from "jwt-decode";
 const AuthenticationPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const [isRegister, setIsRegister] = useState(false);
-    const user = useSelector((state) => state.auth.user);
     useEffect(() => {
         if (location.state?.message) {
             switch (location.state?.status) {
@@ -99,23 +99,21 @@ const AuthenticationPage = () => {
         <DefaultLayout>
             <div
                 style={{
-                    backgroundColor: "#e5e7eb",
                     minHeight: "100vh",
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "space-around",
-
+                    justifyContent: "center",
+                    backgroundImage: `url(${backgroundImage})`,
                 }}
             >
-                <img src="mylogo.webp" alt="" width={400} />
                 <FormLogin
                     isRegister={isRegister}
-                    setIsRegister={setIsRegister}
                     dataUser={dataUser}
                     isPending={isPending}
                     onSubmit={(data) => {
                         mutationAuth.mutate(data);
                     }}
+                    onChangeForm={() => setIsRegister((prev) => !prev)}
                 />
             </div>
         </DefaultLayout>

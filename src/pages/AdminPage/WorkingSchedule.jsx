@@ -1,28 +1,26 @@
-import React from 'react'
-import { Flex, Form, Select, Input, DatePicker, TimePicker, Table, Pagination, Space } from "antd";
-import { DeleteOutlined, PlusCircleFilled, ExportOutlined, ImportOutlined, EditOutlined } from "@ant-design/icons";
+import { Form, Select, DatePicker, TimePicker, Table, Space } from "antd";
+import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
 import ModalComponent from '../../components/ModalComponent/ModalComponent';
 import LoadingComponent from "../../components/LoadingComponent/LoadingComponent";
-import * as DoctorService from "../../services/DoctorService";
-import * as Message from "../../components/Message/Message";
-import * as WorkingScheduleService from "../../services/WorkingScheduleService";
 import DrawerComponent from "../../components/DrawerComponent/DrawerComponent";
+import ActionButtonGroup from "../../components/ActionButtonGroup/ActionButtonGroup";
+import { useWorkingScheduleData } from "../../hooks/useWorkingScheduleData";
+import { useDoctorData } from "../../hooks/useDoctorData";
 import dayjs from 'dayjs';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { useState, useMemo } from "react";
+import { useState, useRef } from "react";
 const WorkingSchedule = () => {
-    const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-    const [isModalOpenDeleteMany, setIsModalOpenDeleteMany] = useState(false);
-    const [isModalOpenDelete, setIsModalOpenDelete] = useState(false);
+    const [isModalOpenCreate, setIsModalOpenCreate] = useState(false);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
+    const [isModalOpenDelete, setIsModalOpenDelete] = useState(false);
+    const [isModalOpenDeleteMany, setIsModalOpenDeleteMany] = useState(false);
     const [rowSelected, setRowSelected] = useState(null);
-    const [isOpenAdd, setIsOpenAdd] = useState(false);
+    const fileInputRef = useRef(null);
+    const [fileType, setFileType] = useState(null); // "csv" hoặc "excel"
+    const [selectedRowKeys, setSelectedRowKeys] = useState([]);
     const [pagination, setPagination] = useState({
         current: 1,
-        pageSize: 10,
-        total: 0,
+        pageSize: 5,
     });
     const [formCreate] = Form.useForm();
     const [formUpdate] = Form.useForm();
@@ -34,72 +32,27 @@ const WorkingSchedule = () => {
         },
         type: "checkbox",
     };
-    const queryGetAllDoctors = useQuery({
-        queryKey: ["getAllDoctors"],
-        queryFn: () => DoctorService.getAllDoctors(),
-
-    })
-    const queryGetAllWorkingSchedule = useQuery({
-        queryKey: ["getAllWorkingSchedule", pagination],
-        queryFn: () => WorkingScheduleService.getAllWorkingSchedules(pagination.current, pagination.pageSize),
-        refetchOnWindowFocus: false,
-        refetchInterval: 10000,
-        keepPreviousData: true,
-    })
-    const mutationCrateWorkingSchedule = useMutation({
-        mutationFn: (data) => WorkingScheduleService.createWorkingSchedule(data),
-        onSuccess: (res) => {
-            if (res.status === "success") {
-                Message.success(res.message);
-                setIsOpenAdd(false);
-                formCreate.resetFields();
-            } else {
-                Message.error(res.message);
-            }
-        },
-        onError: (error) => {
-            console.log(error);
-            Message.error("Có lỗi xảy ra, vui lòng thử lại sau!");
-        },
-    })
-    const mutationUpdateWorkingSchedule = useMutation({
-        mutationFn: (data) => {
-            const { id, ...rest } = data;
-            return WorkingScheduleService.updateWorkingSchedule(id, rest);
-        },
-        onSuccess: (res) => {
-            if (res.status === "success") {
-                Message.success(res.message);
-                setIsDrawerOpen(false);
-                formUpdate.resetFields();
-            } else {
-                Message.error(res.message);
-            }
-        },
-        onError: (error) => {
-            Message.error("Có lỗi xảy ra, vui lòng thử lại sau!" + error);
-        },
-    })
-    const mutationDeleteWorkingSchedule = useMutation({
-        mutationFn: (id) => WorkingScheduleService.deleteWorkingSchedule(id),
-        onSuccess: (res) => {
-            if (res.status === "success") {
-                Message.success(res.message);
-                setIsModalOpenDelete(false);
-                setRowSelected(null);
-            } else {
-                Message.error(res.message);
-            }
-        },
-        onError: (error) => {
-            Message.error("Có lỗi xảy ra, vui lòng thử lại sau!" + error);
-        },
+    const { queryGetAllDoctors } = useDoctorData({});
+    const {
+        queryGetAllWorkingSchedules,
+        mutationCreateWorkingSchedule,
+        mutationDeleteWorkingSchedule,
+        mutationUpdateWorkingSchedule,
+        mutationDeleteManyWorkingSchedules,
+    } = useWorkingScheduleData({
+        setIsModalOpenCreate,
+        setIsDrawerOpen,
+        setIsModalOpenDeleteMany,
+        setIsModalOpenDelete,
+        setSelectedRowKeys,
+        setRowSelected,
     })
     const { data: doctors, isLoading: isLoadingDoctors } = queryGetAllDoctors;
-    const { data: workingSchedules, isLoading: isLoadingWorkingSchedules } = queryGetAllWorkingSchedule;
-    const { isPending: isPendingCreateWorkingSchedule } = mutationCrateWorkingSchedule;
+    const { data: workingSchedules, isLoading: isLoadingWorkingSchedules } = queryGetAllWorkingSchedules;
+    const { isPending: isPendingCreateWorkingSchedule } = mutationCreateWorkingSchedule;
     const { isPending: isPendingDelete } = mutationDeleteWorkingSchedule;
     const { isPending: isPendingUpdate } = mutationUpdateWorkingSchedule;
+    const { isPending: isPendingDeleteMany } = mutationDeleteManyWorkingSchedules;
     const handleEditWorkingSchedule = (id) => {
         const workingSchedule = workingSchedules?.data?.find((item) => item._id === id);
         if (workingSchedule) {
@@ -109,8 +62,8 @@ const WorkingSchedule = () => {
                 startTime: dayjs(workingSchedule.startTime, "HH:mm"),
                 endTime: dayjs(workingSchedule.endTime, "HH:mm"),
             });
-            setIsDrawerOpen(true);
         }
+        setIsDrawerOpen(true);
     }
     const columns = [
         {
@@ -179,21 +132,17 @@ const WorkingSchedule = () => {
             ),
         },
     ];
-    const dataTable = useMemo(() => {
-        if (workingSchedules?.data) {
-            return workingSchedules.data.map((item, index) => ({
-                key: item._id,
-                index: index + 1,
-                doctor: item.doctor,
-                workDate: item.workDate,
-                startTime: item.startTime,
-                endTime: item.endTime,
-            }));
+    const dataTable = workingSchedules?.data?.map((item, index) => {
+        return {
+            key: item._id,
+            index: index + 1,
+            doctor: item.doctor,
+            workDate: dayjs(item.workDate),
+            startTime: dayjs(item.startTime, "HH:mm").format("HH:mm"),
+            endTime: dayjs(item.endTime, "HH:mm").format("HH:mm"),
         }
-        return [];
-    }, [workingSchedules]);
-    pagination.total = workingSchedules?.total || 0;
-    const handleAddDoctor = () => {
+    })
+    const handleAddWorkingSchedule = () => {
         formCreate.validateFields().then(async (values) => {
             const data = {
                 doctorId: values.name,
@@ -201,25 +150,16 @@ const WorkingSchedule = () => {
                 startTime: values.startTime.format("HH:mm"),
                 endTime: values.endTime.format("HH:mm"),
             }
-            mutationCrateWorkingSchedule.mutate(data, {
-                onSettled: () => {
-                    queryGetAllWorkingSchedule.refetch();
-                }
-            });
-
-
+            mutationCreateWorkingSchedule.mutate(data);
         }).catch((error) => {
             console.log(error);
         })
     }
-    const handleCloseAddDoctor = () => {
-
-        setIsOpenAdd(false);
+    const handleCloseAddWorkingSchedule = () => {
+        setIsModalOpenCreate(false);
     }
-    const handleOnUpdateUser = () => {
+    const handleOnUpdateWorkingSchedule = () => {
         formUpdate.validateFields().then(async (values) => {
-            console.log(values);
-
             const data = {
                 id: rowSelected,
                 doctor: values.name,
@@ -227,105 +167,49 @@ const WorkingSchedule = () => {
                 startTime: values.startTime.format("HH:mm"),
                 endTime: values.endTime.format("HH:mm"),
             }
-            mutationUpdateWorkingSchedule.mutate(data, {
-                onSettled: () => {
-                    queryGetAllWorkingSchedule.refetch();
-                }
-            });
+            mutationUpdateWorkingSchedule.mutate(data);
         }).catch((error) => {
             console.log(error);
         })
     }
     const handleOkDelete = () => {
-        mutationDeleteWorkingSchedule.mutate(rowSelected, {
-            onSettled: () => {
-                queryGetAllWorkingSchedule.refetch();
-            }
-        });
+        mutationDeleteWorkingSchedule.mutate(rowSelected);
     }
     const handleCancelDelete = () => {
         setIsModalOpenDelete(false);
-    }
-    const handleChangePage = (page, pageSize) => {
-        setPagination({ current: page, pageSize });
     };
+    const handleOkDeleteMany = () => {
+        mutationDeleteManyWorkingSchedules.mutate(selectedRowKeys);
+    }
+    const handleCancelDeleteMany = () => {
+        setIsModalOpenDeleteMany(false);
+        setSelectedRowKeys([]);
+    }
+    const handleExportCSV = () => { }
+    const handleExportExcel = () => { }
+    const handleChooseFile = (type) => {
+
+    }
+    const handleFileChange = (e) => {
+
+    }
     return (
         <>
-            <Flex
-                gap="middle"
-                align="center"
-                justify="space-between"
-                style={{
-                    marginBottom: "20px",
-                    flexWrap: "wrap",
-                    rowGap: "16px",
-                }}
+            <ActionButtonGroup
+                selectedRowKeys={selectedRowKeys}
+                dataTable={dataTable}
+                onExportCSV={handleExportCSV}
+                onExportExcel={handleExportExcel}
+                onImportCSV={() => handleExportCSV("csv")}
+                onImportExcel={() => handleChooseFile("excel")}
+                fileInputRef={fileInputRef}
+                fileType={fileType}
+                onFileChange={handleFileChange}
+                onDeleteMany={() => setIsModalOpenDeleteMany(true)}
+                onCreateNew={() => setIsModalOpenCreate(true)}
             >
-                {/* Left side buttons */}
-                <Flex
-                    gap="middle"
-                    style={{
-                        flex: "1 1 300px",
-                        justifyContent: "flex-start",
-                        flexWrap: "wrap",
-                    }}
-                >
-                    <ButtonComponent
-                        danger
-                        size="small"
-                        disabled={selectedRowKeys.length === 0}
-                        icon={<DeleteOutlined />}
-                        onClick={() => setIsModalOpenDeleteMany(true)}
-                        style={{ minWidth: "120px" }}
-                    >
-                        Xoá tất cả
-                    </ButtonComponent>
-                    <ButtonComponent
-                        size="small"
-                        icon={<PlusCircleFilled />}
-                        type="primary"
-                        onClick={() => setIsOpenAdd(true)}
-                        style={{ minWidth: "120px" }}
-                    >
-                        Thêm mới
-                    </ButtonComponent>
-                </Flex>
 
-                {/* Right side buttons */}
-                <Flex
-                    gap="middle"
-                    style={{
-                        flex: "1 1 300px",
-                        justifyContent: "flex-end",
-                        flexWrap: "wrap",
-                    }}
-                >
-                    <ButtonComponent
-                        size="small"
-                        type="default"
-                        icon={<ExportOutlined />}
-                        styleButton={{
-                            minWidth: "120px",
-                            backgroundColor: "#52c41a",
-                            color: "#fff",
-                        }}
-                    >
-                        Export
-                    </ButtonComponent>
-                    <ButtonComponent
-                        size="small"
-                        type="primary"
-                        icon={<ImportOutlined />}
-                        styleButton={{
-                            minWidth: "120px",
-                            backgroundColor: "#1890ff",
-                            color: "#fff",
-                        }}
-                    >
-                        Import
-                    </ButtonComponent>
-                </Flex>
-            </Flex>
+            </ActionButtonGroup>
             <LoadingComponent isLoading={isLoadingWorkingSchedules} delay={200}>
                 <Table
                     rowSelection={rowSelection}
@@ -334,34 +218,34 @@ const WorkingSchedule = () => {
                     scroll={{ x: "max-content" }}
                     dataSource={dataTable}
                     locale={{ emptyText: "Không có dữ liệu bệnh viện" }}
-                    pagination={false}
+                    pagination={{
+                        current: pagination.current,
+                        pageSize: pagination.pageSize,
+                        position: ["bottomCenter"],
+                        showTotal: (total, range) => `Hiển thị ${range[0]}-${range[1]} trong tổng số ${total} bác sĩ`,
+                        showSizeChanger: true, // Cho phép chọn số dòng/trang
+                        pageSizeOptions: ["5", "8", "10", "20", "50"], // Tuỳ chọn số dòng
+                        showQuickJumper: true, // Cho phép nhảy đến trang
+                        onChange: (page, pageSize) => {
+                            setPagination({
+                                current: page,
+                                pageSize: pageSize,
+                            });
+                        },
+                    }}
                     onRow={(record) => ({
                         onClick: () => {
                             setRowSelected(record.key);
                         },
                     })}
                 />
-                <Pagination
-                    style={{ marginTop: "20px", textAlign: "right" }}
-                    showQuickJumper
-                    align="center"
-                    pageSizeOptions={["5", "8", "10", "20", "50"]}
-                    showSizeChanger
-                    current={pagination.current}
-                    pageSize={pagination.pageSize}
-                    total={pagination.total}
-                    onChange={handleChangePage}
-                    showTotal={(total, range) =>
-                        `${range[0]}-${range[1]} of ${total} items`
-                    }
-                />
             </LoadingComponent>
             <LoadingComponent isLoading={isPendingCreateWorkingSchedule}>
                 <ModalComponent
                     title="Thêm mới lịch làm việc"
-                    open={isOpenAdd}
-                    onOk={handleAddDoctor}
-                    onCancel={handleCloseAddDoctor}
+                    open={isModalOpenCreate}
+                    onOk={handleAddWorkingSchedule}
+                    onCancel={handleCloseAddWorkingSchedule}
                     width={600}
                     style={{ borderRadius: 0 }}
                 >
@@ -496,7 +380,7 @@ const WorkingSchedule = () => {
                 </ModalComponent>
             </LoadingComponent>
             <DrawerComponent
-                title="Chi tiết chuyên khoa"
+                title="Chi tiết lịch làm việc"
                 placement="right"
                 isOpen={isDrawerOpen}
                 onClose={() => setIsDrawerOpen(false)}
@@ -510,7 +394,7 @@ const WorkingSchedule = () => {
                         wrapperCol={{ span: 18 }}
                         style={{ maxWidth: 600, padding: "20px" }}
                         initialValues={{ remember: true }}
-                        onFinish={handleOnUpdateUser}
+                        onFinish={handleOnUpdateWorkingSchedule}
                         autoComplete="off"
                         form={formUpdate}
                     >
@@ -633,9 +517,9 @@ const WorkingSchedule = () => {
 
                         <Form.Item
                             label={null}
-                            wrapperCol={{ offset: 20, span: 4 }}
+                            wrapperCol={{ offset: 18, span: 6 }}
                         >
-                            <Flex gap="middle">
+                            <Space>
                                 <ButtonComponent
                                     type="default"
                                     onClick={() => setIsDrawerOpen(false)}
@@ -648,13 +532,13 @@ const WorkingSchedule = () => {
                                 >
                                     Lưu
                                 </ButtonComponent>
-                            </Flex>
+                            </Space>
                         </Form.Item>
                     </Form>
                 </LoadingComponent>
             </DrawerComponent >
             <ModalComponent
-                title="Xoá chuyên khoa"
+                title="Xoá lịch làm việc"
                 open={isModalOpenDelete}
                 onOk={handleOkDelete}
                 onCancel={handleCancelDelete}
@@ -664,6 +548,19 @@ const WorkingSchedule = () => {
                     <p>
                         Bạn có chắc chắn muốn <strong>xóa</strong> chuyên khoa
                         này không?
+                    </p>
+                </LoadingComponent>
+            </ModalComponent>
+            <ModalComponent
+                title="Xoá nhiều lịch làm việc"
+                open={isModalOpenDeleteMany}
+                onOk={handleOkDeleteMany}
+                onCancel={handleCancelDeleteMany}
+                style={{ borderRadius: 0 }}
+            >
+                <LoadingComponent isLoading={isPendingDeleteMany}>
+                    <p>
+                        Bạn có chắc chắn muốn <strong>xóa</strong> bác sĩ này không?
                     </p>
                 </LoadingComponent>
             </ModalComponent>

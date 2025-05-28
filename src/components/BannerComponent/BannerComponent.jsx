@@ -26,11 +26,10 @@ const BannerComponent = () => {
                     right: 0,
                     bottom: 0,
                     backgroundImage: `url(${bannerImage})`,
-
                     backgroundSize: "contain",
                     backgroundRepeat: "no-repeat",
                     backgroundPosition: "right",
-                    opacity: 0.7,
+                    opacity: 0.3,
                 }}
             >
 

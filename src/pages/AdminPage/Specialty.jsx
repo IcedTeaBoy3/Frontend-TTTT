@@ -1,4 +1,4 @@
-import React from "react";
+
 import { useState, useRef } from "react";
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
 import ModalComponent from "../../components/ModalComponent/ModalComponent";
@@ -6,33 +6,34 @@ import LoadingComponent from "../../components/LoadingComponent/LoadingComponent
 import DrawerComponent from "../../components/DrawerComponent/DrawerComponent";
 import {
     DeleteOutlined,
-    PlusCircleFilled,
-    ExportOutlined,
-    ImportOutlined,
     UploadOutlined,
     EditOutlined,
     SearchOutlined,
 } from "@ant-design/icons";
-import * as Message from "../../components/Message/Message";
-import { Flex, Form, Input, Upload, Table, Space, Pagination } from "antd";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import * as SpecialtyService from "../../services/SpecialtyService";
+import { Form, Input, Upload, Table, Space, Image } from "antd";
+import { useSpecialtyData } from "../../hooks/useSpecialtyData";
+import ActionButtonGroup from "../../components/ActionButtonGroup/ActionButtonGroup";
+import { saveAs } from "file-saver";
+import Papa from "papaparse";
+import * as XLSX from "xlsx";
 const Specialty = () => {
-    const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-    const [rowSelected, setRowSelected] = useState(null);
+    const [isModalOpenCreate, setIsModalOpenCreate] = useState(false);
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [isModalOpenDelete, setIsModalOpenDelete] = useState(false);
     const [isModalOpenDeleteMany, setIsModalOpenDeleteMany] = useState(false);
-    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-    const [isOpenAdd, setIsOpenAdd] = useState(false);
+    const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+    const [rowSelected, setRowSelected] = useState(null);
     const [formCreate] = Form.useForm();
     const [formUpdate] = Form.useForm();
+    const fileInputRef = useRef(null);
+    const [fileType, setFileType] = useState(null); // "csv" hoặc "excel"
+    // Tìm kiếm
     const [searchText, setSearchText] = useState("");
     const [searchedColumn, setSearchedColumn] = useState("");
     const searchInput = useRef(null);
     const [pagination, setPagination] = useState({
         current: 1,
-        pageSize: 8,
-        total: 0,
+        pageSize: 5,
     });
     const rowSelection = {
         selectedRowKeys,
@@ -41,79 +42,30 @@ const Specialty = () => {
         },
         type: "checkbox",
     };
-    const mutationAddSpecialty = useMutation({
-        mutationFn: SpecialtyService.createSpecialty,
-        onSuccess: (data) => {
-            if (data?.status == "success") {
-                Message.success(data.message);
-                setIsOpenAdd(false);
-                formCreate.resetFields();
-            }
-            else {
-                Message.error(data.message);
-            }
-        },
-        onError: (error) => {
-            Message.error(error.message);
-        },
-    });
-    const mutationDeleteSpecialty = useMutation({
-        mutationFn: SpecialtyService.deleteSpecialty,
-        onSuccess: (data) => {
-            if (data?.status == "success") {
-                Message.success(data.message);
-                setIsModalOpenDelete(false);
-            }
-            else {
-                Message.error(data.message);
-            }
-        },
-        onError: (error) => {
-            Message.error(error.message);
-        },
-    });
-    const mutaionUpdateSpecialty = useMutation({
-        mutationFn: async ({ id, formData }) => {
-            return await SpecialtyService.updateSpecialty(id, formData);
-        },
-        onSuccess: (data) => {
-            if (data?.status == "success") {
-                Message.success(data.message);
-                setIsDrawerOpen(false);
-            }
-            else {
-                Message.error(data.message);
-            }
-        },
-        onError: (error) => {
-            Message.error(error.message);
-        },
-    });
-    const mutationDeleteManySpecialties = useMutation({
-        mutationFn: SpecialtyService.deleteManySpecialties,
-        onSuccess: (data) => {
-            if (data?.status == "success") {
 
-                setSelectedRowKeys([]);
-                Message.success(data.message);
-                setIsModalOpenDeleteMany(false);
-            } else {
-                Message.error(data.message);
-            }
-        },
-        onError: (error) => {
-            Message.error(error.message);
-        },
+    const {
+        queryGetAllSpecialties,
+        mutationCreateSpecialty,
+        mutationDeleteSpecialty,
+        mutationUpdateSpecialty,
+        mutationDeleteManySpecialties,
+        mutationInsertManySpecialties,
+    } = useSpecialtyData({
+        setIsModalOpenCreate,
+        setIsDrawerOpen,
+        setIsModalOpenDeleteMany,
+        setIsModalOpenDelete,
+        setSelectedRowKeys,
+        setRowSelected,
     });
-    const queryGetAllSpecialties = useQuery({
-        queryKey: ["getAllSpecialties", pagination],
-        queryFn: () =>
-            SpecialtyService.getAllSpecialties(
-                pagination.current,
-                pagination.pageSize,
-            ),
-        keepPreviousData: true,
-    });
+    const { data: specialties, isLoading } = queryGetAllSpecialties;
+    const { isPending: isPedingAdd } = mutationCreateSpecialty;
+    const { isPending: isPendingDelete } = mutationDeleteSpecialty;
+    const { isPending: isPendingUpdate } = mutationUpdateSpecialty;
+    const { isPending: isPendingDeleteMany } = mutationDeleteManySpecialties;
+    const { isPending: isPendingInsertMany } = mutationInsertManySpecialties;
+
+
     const getColumnSearchProps = (dataIndex) => ({
         filterDropdown: ({
             setSelectedKeys,
@@ -199,12 +151,10 @@ const Specialty = () => {
         setSearchText(selectedKeys[0]);
         setSearchedColumn(dataIndex);
     };
-
     const handleReset = (clearFilters) => {
         clearFilters();
         setSearchText("");
     };
-
     const columns = [
         {
             title: "STT",
@@ -256,8 +206,6 @@ const Specialty = () => {
             ),
         },
     ];
-    const { data: specialties, isLoading } = queryGetAllSpecialties;
-    pagination.total = specialties?.total || 0;
     const dataTable = specialties?.data.map((item, index) => {
         return {
             key: item._id,
@@ -265,38 +213,25 @@ const Specialty = () => {
             name: item.name,
             description: item.description,
             image: (
-                <img
+                <Image
                     src={`${import.meta.env.VITE_APP_BACKEND_URL}${item.image}`}
                     alt={item.name}
-                    style={{
-                        width: "50px",
-                        height: "50px",
-                        borderRadius: "5px",
-                    }}
+                    width={50}
+                    height={50}
+                    style={{ borderRadius: "8px", objectFit: "cover" }}
                 />
             ),
         };
     });
-
-    const { isPending: isPedingAdd } = mutationAddSpecialty;
-    const { isPending: isPendingDelete } = mutationDeleteSpecialty;
-    const { isPending: isPendingUpdate } = mutaionUpdateSpecialty;
-    const { isPending: isPendingDeleteMany } = mutationDeleteManySpecialties;
     const handleAddSpecialty = () => {
         formCreate.validateFields().then((values) => {
             //  values.image là mảng file (do maxCount=1 thì vẫn là mảng 1 phần tử)
-            const fileList = values?.image;
+            const fileList = values.image;
             const formData = new FormData();
             formData.append("name", values.name);
             formData.append("description", values.description);
             formData.append("image", fileList?.[0]?.originFileObj); // originFileObj mới là File thực tế
-            console.log(fileList?.[0]?.originFileObj);
-
-            mutationAddSpecialty.mutate(formData, {
-                onSettled: () => {
-                    queryGetAllSpecialties.refetch();
-                },
-            });
+            mutationCreateSpecialty.mutate(formData);
         });
     };
     const handleOkDelete = () => {
@@ -325,129 +260,123 @@ const Specialty = () => {
     const handleCancelDeleteMany = () => {
         setIsModalOpenDeleteMany(false);
     };
-    const handleOnUpdateUser = (values) => {
+    const handleOnUpdateSpecialty = (values) => {
         const formData = new FormData();
-        formData.append("name", values.name);
-        formData.append("description", values.description);
-
         const fileObj = values.image?.[0]?.originFileObj;
-
-        // Nếu là file mới (user vừa chọn ảnh), thì mới append
+        console.log(fileObj);
         if (fileObj instanceof File) {
             formData.append("image", fileObj);
         }
-
-        mutaionUpdateSpecialty.mutate(
-            { id: rowSelected, formData },
-            {
-                onSettled: () => {
-                    queryGetAllSpecialties.refetch();
-                },
-            },
-        );
+        formData.append("name", values.name);
+        formData.append("description", values.description);
+        mutationUpdateSpecialty.mutate({ id: rowSelected, formData });
     };
-
     const handleEditSpecialty = async (id) => {
-        const res = await SpecialtyService.getSpecialty(id);
-        if (res?.status == "error") {
-            Message.error(res?.message);
-            return;
-        }
+        const specialty = specialties?.data.find((item) => item._id === id);
         formUpdate.setFieldsValue({
-            name: res?.data?.name,
-            description: res?.data?.description,
+            name: specialty?.name,
+            description: specialty?.description,
             image: [
                 {
                     uid: "-1",
-                    name: res?.data?.image,
+                    name: specialty?.image,
                     status: "done",
-                    url: `${import.meta.env.VITE_APP_BACKEND_URL}${res?.data?.image}`,
+                    url: `${import.meta.env.VITE_APP_BACKEND_URL}${specialty?.image}`,
                 },
             ],
         });
         setIsDrawerOpen(true);
     };
-
     const handleCloseAddSpecialty = () => {
-        setIsOpenAdd(false);
+        setIsModalOpenCreate(false);
     };
-    const handleChangePage = (page, pageSize) => {
-        setPagination({
-            current: page,
-            pageSize: pageSize,
-        });
-    };
+
+    const handleExportExcel = () => {
+        // Xuất file Excel
+        const dataExport = specialties?.data.map((item) => ({
+            "Tên chuyên khoa": item.name,
+            "Mô tả": item.description,
+            "Hình ảnh": `${import.meta.env.VITE_APP_BACKEND_URL}${item.image}`,
+        }))
+        const worksheet = XLSX.utils.json_to_sheet(dataExport);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
+        const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+        const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+        saveAs(blob, "specialties.xlsx");
+    }
+    const handleExportCSV = () => {
+        // Xuất file CSV
+        const dataExport = specialties?.data.map((item) => ({
+            "Tên chuyên khoa": item.name,
+            "Mô tả": item.description,
+            "Hình ảnh": `${import.meta.env.VITE_APP_BACKEND_URL}${item.image}`,
+        }));
+        const csv = Papa.unparse(dataExport);
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        saveAs(blob, "specialties.csv");
+    }
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const isExcel = fileType === "excel";
+        const reader = new FileReader();
+
+        reader.onload = async (evt) => {
+            const data = evt.target.result;
+            let jsonData = [];
+            const workbook = XLSX.read(data, { type: isExcel ? "binary" : "string" });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            jsonData = XLSX.utils.sheet_to_json(sheet);
+            if (isExcel) {
+                // Xử lý dữ liệu Excel
+                const specialties = jsonData.map((item) => ({
+                    name: item["Tên chuyên khoa"],
+                    description: item["Mô tả"],
+                    image: item["Hình ảnh"],
+                }));
+                mutationInsertManySpecialties.mutate({ specialties });
+            } else {
+                // Xử lý dữ liệu CSV
+                const parsedData = Papa.parse(data, { header: true }).data;
+                const specialties = parsedData.map((item) => ({
+                    name: item["Tên chuyên khoa"],
+                    description: item["Mô tả"],
+                    image: item["Hình ảnh"],
+                }));
+                mutationInsertManySpecialties.mutate({ specialties });
+            }
+        };
+        if (isExcel) reader.readAsBinaryString(file);
+        else reader.readAsText(file);
+
+        e.target.value = ""; // reset input
+    }
+    const handleChooseFile = (type) => {
+        setFileType(type);
+        setTimeout(() => {
+            fileInputRef.current?.click(); // mở input file ẩn
+        }, 0);
+    }
 
     return (
         <>
-            <Flex
-                gap="middle"
-                align="center"
-                justify="space-between"
-                style={{ marginBottom: "20px", flexWrap: "wrap" }}
+            <ActionButtonGroup
+                selectedRowKeys={selectedRowKeys}
+                dataTable={dataTable}
+                onExportCSV={handleExportCSV}
+                onExportExcel={handleExportExcel}
+                onImportCSV={() => handleChooseFile("csv")}
+                onImportExcel={() => handleChooseFile("excel")}
+                fileInputRef={fileInputRef}
+                fileType={fileType}
+                onFileChange={handleFileChange}
+                onDeleteMany={() => setIsModalOpenDeleteMany(true)}
+                onCreateNew={() => setIsModalOpenCreate(true)}
             >
-                <Flex
-                    gap="middle"
-                    style={{
-                        flexWrap: "wrap",
-                        flex: "1 1 300px", // cho responsive
-                        justifyContent: "flex-start",
-                    }}
-                >
-                    <ButtonComponent
-                        size="small"
-                        disabled={selectedRowKeys.length == 0}
-                        icon={<DeleteOutlined />}
-                        onClick={() => setIsModalOpenDeleteMany(true)}
-                        danger
-                        style={{ minWidth: "120px" }}
-                    >
-                        Xoá tất cả
-                    </ButtonComponent>
-                    <ButtonComponent
-                        size="small"
-                        icon={<PlusCircleFilled></PlusCircleFilled>}
-                        type="primary"
-                        onClick={() => setIsOpenAdd(true)}
-                        style={{ minWidth: "120px" }}
-                    >
-                        Thêm mới
-                    </ButtonComponent>
-                </Flex>
-                <Flex
-                    gap="middle"
-                    style={{
-                        flexWrap: "wrap",
-                        flex: "1 1 300px", // cho responsive
-                        justifyContent: "flex-end",
-                    }}
-                >
-                    <ButtonComponent
-                        size="small"
-                        type="default"
-                        icon={<ExportOutlined />}
-                        styleButton={{
-                            minWidth: "120px",
-                            backgroundColor: "#52c41a",
-                            color: "#fff",
-                        }}
-                    >
-                        Export
-                    </ButtonComponent>
-                    <ButtonComponent
-                        size="small"
-                        type="primary"
-                        icon={<ImportOutlined />}
-                        styleButton={{
-                            minWidth: "120px",
-                            backgroundColor: "#1890ff",
-                            color: "#fff",
-                        }}
-                    >
-                        Import
-                    </ButtonComponent>
-                </Flex>
-            </Flex>
+
+            </ActionButtonGroup >
             <LoadingComponent isLoading={isLoading} delay={200}>
                 <Table
                     rowSelection={rowSelection}
@@ -456,33 +385,32 @@ const Specialty = () => {
                     scroll={{ x: "max-content" }}
                     dataSource={dataTable}
                     locale={{ emptyText: "Không có dữ liệu bệnh nhân" }}
-                    pagination={false}
+                    pagination={{
+                        current: pagination.current,
+                        pageSize: pagination.pageSize,
+                        position: ["bottomCenter"],
+                        showTotal: (total, range) => `Hiển thị ${range[0]}-${range[1]} trong tổng số ${total} chuyên khoa`,
+                        showSizeChanger: true, // Cho phép chọn số dòng/trang
+                        pageSizeOptions: ["5", "8", "10", "20", "50"], // Tuỳ chọn số dòng
+                        showQuickJumper: true, // Cho phép nhảy đến trang
+                        onChange: (page, pageSize) => {
+                            setPagination({
+                                current: page,
+                                pageSize: pageSize,
+                            });
+                        },
+                    }}
                     onRow={(record) => ({
                         onClick: () => {
                             setRowSelected(record.key);
                         },
                     })}
                 />
-                <Pagination
-                    style={{ marginTop: "20px", textAlign: "right" }}
-                    showQuickJumper
-                    align="center"
-                    pageSizeOptions={["5", "8", "10", "20", "50"]}
-                    showSizeChanger
-                    current={pagination.current}
-                    pageSize={pagination.pageSize}
-                    total={pagination.total}
-                    defaultPageSize={pagination.pageSize}
-                    onChange={handleChangePage}
-                    showTotal={(total, range) =>
-                        `${range[0]}-${range[1]} of ${total} items`
-                    }
-                />
             </LoadingComponent>
             <LoadingComponent isLoading={isPedingAdd}>
                 <ModalComponent
                     title="Thêm mới chuyên khoa"
-                    open={isOpenAdd}
+                    open={isModalOpenCreate}
                     onOk={handleAddSpecialty}
                     onCancel={handleCloseAddSpecialty}
                     width={600}
@@ -599,7 +527,7 @@ const Specialty = () => {
                         wrapperCol={{ span: 18 }}
                         style={{ maxWidth: 600, padding: "20px" }}
                         initialValues={{ remember: true }}
-                        onFinish={handleOnUpdateUser}
+                        onFinish={handleOnUpdateSpecialty}
                         autoComplete="off"
                         form={formUpdate}
                     >
@@ -655,9 +583,9 @@ const Specialty = () => {
                         </Form.Item>
                         <Form.Item
                             label={null}
-                            wrapperCol={{ offset: 20, span: 4 }}
+                            wrapperCol={{ offset: 18, span: 6 }}
                         >
-                            <Flex gap="middle">
+                            <Space>
                                 <ButtonComponent
                                     type="default"
                                     onClick={() => setIsDrawerOpen(false)}
@@ -670,7 +598,7 @@ const Specialty = () => {
                                 >
                                     Lưu
                                 </ButtonComponent>
-                            </Flex>
+                            </Space>
                         </Form.Item>
                     </Form>
                 </LoadingComponent>

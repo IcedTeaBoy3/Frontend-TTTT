@@ -2,10 +2,7 @@ import axiosInstance from "../config/axiosInstance";
 
 export const createDoctor = async (data) => {
     try {
-        const response = await axiosInstance.post(
-            "/doctors/create-doctor",
-            data,
-        );
+        const response = await axiosInstance.post("/doctors/create-doctor",data);
         return response.data;
     } catch (error) {
         throw error.response.data;
@@ -13,9 +10,7 @@ export const createDoctor = async (data) => {
 };
 export const getAllDoctors = async (page, pageSize) => {
     try {
-        const response = await axiosInstance.get(
-            `/doctors/get-all-doctors?page=${page}&limit=${pageSize}`,
-        );
+        const response = await axiosInstance.get(`/doctors/get-all-doctors`,);
         return response.data;
     } catch (error) {
         throw error.response.data;
@@ -23,10 +18,7 @@ export const getAllDoctors = async (page, pageSize) => {
 };
 export const updateDoctor = async (id, data) => {
     try {
-        const response = await axiosInstance.put(
-            `/doctors/update-doctor/${id}`,
-            data,
-        );
+        const response = await axiosInstance.put(`/doctors/update-doctor/${id}`,data,);
         return response.data;
     } catch (error) {
         throw error.response.data;
@@ -34,9 +26,7 @@ export const updateDoctor = async (id, data) => {
 };
 export const getDoctor = async (id) => {
     try {
-        const response = await axiosInstance.get(
-            `/doctors/get-doctor/${id}`,
-        );
+        const response = await axiosInstance.get(`/doctors/get-doctor/${id}`,);
         return response.data;
     } catch (error) {
         throw error.response.data;
@@ -44,9 +34,7 @@ export const getDoctor = async (id) => {
 };
 export const deleteDoctor = async (id) => {
     try {
-        const response = await axiosInstance.delete(
-            `/doctors/delete-doctor/${id}`,
-        );
+        const response = await axiosInstance.delete(`/doctors/delete-doctor/${id}`,);
         return response.data;
     } catch (error) {
         throw error.response.data;

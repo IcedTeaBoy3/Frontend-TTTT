@@ -13,7 +13,7 @@ import * as WorkingScheduleService from '../../services/workingScheduleService'
 import * as AppointmentService from '../../services/AppointmentService'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
-import { updateAppointment } from '../../redux/Slice/appointmentSlice'
+import { updateAppointment, resetAppointment } from '../../redux/Slice/appointmentSlice'
 import { updateUser } from '../../redux/Slice/authSlice'
 import TimeSlot from '../../components/TimeSlot/TimeSlot'
 import { useNavigate } from 'react-router-dom'
@@ -28,7 +28,6 @@ const { Title, Text } = Typography;
 const BookingPage = () => {
     const doctor = useSelector((state) => state.appointment.doctor);
     const patient = useSelector((state) => state.auth.user);
-
     const appointment = useSelector((state) => state.appointment);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [reason, setReason] = useState('');
@@ -37,7 +36,7 @@ const BookingPage = () => {
     const [timeSlots, setTimeSlots] = useState([]);
     const [availableSlots, setAvailableSlots] = useState([]);
     const [activeKey, setActiveKey] = useState(appointment?.selectedTime ? ['2'] : ['1']);
-    const [isLoaded, setIsLoaded] = useState(false); // 👈 THÊM nè!
+    const [isLoaded, setIsLoaded] = useState(false); // Đánh dấu dã load xong dữ liệu
     const [currentStep, setCurrentStep] = useState(appointment?.selectedTime ? 1 : 0);
     const onChange = key => {
         setActiveKey(key);
@@ -95,44 +94,39 @@ const BookingPage = () => {
     const { isPending: isPendingUpdateProfile } = mutationUpdateUpdateProfile
     useEffect(() => {
         if (
-            workingSchedules?.status === "success" &&
             doctor?.status === "success" &&
-            workingSchedules?.data.length > 0
+            workingSchedules?.status === "success" &&
+            Array.isArray(workingSchedules.data) &&
+            workingSchedules.data.length > 0
         ) {
             const schedule = workingSchedules.data[0];
 
             dispatch(updateAppointment({
                 doctor: doctor.data,
-                schedule: schedule,
+                schedule,
             }));
 
-            // Cập nhật ngày nếu khác
-            if (schedule && appointment.selectedDate !== schedule.workDate) {
+            // Nếu ngày đang chọn khác lịch → cập nhật
+            if (schedule.workDate !== appointment.selectedDate) {
                 dispatch(updateAppointment({ selectedDate: schedule.workDate }));
             }
 
-            // Luôn generate timeSlots
-            const startTime = schedule.startTime;
-            const endTime = schedule.endTime;
-            const timeSlots = generateTimeSlots(startTime, endTime);
-            setTimeSlots(timeSlots);
+            handleCreateWorkingTime(schedule); // 👉 dùng luôn hàm có sẵn
         }
-    }, [workingSchedules, doctor]);
+    }, [workingSchedules, doctor, appointment.selectedDate, dispatch]);
     const handleCreateWorkingTime = (schedule) => {
+        if (!schedule?.startTime || !schedule?.endTime || !schedule?.workDate) return;
 
-        const startTime = schedule.startTime;
-        const endTime = schedule.endTime;
-        const timeSlots = generateTimeSlots(startTime, endTime);
-        setIsLoaded(false); // reset khi đổi ngày
+        const timeSlots = generateTimeSlots(schedule.startTime, schedule.endTime);
+        setIsLoaded(false); // reset loading
         setTimeSlots(timeSlots);
-        dispatch(updateAppointment({
-            selectedDate: schedule.workDate,
-        }));
 
-    }
+        dispatch(updateAppointment({ selectedDate: schedule.workDate }));
+    };
     useEffect(() => {
-        if (appointment?.selectedDate) {
-            const schedule = workingSchedules?.data?.find(item => item.workDate === appointment.selectedDate);
+        if (appointment?.selectedDate && Array.isArray(workingSchedules?.data)) {
+            const schedule = workingSchedules.data.find(item => dayjs(item?.workDate).isSame(dayjs(appointment.selectedDate), 'day'));
+            dispatch(updateAppointment({ schedule }));
             if (schedule) {
                 handleCreateWorkingTime(schedule);
             }
@@ -140,59 +134,43 @@ const BookingPage = () => {
     }, [appointment.selectedDate]);
     function generateTimeSlots(start, end, duration = 30) {
         const slots = [];
-        let [startHour, startMin] = start.split(':').map(Number);
-        let [endHour, endMin] = end.split(':').map(Number);
+        if (!start || !end) return slots;
+
+        const [startHour, startMin] = start.split(':').map(Number);
+        const [endHour, endMin] = end.split(':').map(Number);
+
         const startTime = startHour * 60 + startMin;
         const endTime = endHour * 60 + endMin;
+
+        if (startTime >= endTime) return slots; // ⛔ Không tạo slot nếu giờ bắt đầu >= giờ kết thúc
 
         for (let time = startTime; time + duration <= endTime; time += duration) {
             const h = Math.floor(time / 60);
             const m = time % 60;
             slots.push(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`);
         }
+
         return slots;
     }
 
-    const handleCheckTime = (selectedDate, time) => {
-        if (!isLoaded) return false; // 👈 Lúc chưa load → cho phép click (hoặc có thể return true nếu muốn disable)
-        if (!Array.isArray(availableSlots) || availableSlots.length === 0) {
-            return true; // disable nếu đã load xong mà không có slot
-        }
+    function canSelectSlot(selectedDate, time, availableSlots, now = dayjs()) {
         if (!selectedDate || !time) return false;
-        // Chuyển về local timezone nếu cần
-        const selectedDay = dayjs(selectedDate).utc().local();
-        const now = dayjs();
-
-        // Nếu không phải hôm nay → không disable
-        if (!selectedDay.isSame(now, 'day')) {
-            // Nhưng vẫn cần kiểm tra slot có nằm trong danh sách available không (nếu có)
-            return false;
-        }
-
-        // Nếu là hôm nay → kiểm tra thời gian + availableSlots
-
-        // Ghép ngày và giờ lại để so sánh
+        const selectedDay = dayjs(selectedDate).startOf('day');
         const fullSelectedTime = dayjs(`${selectedDay.format('YYYY-MM-DD')} ${time}`, 'YYYY-MM-DD HH:mm');
+        const isToday = selectedDay.isSame(now, 'day');
         const isTooClose = fullSelectedTime.diff(now, 'minute') < 60;
 
-        if (availableSlots.length > 0) {
-            const isAvailable = availableSlots.includes(time);
-            // Nếu slot không có trong danh sách → disable
-            if (!isAvailable) return true;
-
-            // Nếu có trong danh sách mà quá sát giờ → disable
-            return isTooClose;
-        }
-        // trường hợp availableSlots là mảng rỗng hoặc không có thì phải disable hết
-
-        // Nếu không có availableSlots → chỉ kiểm tra thời gian
-        return isTooClose;
+        return availableSlots.includes(time) && (!isToday || !isTooClose);
+    }
+    const handleCheckTime = (selectedDate, time) => {
+        if (!isLoaded) return false;
+        if (!Array.isArray(availableSlots) || availableSlots.length === 0) return true;
+        return !canSelectSlot(selectedDate, time, availableSlots);
     };
     const handleSelectedTime = (time) => {
         setCurrentStep(1); // Cập nhật bước hiện tại
         // Cập nhật giờ khám đã chọn
         dispatch(updateAppointment({ selectedTime: time }));
-
     }
 
 
@@ -210,7 +188,7 @@ const BookingPage = () => {
         }
 
         const { name, email, phone, dateOfBirth, gender, address, ethnic, idCard, insuranceCode, job } = patient;
-        if (!name || !email || !phone || !dateOfBirth || !gender || !address || !ethnic || !idCard || !insuranceCode || !job) {
+        if (!name || !email || !phone || !dateOfBirth || !gender || !address || !idCard) {
             Message.info("Vui lòng cập nhật hồ sơ bệnh nhân trước khi đặt lịch khám");
             handleEditProfile();
             return;
@@ -278,6 +256,7 @@ const BookingPage = () => {
                         timeSlots={timeSlots}
                         selectedTime={appointment.selectedTime}
                         selectedDate={appointment.selectedDate}
+                        schedule={appointment.schedule}
                         handleCheckTime={handleCheckTime}
                         handleSelectedTime={handleSelectedTime}
                     />
@@ -479,6 +458,7 @@ const BookingPage = () => {
             </div>
             <ModalUpdateUser
                 isModalOpen={isModalOpen}
+                patient={patient}
                 handleUpdateProfile={handleUpdateProfile}
                 isPendingUpdateProfile={isPendingUpdateProfile}
                 onCancel={() => setIsModalOpen(false)}

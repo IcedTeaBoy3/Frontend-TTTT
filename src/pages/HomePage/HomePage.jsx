@@ -117,9 +117,9 @@ const HomePage = () => {
                                         <CardComponent
                                             key={item._id}
                                             avatar={item.image}
-                                            name={item.user.name}
-                                            specialty={item.specialty.name}
-                                            hospital={item.hospital.name}
+                                            name={item.user?.name}
+                                            specialty={item.specialty?.name}
+                                            hospital={item.hospital?.name}
                                             onClick={() => handleNavigate(`/detail-doctor/${item._id}`)}
                                         >
 
@@ -159,16 +159,18 @@ const HomePage = () => {
                                     <Card
                                         hoverable="true"
                                         key={item._id}
+                                        style={{ width: 260, textAlign: 'center' }}
                                         cover={<img
                                             alt="example"
                                             src={`${import.meta.env.VITE_APP_BACKEND_URL}${item.image}`}
                                             style={{
-                                                height: 200, // 👈 chỉnh chiều cao nhỏ lại
+                                                height: 200,
+                                                objectFit: 'cover',
                                             }}
                                         />}
 
                                     >
-                                        <Card.Meta title={item.name} description={item.address} />
+                                        <Card.Meta title={item?.name} description={item.address} />
 
                                     </Card>
 
@@ -199,7 +201,7 @@ const HomePage = () => {
                                                 src={`${import.meta.env.VITE_APP_BACKEND_URL}${item.image}`}
                                                 style={{ width: '64px', height: '64px', objectFit: 'cover' }}
                                             />
-                                            <Card.Meta title={item.name} />
+                                            <Card.Meta title={item?.name} />
                                         </Card>
                                     </Col>
                                 ))}

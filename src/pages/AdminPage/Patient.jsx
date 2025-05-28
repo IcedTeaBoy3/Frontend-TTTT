@@ -1,6 +1,5 @@
-import React from "react";
-import { Space, Table, Input, Button, Form, Radio, Flex } from "antd";
-import * as UserService from "../../services/UserService";
+
+import { Space, Table, Input, Button, Form, Flex, Popconfirm } from "antd";
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
 import {
     EditOutlined,
@@ -9,23 +8,32 @@ import {
     ExportOutlined,
     ImportOutlined,
 } from "@ant-design/icons";
-import { useQuery } from "@tanstack/react-query";
-import { useState, useRef, useEffect } from "react";
-import { useMutationHook } from "../../hooks/useMutationHook";
+import { useState, useRef } from "react";
 import LoadingComponent from "../../components/LoadingComponent/LoadingComponent";
 import ModalComponent from "../../components/ModalComponent/ModalComponent";
 import DrawerComponent from "../../components/DrawerComponent/DrawerComponent";
-import * as Message from "../../components/Message/Message";
+import { usePatientData } from "../../hooks/usePatientData";
+import ActionButtonGroup from "../../components/ActionButtonGroup/ActionButtonGroup";
+import { saveAs } from "file-saver";
+import Papa from "papaparse";
+import * as XLSX from "xlsx";
 const Patient = () => {
+    const [isOpenDrawer, setIsOpenDrawer] = useState(false);
     const [isModalOpenDelete, setIsModalOpenDelete] = useState(false);
     const [isModalOpenDeleteMany, setIsModalOpenDeleteMany] = useState(false);
-    const [isOpenDrawer, setIsOpenDrawer] = useState(false);
+    const [rowSelected, setRowSelected] = useState(null);
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
     const [formUpdate] = Form.useForm();
-    const [rowSelected, setRowSelected] = useState(null);
+    const fileInputRef = useRef(null);
+    const [fileType, setFileType] = useState(null); // "csv" hoặc "excel"
+    // Tìm kiếm
+    const [searchText, setSearchText] = useState("");
+    const [searchedColumn, setSearchedColumn] = useState("");
+    const searchInput = useRef(null);
+    // Phân trang
     const [pagination, setPagination] = useState({
         current: 1,
-        pageSize: 8,
+        pageSize: 5,
         total: 0,
     });
     const rowSelection = {
@@ -35,35 +43,25 @@ const Patient = () => {
         },
         type: "checkbox",
     };
-    const getAllPatients = async () => {
-        const res = await UserService.getAllUsers();
-        return res.data;
-    };
-    const queryGetAllPatients = useQuery({
-        queryKey: ["getAllPatients"],
-        queryFn: getAllPatients,
-    });
-    const getUser = async (id) => {
-        const res = await UserService.getUser(id);
-        return res.data;
-    };
 
-    const mutationDeletePatient = useMutationHook((data) =>
-        UserService.deleteUser(data),
-    );
-    const mutationUpdatePatient = useMutationHook((data) => {
-        const { id, ...rest } = data;
-        return UserService.updateUser(id, rest);
-    });
-    const mutationDeleteAllPatient = useMutationHook((data) =>
-        UserService.deleteManyUsers(data),
-    );
-    const { data: dataUpdate, isPending: isPendingUpdate } =
-        mutationUpdatePatient;
-    const { data: dataDelete, isPending: isPendingDelete } =
-        mutationDeletePatient;
-    const { data: dataDeleteMany, isPending: isPendingDeleteMany } =
-        mutationDeleteAllPatient;
+    const {
+        queryGetAllPatients,
+        mutationDeletePatient,
+        mutationUpdatePatient,
+        mutationDeleteAllPatient,
+        mutationInsertManyPatient,
+    } = usePatientData({
+        setIsOpenDrawer,
+        setSelectedRowKeys,
+        setRowSelected,
+        setIsModalOpenDeleteMany,
+        setIsModalOpenDelete,
+    })
+    // Lấy dữ liệu bệnh nhân
+    const { data: dataPatient, isLoading } = queryGetAllPatients;
+    const { isPending: isPendingUpdate } = mutationUpdatePatient;
+    const { isPending: isPendingDelete } = mutationDeletePatient;
+    const { isPending: isPendingDeleteMany } = mutationDeleteAllPatient;
     const handleOkDelete = async () => {
         mutationDeletePatient.mutate(
             { id: rowSelected },
@@ -77,19 +75,19 @@ const Patient = () => {
     const handleCancelDelete = () => {
         setIsModalOpenDelete(false);
     };
-    const handleEditUser = async (id) => {
-        const res = await getUser(id);
-        if (res?.status == "error") {
-            Message.error(res?.message);
-            return;
+    const handleEditUser = (id) => {
+        const user = dataPatient?.data?.find((item) => item._id === id);
+        if (user) {
+            setRowSelected(id);
+            setIsOpenDrawer(true);
+            formUpdate.setFieldsValue({
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                address: user.address,
+                role: user.role,
+            });
         }
-        formUpdate.setFieldsValue({
-            name: res?.name,
-            email: res?.email,
-            phone: res?.phone,
-            role: res?.role,
-        });
-        setIsOpenDrawer(true);
     };
     const handleOnUpdateUser = async (values) => {
         mutationUpdatePatient.mutate(
@@ -98,51 +96,11 @@ const Patient = () => {
                 name: values.name,
                 email: values.email,
                 phone: values.phone,
+                address: values.address,
                 role: values.role,
-            },
-            {
-                onSettled: () => {
-                    queryGetAllPatients.refetch();
-                },
             },
         );
     };
-
-    // Xử lý khi xoá người dùng thành công
-    useEffect(() => {
-        if (dataDelete?.status == "success") {
-            setIsModalOpenDelete(false);
-            Message.success(dataDelete?.message);
-        } else if (dataDelete?.status == "error") {
-            Message.error(dataDelete?.message);
-            setIsModalOpenDelete(false);
-        }
-    }, [dataDelete]);
-    // Xử lý khi cập nhật người dùng thành công
-    useEffect(() => {
-        if (dataUpdate?.status == "success") {
-            setIsOpenDrawer(false);
-            Message.success(dataUpdate?.message);
-        } else if (dataUpdate?.status == "error") {
-            Message.error(dataUpdate?.message);
-        }
-    }, [dataUpdate]);
-    // Xử lý khi xoá tất cả người dùng thành công
-    useEffect(() => {
-        if (dataDeleteMany?.status == "success") {
-            setSelectedRowKeys([]);
-            Message.success(dataDeleteMany?.message);
-            setIsModalOpenDeleteMany(false);
-        } else if (dataDeleteMany?.status == "error") {
-            Message.error(dataDeleteMany?.message);
-        }
-    }, [dataDeleteMany]);
-
-    const { data: dataPatient, isLoading } = queryGetAllPatients;
-    const [searchText, setSearchText] = useState("");
-    const [searchedColumn, setSearchedColumn] = useState("");
-    const searchInput = useRef(null);
-
     const getColumnSearchProps = (dataIndex) => ({
         filterDropdown: ({
             setSelectedKeys,
@@ -211,20 +169,18 @@ const Patient = () => {
                 text
             ),
     });
-
     const handleSearch = (selectedKeys, confirm, dataIndex) => {
         confirm();
         setSearchText(selectedKeys[0]);
         setSearchedColumn(dataIndex);
     };
-
     const handleReset = (clearFilters) => {
         clearFilters();
         setSearchText("");
     };
-    const hasName = dataPatient?.some((item) => item.name);
-    const hasPhone = dataPatient?.some((item) => item.phone);
-    const hasAddress = dataPatient?.some((item) => item.address);
+    const hasName = dataPatient?.data?.some((item) => item.name);
+    const hasPhone = dataPatient?.data?.some((item) => item.phone);
+    const hasAddress = dataPatient?.data?.some((item) => item.address);
     const columns = [
         {
             title: "STT",
@@ -262,19 +218,7 @@ const Patient = () => {
 
         },
         {
-            title: "Role",
-            dataIndex: "role",
-            key: "role",
-            filters: [
-                { text: "Bệnh nhân", value: "Bệnh nhân" },
-                { text: "Bác sĩ", value: "Bác sĩ" },
-                { text: "Admin", value: "Admin" },
-            ],
-            onFilter: (value, record) => record.role === value,
-        },
-
-        {
-            title: "Action",
+            title: "Thao tác",
             key: "action",
             render: (_, record) => (
                 <Space size="middle">
@@ -298,19 +242,8 @@ const Patient = () => {
             ),
         },
     ].filter(Boolean);
-    const convertRole = (role) => {
-        switch (role) {
-            case "admin":
-                return "Admin";
-            case "doctor":
-                return "Bác sĩ";
-            case "patient":
-                return "Bệnh nhân";
-            default:
-                return role;
-        }
-    };
-    const dataTable = dataPatient?.map((item, index) => {
+
+    const dataTable = dataPatient?.data?.map((item, index) => {
         return {
             key: item._id,
             index: index + 1,
@@ -318,84 +251,104 @@ const Patient = () => {
             email: item.email,
             phone: item.phone,
             address: item.address,
-            role: convertRole(item.role),
         };
     });
     const handleOkDeleteMany = () => {
         mutationDeleteAllPatient.mutate(
             { ids: selectedRowKeys },
-            {
-                onSettled: () => {
-                    queryGetAllPatients.refetch();
-                },
-            },
         );
     }
     const handleCancelDeleteMany = () => {
         setIsModalOpenDeleteMany(false);
     };
+    const handleExportCSV = () => {
+        // Xuất file CSV
+        const dataExport = dataPatient?.data?.map((item) => ({
+            name: item.name,
+            email: item.email,
+            password: item.password, // Thêm trường password nếu cần
+            phone: item.phone,
+            address: item.address,
+            isVerified: item.isVerified,
+            dateOfBirth: item.dateOfBirth,
+            gender: item.gender,
+            ethnic: item.ethnic,
+            idCard: item.idCard,
+            insuranceCode: item.insuranceCode,
+            job: item.job,
+        }));
+        const csv = Papa.unparse(dataExport);
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        saveAs(blob, "users.csv");
+    };
+    const handleExportExcel = () => {
+        // Xuất file Excel
+        const dataExport = dataPatient?.data?.map((item) => ({
+            name: item.name,
+            email: item.email,
+            password: item.password, // Thêm trường password nếu cần
+            phone: item.phone,
+            address: item.address,
+            isVerified: item.isVerified,
+            dateOfBirth: item.dateOfBirth,
+            gender: item.gender,
+            ethnic: item.ethnic,
+            idCard: item.idCard,
+            insuranceCode: item.insuranceCode,
+            job: item.job,
+        }))
+        const worksheet = XLSX.utils.json_to_sheet(dataExport);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
+        const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+        const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+        saveAs(blob, "users.xlsx");
+    };
+    const handleChooseFile = (type) => {
+        setFileType(type);
+        setTimeout(() => {
+            fileInputRef.current?.click(); // mở input file ẩn
+        }, 0);
+    };
+    const handleFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const isExcel = fileType === "excel";
+        const reader = new FileReader();
+
+        reader.onload = async (evt) => {
+            const data = evt.target.result;
+            let jsonData = [];
+            const workbook = XLSX.read(data, { type: isExcel ? "binary" : "string" });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            jsonData = XLSX.utils.sheet_to_json(sheet);
+            mutationInsertManyPatient.mutate(jsonData);
+        };
+        if (isExcel) reader.readAsBinaryString(file);
+        else reader.readAsText(file);
+
+        e.target.value = ""; // reset input
+    };
+
     return (
         <>
-            <Flex
-                gap="middle"
-                align="center"
-                justify="space-between"
-                style={{ marginBottom: "20px", flexWrap: "wrap" }}
+            <ActionButtonGroup
+                selectedRowKeys={selectedRowKeys}
+                dataTable={dataTable}
+                onExportCSV={handleExportCSV}
+                onExportExcel={handleExportExcel}
+                onImportCSV={() => handleChooseFile("csv")}
+                onImportExcel={() => handleChooseFile("excel")}
+                fileInputRef={fileInputRef}
+                fileType={fileType}
+                onFileChange={handleFileChange}
+                onDeleteMany={() => setIsModalOpenDeleteMany(true)}
             >
-                <Flex
-                    gap="middle"
-                    style={{
-                        flexWrap: "wrap",
-                        flex: "1 1 300px", // cho responsive
-                        justifyContent: "flex-start",
-                    }}
-                >
-                    <ButtonComponent
-                        size="small"
-                        disabled={selectedRowKeys.length == 0}
-                        icon={<DeleteOutlined />}
-                        onClick={() => setIsModalOpenDeleteMany(true)}
-                        danger
-                        style={{ minWidth: "120px" }}
-                    >
-                        Xoá tất cả
-                    </ButtonComponent>
-                </Flex>
-                <Flex
-                    gap="middle"
-                    style={{
-                        flexWrap: "wrap",
-                        flex: "1 1 300px", // cho responsive
-                        justifyContent: "flex-end",
-                    }}
-                >
-                    <ButtonComponent
-                        size="small"
-                        type="default"
-                        icon={<ExportOutlined />}
-                        styleButton={{
-                            minWidth: "120px",
-                            backgroundColor: "#52c41a",
-                            color: "#fff",
-                        }}
-                    >
-                        Export
-                    </ButtonComponent>
-                    <ButtonComponent
-                        size="small"
-                        type="primary"
-                        icon={<ImportOutlined />}
-                        styleButton={{
-                            minWidth: "120px",
-                            backgroundColor: "#1890ff",
-                            color: "#fff",
-                        }}
-                    >
-                        Import
-                    </ButtonComponent>
-                </Flex>
-            </Flex>
-            <LoadingComponent size="large" isLoading={isLoading} delay={200}>
+
+            </ActionButtonGroup>
+
+            <LoadingComponent isLoading={isLoading} delay={200}>
                 <Table
                     rowSelection={rowSelection}
                     rowKey={"key"}
@@ -407,7 +360,7 @@ const Patient = () => {
                         current: pagination.current,
                         pageSize: pagination.pageSize,
                         position: ["bottomCenter"],
-                        showTotal: (total, range) => `Tổng ${total} bệnh nhân`,
+                        showTotal: (total, range) => `Hiển thị ${range[0]}-${range[1]} trong tổng số ${total} bệnh nhân`,
                         showSizeChanger: true, // Cho phép chọn số dòng/trang
                         pageSizeOptions: ["5", "8", "10", "20", "50"], // Tuỳ chọn số dòng
                         showQuickJumper: true, // Cho phép nhảy đến trang
@@ -473,7 +426,7 @@ const Patient = () => {
                         form={formUpdate}
                     >
                         <Form.Item
-                            label="Name"
+                            label="Tên"
                             name="name"
                             rules={[
                                 {
@@ -501,7 +454,7 @@ const Patient = () => {
                             <Input name="email" />
                         </Form.Item>
                         <Form.Item
-                            label="Phone"
+                            label="Số điện thoại"
                             name="phone"
                             rules={[
                                 {
@@ -510,63 +463,68 @@ const Patient = () => {
                                 },
                                 {
                                     pattern: /^(\+84|0)(3|5|7|8|9)[0-9]{8}$/,
-                                    message:
-                                        "Vui lòng nhập số điện thoại hợp lệ!",
+                                    message: "Vui lòng nhập số điện thoại hợp lệ!",
                                 },
                             ]}
                         >
                             <Input name="phone" />
                         </Form.Item>
-
-
                         <Form.Item
-                            label="Role"
-                            name="role"
+                            label="Địa chỉ"
+                            name="address"
                             rules={[
                                 {
                                     required: true,
-                                    message: "Vui lòng chọn quyền!",
+                                    message: "Vui lòng nhập địa chỉ!",
                                 },
                             ]}
                         >
-                            <Radio.Group name="role">
-                                <Radio value={"patient"}>Bệnh nhân</Radio>
-                                <Radio value={"doctor"}>Bác sĩ</Radio>
-                                <Radio value={"admin"}>Admin</Radio>
-                            </Radio.Group>
+                            <Input.TextArea name="address" rows={4} />
                         </Form.Item>
 
+
+
                         {/* <Form.Item
-              label="Avatar"
-              name="avatar"
-            >
-              <div>
-              
-                <WarpperUploadFile onChange={handleOnchangeAvatarDetail} maxCount={1}>
-                  <Button>Select file</Button>
-                </WarpperUploadFile>
-                { stateUserDetail?.avatar && 
-                  <img 
-                    src={stateUserDetail?.avatar} 
-                    alt="avatar" 
-                    style={{width:'60px',height:'60px',borderRadius:'50%',marginLeft:'10px'}}
-                  />
-                }
-              </div>
-              
-            </Form.Item> */}
+                        label="Avatar"
+                        name="avatar"
+                        >
+                        <div>
+                        
+                            <WarpperUploadFile onChange={handleOnchangeAvatarDetail} maxCount={1}>
+                            <Button>Select file</Button>
+                            </WarpperUploadFile>
+                            { stateUserDetail?.avatar && 
+                            <img 
+                                src={stateUserDetail?.avatar} 
+                                alt="avatar" 
+                                style={{width:'60px',height:'60px',borderRadius:'50%',marginLeft:'10px'}}
+                            />
+                            }
+                        </div>
+                        
+                        </Form.Item> */}
 
                         <Form.Item
                             label={null}
-                            wrapperCol={{ offset: 20, span: 4 }}
+                            wrapperCol={{ offset: 17, span: 7 }}
                         >
-                            <ButtonComponent
-                                type="primary"
-                                htmlType="submit"
-                                size="large"
-                            >
-                                Cập nhật
-                            </ButtonComponent>
+                            <Space>
+
+                                <ButtonComponent
+                                    type="default"
+                                    onClick={() => setIsOpenDrawer(false)}
+                                >
+                                    Hủy
+                                </ButtonComponent>
+                                <ButtonComponent
+                                    type="primary"
+                                    htmlType="submit"
+
+                                >
+                                    Cập nhật
+                                </ButtonComponent>
+                            </Space>
+
                         </Form.Item>
                     </Form>
                 </LoadingComponent>

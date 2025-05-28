@@ -15,7 +15,7 @@ export const createHospital = async (data) => {
 export const getAllHospitals = async (page, pageSize) => {
     try {
         const response = await axiosInstance.get(
-            `/hospitals/get-all-hospitals?page=${page}&limit=${pageSize}`,
+            `/hospitals/get-all-hospitals`,
         );
         return response.data;
     } catch (error) {

@@ -1,8 +1,8 @@
-import React from 'react'
 
 import { addMinutesToTime } from '../../utils/timeUtils';
 import { CustomButton } from './style';
-const TimeSlot = ({ timeSlots, selectedDate, selectedTime, handleCheckTime, handleSelectedTime }) => {
+import dayjs from 'dayjs';
+const TimeSlot = ({ timeSlots, schedule, selectedDate, selectedTime, handleCheckTime, handleSelectedTime }) => {
     return (
         <div
             style={{
@@ -20,8 +20,8 @@ const TimeSlot = ({ timeSlots, selectedDate, selectedTime, handleCheckTime, hand
                     key={index}
                     type="primary"
                     disabled={handleCheckTime(selectedDate, time)}
-                    styleButton={{ width: 100 }}
-                    $isSelected={selectedTime === time}
+                    stylebutton={{ width: 100 }}
+                    $isSelected={selectedTime === time && dayjs(schedule?.workDate).isSame(dayjs(selectedDate), 'day')}
                     onClick={() => handleSelectedTime(time)}
                 >
                     {`${time}-${addMinutesToTime(time, 30)}`}
