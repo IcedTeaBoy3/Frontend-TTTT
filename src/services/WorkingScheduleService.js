@@ -2,7 +2,7 @@ import axiosInstance from "../config/axiosInstance";
 
 export const getAllWorkingSchedules = async (page, pageSize) => {
     try {
-        const response = await axiosInstance.get(`/working-schedules/get-all-working-schedules?page=${page}&limit=${pageSize}`);
+        const response = await axiosInstance.get(`/working-schedules/get-all-working-schedules`);
         return response.data;
     } catch (error) {
         console.error("Error fetching working schedules:", error);

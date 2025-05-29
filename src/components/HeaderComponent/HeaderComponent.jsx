@@ -74,7 +74,9 @@ const HeaderComponent = () => {
             {
                 key: "3",
                 label: (
-                    <PopupItem onClick={() => navigate("/order")}>
+                    <PopupItem onClick={() => navigate("/profile", {
+                        state: { tab: "appointments" },
+                    })}>
                         <InfoCircleFilled style={{ fontSize: 15, marginRight: 8 }} />
                         Lịch sử đặt khám
                     </PopupItem>

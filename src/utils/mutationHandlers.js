@@ -9,18 +9,14 @@ export const handleMutationResponse = (
         closeModal,
     } = {}
 ) => {
-    if (data?.status == "success") {
-        Message.success(data?.message);
+    if (data?.status === "success") {
         onSuccessCallback?.();
         refetchQuery?.();
         closeDrawer?.();
         clearSelection?.();
         closeModal?.();
+        return { success: true, message: data?.message };
     } else {
-        Message.error(data?.message);
+        return { success: false, message: data?.message };
     }
-};
-
-export const handleMutationError = (error, customMessage) => {
-    Message.error(customMessage || error.message);
 };

@@ -75,6 +75,9 @@ const BookingPage = () => {
             if (res?.status === "success") {
                 Message.success(res?.message);
                 setCurrentStep(3);
+                dispatch(updateAppointment({
+                    stt: res?.data?.stt,
+                }))
                 navigate('/booking-success');
             } else if (res?.status === "error") {
                 setCurrentStep(0);
@@ -172,8 +175,6 @@ const BookingPage = () => {
         // Cập nhật giờ khám đã chọn
         dispatch(updateAppointment({ selectedTime: time }));
     }
-
-
     const handleEditProfile = () => {
         setActiveKey(['3']); // Mở tab Hồ sơ bệnh nhân
         setIsModalOpen(true);

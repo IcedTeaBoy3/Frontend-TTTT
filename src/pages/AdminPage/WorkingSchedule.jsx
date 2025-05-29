@@ -193,6 +193,7 @@ const WorkingSchedule = () => {
     const handleFileChange = (e) => {
 
     }
+
     return (
         <>
             <ActionButtonGroup
@@ -546,7 +547,7 @@ const WorkingSchedule = () => {
             >
                 <LoadingComponent isLoading={isPendingDelete}>
                     <p>
-                        Bạn có chắc chắn muốn <strong>xóa</strong> chuyên khoa
+                        Bạn có chắc chắn muốn <strong>xóa</strong> lịch làm việc
                         này không?
                     </p>
                 </LoadingComponent>
@@ -560,7 +561,7 @@ const WorkingSchedule = () => {
             >
                 <LoadingComponent isLoading={isPendingDeleteMany}>
                     <p>
-                        Bạn có chắc chắn muốn <strong>xóa</strong> bác sĩ này không?
+                        Bạn có chắc chắn muốn <strong>xóa</strong> lịch làm việc này không?
                     </p>
                 </LoadingComponent>
             </ModalComponent>

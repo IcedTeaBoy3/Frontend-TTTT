@@ -12,12 +12,14 @@ import * as Message from "../../components/Message/Message";
 import { useDispatch, useSelector } from "react-redux";
 import { logout, updateUser } from "../../redux/Slice/authSlice";
 import { resetAppointment } from "../../redux/Slice/appointmentSlice";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 import ModalUpdateUser from "../../components/ModalUpdateUser/ModalUpdateUser";
 import { useMutation } from "@tanstack/react-query";
 import PersonalProfile from "../../components/PersonalProfile/PersonalProfile";
 import AccountInfor from "../../components/AccountInfor/AccountInfor";
+import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
+import BookedAppointment from "../../components/BookedAppointment/BookedAppointment";
 const { Title, Text, Paragraph } = Typography;
 
 const items = [
@@ -49,8 +51,10 @@ const ProfilePage = () => {
     const user = useSelector((state) => state.auth.user);
     const dispatch = useDispatch();
     const navigate = useNavigate();
-
-    const [selectedKey, setSelectedKey] = useState("profile");
+    const location = useLocation();
+    // Kiểm tra xem có state từ navigation không
+    const initialTab = location?.state?.tab || "profile"; // Mặc định là "profile" nếu không có state
+    const [selectedKey, setSelectedKey] = useState(initialTab);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const mutationUpdateUpdateProfile = useMutation({
         mutationFn: (data) => {
@@ -72,6 +76,12 @@ const ProfilePage = () => {
         }
     })
     const { isPending: isPendingUpdateProfile } = mutationUpdateUpdateProfile;
+    useEffect(() => {
+        // Cập nhật selectedKey khi có thay đổi từ location state
+        if (location?.state?.tab && location.pathname === "/profile" && location.state.tab !== selectedKey) {
+            setSelectedKey(location.state.tab);
+        }
+    }, [location?.state])
     const renderContent = () => {
         switch (selectedKey) {
             case "profile":
@@ -86,7 +96,9 @@ const ProfilePage = () => {
                     />
                 )
             case "appointments":
-                return <div>📅 Lịch sử khám</div>;
+                return (
+                    <BookedAppointment userId={user?.id} />
+                )
             default:
                 return <div>Chọn một mục từ menu</div>;
         }
@@ -149,13 +161,15 @@ const ProfilePage = () => {
                             borderRight: "1px solid #e0e0e0",
                         }}
                     >
-                        <div style={{ textAlign: "center", marginBottom: "16px" }}>
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                             <Avatar
                                 size={80}
                                 icon={<UserOutlined />}
                                 style={{ backgroundColor: "#1890ff", marginBottom: "10px" }}
                             />
-
+                            <ButtonComponent>
+                                Thay đổi
+                            </ButtonComponent>
                             <Title level={5} style={{ margin: 0 }}>
                                 {user?.name || "Người dùng"}
                             </Title>

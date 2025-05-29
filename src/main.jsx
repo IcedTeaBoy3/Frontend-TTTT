@@ -1,5 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import "./styles/index.css";
 import App from "./App.jsx";
 // Cấu hình react-query
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -13,7 +14,9 @@ createRoot(document.getElementById("root")).render(
     <QueryClientProvider client={queryClient}>
         <Provider store={store}>
             <PersistGate loading={null} persistor={persistor}>
-                <App />
+                <StrictMode>
+                    <App />
+                </StrictMode>
             </PersistGate>
         </Provider>
     </QueryClientProvider>,

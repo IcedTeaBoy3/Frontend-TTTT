@@ -20,9 +20,6 @@ import Hospital from "../pages/AdminPage/Hospital";
 import Specialty from "../pages/AdminPage/Specialty";
 import WorkingSchedule from "../pages/AdminPage/WorkingSchedule";
 const AppRoutes = () => {
-    // Giả lập user
-    const user = useSelector((state) => state.auth.user);
-
     return (
         <BrowserRouter>
 
@@ -32,8 +29,16 @@ const AppRoutes = () => {
                 <Route path="/detail-doctor/:id" element={<DetailDoctorPage />} />
                 <Route path="/unauthorized" element={<UnauthorizedPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/booking" element={user?.access_token ? (<BookingPage />) : <Navigate to="/authentication" />} />
-                <Route path="/booking-success" element={<BookingSuccess />} />
+                <Route path="/booking" element={
+                    <ProtectedRoute allowedRoles={["patient", "doctor", "admin"]}>
+                        <BookingPage />
+                    </ProtectedRoute>
+                } />
+                <Route path="/booking-success" element={
+                    <ProtectedRoute allowedRoles={["patient", "doctor", "admin"]}>
+                        <BookingSuccess />
+                    </ProtectedRoute>
+                } />
                 <Route path="/verify-email" element={<VerifyEmail />} />
                 {/* Admin Routes */}
                 <Route

@@ -7,11 +7,20 @@ import { UserOutlined, CheckCircleTwoTone } from '@ant-design/icons'
 import { useSelector } from 'react-redux'
 import { addMinutesToTime } from '../../utils/timeUtils'
 import { convertGender } from '../../utils/convertGender'
+import { useNavigate } from 'react-router-dom'
 const { Title, Paragraph, Text } = Typography
 const BookingSuccess = () => {
     const doctor = useSelector((state) => state.appointment.doctor)
     const appointment = useSelector((state) => state.appointment)
     const patient = useSelector((state) => state.auth.user)
+    const navigate = useNavigate()
+    const handleViewAppointment = () => {
+        navigate('/profile', {
+            state: {
+                tab: 'appointments',
+            },
+        })
+    }
     const infoStyle = {
         fontSize: 16,
     };
@@ -54,8 +63,9 @@ const BookingSuccess = () => {
                 >
                     <GreenCheckmark />
                     <Title level={2} style={{ color: "#52c41a", fontWeight: 'bold' }}>Đặt lịch khám thành công!</Title>
+                    <Title level={2} style={{ color: "#52c41a", fontWeight: 'bold', margin: 0 }}>STT: {appointment?.stt}</Title>
                     <Text strong>
-                        Cảm ơn bạn đã đặt lịch khám với chúng tôi. Xác nhận và sẽ được gửi đến email của bạn trong thời gian sớm nhất.
+                        Cảm ơn bạn đã đặt lịch khám với chúng tôi. Thông tin về lịch khám bệnh đã được gửi đến email của bạn.
                     </Text>
                 </div>
 
@@ -119,8 +129,8 @@ const BookingSuccess = () => {
                             </Col>
 
                             <Col xs={24} sm={12}>
-                                <Text strong style={infoStyle}>Phòng khám:</Text>
-                                <Paragraph style={infoStyle} type='secondary'>{doctor?.hospital?.name}</Paragraph>
+                                <Text strong style={infoStyle}>STT:</Text>
+                                <Paragraph style={infoStyle} type='success'>{appointment.stt}</Paragraph>
                             </Col>
 
                             {appointment?.reason && (
@@ -198,7 +208,7 @@ const BookingSuccess = () => {
                                 fontWeight: "bold",
                                 fontSize: 16,
                             }}
-                            onClick={() => window.print()} // In phiếu khám
+                            onClick={handleViewAppointment}
                         >
                             Xem phiếu khám
                         </ButtonComponent>

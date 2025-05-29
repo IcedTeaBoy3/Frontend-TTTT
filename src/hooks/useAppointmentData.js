@@ -1,10 +1,10 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import * as DoctorService from "../services/DoctorService";
+import * as AppointmentService from "../services/AppointmentService";
 import { handleMutationResponse } from "../utils/mutationHandlers";
 import { useState, useEffect } from "react";
 import * as Message from "../components/Message/Message";
 
-export const useDoctorData = ({
+export const useAppointmentData = ({
     setIsModalOpenCreate,
     setIsDrawerOpen,
     setIsModalOpenDeleteMany,
@@ -14,76 +14,60 @@ export const useDoctorData = ({
 }) => {
     const [mutationResult, setMutationResult] = useState(null);
 
-    const queryGetAllDoctors = useQuery({
-        queryKey: ["getAllDoctors"],
-        queryFn: DoctorService.getAllDoctors,
+    const queryGetAllAppointments = useQuery({
+        queryKey: ["getAllAppointments"],
+        queryFn: AppointmentService.getAllAppointments,
         retry: 1,
     });
 
-    const mutationCreateDoctor = useMutation({
-        mutationKey: ["createDoctor"],
-        mutationFn: DoctorService.createDoctor,
-        onSuccess: (data) => {
-            const result = handleMutationResponse(data, {
-                closeModal: () => setIsModalOpenCreate(false),
-                refetchQuery: queryGetAllDoctors.refetch,
-            });
-            setMutationResult(result);
-        },
-        onError: (error) => {
-            setMutationResult({ success: false, message: error.message });
-        },
-    });
-
-    const mutationDeleteDoctor = useMutation({
-        mutationKey: ["deleteDoctor"],
-        mutationFn: DoctorService.deleteDoctor,
+    const mutationDeleteAppointment = useMutation({
+        mutationKey: ["deleteAppointment"],
+        mutationFn: AppointmentService.deleteAppointment,
         onSuccess: (data) => {
             const result = handleMutationResponse(data, {
                 clearSelection: () => setRowSelected(null),
                 closeModal: () => setIsModalOpenDelete(false),
-                refetchQuery: queryGetAllDoctors.refetch,
+                refetchQuery: queryGetAllAppointments.refetch,
             });
             setMutationResult(result);
         },
         onError: (error) => {
             setMutationResult({ success: false, message: error.message });
-        }
+        },
     });
 
-    const mutationUpdateDoctor = useMutation({
-        mutationKey: ["updateDoctor"],
-        mutationFn: ({ id, ...formData }) => DoctorService.updateDoctor(id, formData),
+    const mutationUpdateAppointment = useMutation({
+        mutationKey: ["updateAppointment"],
+        mutationFn: ({ id, ...formData }) => AppointmentService.updateAppointment(id, formData),
         onSuccess: (data) => {
             const result = handleMutationResponse(data, {
                 clearSelection: () => setRowSelected(null),
                 closeDrawer: () => setIsDrawerOpen(false),
-                refetchQuery: queryGetAllDoctors.refetch,
+                refetchQuery: queryGetAllAppointments.refetch,
             });
             setMutationResult(result);
         },
         onError: (error) => {
             setMutationResult({ success: false, message: error.message });
-        }
+        },
     });
 
-    const mutationDeleteManyDoctors = useMutation({
-        mutationKey: ["deleteManyDoctors"],
-        mutationFn: DoctorService.deleteManyDoctors,
+    const mutationDeleteManyAppointments = useMutation({
+        mutationKey: ["deleteManyAppointments"],
+        mutationFn: AppointmentService.deleteManyAppointments,
         onSuccess: (data) => {
             const result = handleMutationResponse(data, {
                 clearSelection: () => setSelectedRowKeys([]),
                 closeModal: () => setIsModalOpenDeleteMany(false),
-                refetchQuery: queryGetAllDoctors.refetch,
+                refetchQuery: queryGetAllAppointments.refetch,
             });
             setMutationResult(result);
         },
         onError: (error) => {
             setMutationResult({ success: false, message: error.message });
-        }
+        },
     });
 
-    // Hiển thị message phản hồi sau mutation
     useEffect(() => {
         if (mutationResult) {
             if (mutationResult.success) {
@@ -96,11 +80,9 @@ export const useDoctorData = ({
     }, [mutationResult]);
 
     return {
-        queryGetAllDoctors,
-        mutationCreateDoctor,
-        mutationDeleteDoctor,
-        mutationUpdateDoctor,
-        mutationDeleteManyDoctors,
-        // mutationInsertManyDoctors, // Uncomment nếu cần dùng
+        queryGetAllAppointments,
+        mutationDeleteAppointment,
+        mutationUpdateAppointment,
+        mutationDeleteManyAppointments,
     };
 };
