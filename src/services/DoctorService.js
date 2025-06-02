@@ -48,3 +48,11 @@ export const deleteManyDoctors = async (ids) => {
         throw error.response.data;
     }
 }
+export const searchDoctors = async (keyword, specialty,page,limit) => {
+    try {
+        const response = await axiosInstance.get(`/doctors/search-doctors?keyword=${keyword}&specialty=${specialty}&page=${page}&limit=${limit}`,);
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
+}

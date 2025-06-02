@@ -245,22 +245,31 @@ const BookingPage = () => {
                     }}
                 >
                     <Text strong>Chọn ngày khám</Text>
-                    <WorkingSchedule
-                        workingSchedules={workingSchedules}
-                        isLoading={isLoadingWorkingSchedule}
-                        timeSlots={timeSlots}
-                        selectedDate={appointment.selectedDate}
-                        handleCreateWorkingTime={handleCreateWorkingTime}
-                    />
+                    {workingSchedules && workingSchedules?.data?.length > 0 ? (
+                        <WorkingSchedule
+                            workingSchedules={workingSchedules}
+                            isLoading={isLoadingWorkingSchedule}
+                            timeSlots={timeSlots}
+                            selectedDate={appointment.selectedDate}
+                            handleCreateWorkingTime={handleCreateWorkingTime}
+                        />
+                    ) : (
+                        <Text type="secondary">Không có lịch làm việc cho bác sĩ này</Text>
+                    )}
+
                     <Text strong>Chọn giờ khám</Text>
-                    <TimeSlot
-                        timeSlots={timeSlots}
-                        selectedTime={appointment.selectedTime}
-                        selectedDate={appointment.selectedDate}
-                        schedule={appointment.schedule}
-                        handleCheckTime={handleCheckTime}
-                        handleSelectedTime={handleSelectedTime}
-                    />
+                    {timeSlots && timeSlots.length > 0 ? (
+                        <TimeSlot
+                            timeSlots={timeSlots}
+                            selectedTime={appointment.selectedTime}
+                            selectedDate={appointment.selectedDate}
+                            schedule={appointment.schedule}
+                            handleCheckTime={handleCheckTime}
+                            handleSelectedTime={handleSelectedTime}
+                        />
+                    ) : (
+                        <Text type="secondary">Không có khung giờ khám nào khả dụng</Text>
+                    )}
                 </div>
             ),
         },
@@ -417,15 +426,15 @@ const BookingPage = () => {
                         >
                             <Flex justify="space-between" align="center">
                                 <Text style={{ fontSize: "16px" }}>🗓️ Ngày khám</Text>
-                                <Text strong style={{ fontSize: "20px", color: "#1677ff" }}>
+                                <Text strong style={{ fontSize: "18px", color: "#1677ff" }}>
                                     {formatDateToDDMMYYYY(appointment?.selectedDate)}
                                 </Text>
                             </Flex>
 
                             <Flex justify="space-between" align="center">
                                 <Text style={{ fontSize: "16px" }}>🕒 Giờ khám</Text>
-                                {appointment?.selectedTime ? (
-                                    <Text strong style={{ fontSize: "20px", color: "#52c41a" }}>
+                                {dayjs(appointment?.selectedTime, ['H:mm', 'HH:mm'], true).isValid() ? (
+                                    <Text strong style={{ fontSize: "18px", color: "#52c41a" }}>
                                         {`${appointment?.selectedTime} - ${addMinutesToTime(appointment?.selectedTime, 30)}`}
                                     </Text>
                                 ) : (

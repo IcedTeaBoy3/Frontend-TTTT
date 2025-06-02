@@ -1,6 +1,6 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import DefaultLayout from '../../components/DefaultLayout/DefaultLayout';
 import { Avatar } from 'antd';
 import { Typography, Divider, Card, Flex } from 'antd';
@@ -37,32 +37,47 @@ const DetailDoctorPage = () => {
     })
     const { data: workingSchedules, isLoading: isLoadingWorkingSchedule } = queryGetWorkingScheduleByDoctor
     const { data: doctor, isLoading: isLoadingDoctor } = queryGetDoctor
-
     useEffect(() => {
-        if (
-            workingSchedules?.status === "success" &&
-            doctor?.status === "success" &&
-            workingSchedules?.data.length > 0
-        ) {
+        if (workingSchedules && workingSchedules?.data?.length > 0) {
             const schedule = workingSchedules.data[0];
-
             dispatch(updateAppointment({
-                doctor: doctor.data,
                 schedule: schedule,
             }));
-
             // Cập nhật ngày nếu khác
             if (schedule && appointment.selectedDate !== schedule.workDate) {
                 dispatch(updateAppointment({ selectedDate: schedule.workDate }));
             }
-
             // Luôn generate timeSlots
             const startTime = schedule.startTime;
             const endTime = schedule.endTime;
             const timeSlots = generateTimeSlots(startTime, endTime);
             setTimeSlots(timeSlots);
+        } else {
+            // Nếu không có lịch làm việc reset appointment
+            dispatch(setAppointment({
+                schedule: null,
+                selectedDate: null,
+                selectedTime: null,
+            }));
+            setTimeSlots([]);
+            Message.info("Bác sĩ chưa có lịch làm việc")
         }
-    }, [workingSchedules, doctor]);
+    }, [workingSchedules]);
+    useEffect(() => {
+        if (doctor && doctor?.data) {
+            // Cập nhật thông tin bác sĩ vào appointment nếu có
+            dispatch(updateAppointment({
+                doctor: doctor.data,
+            }));
+        } else {
+            // Nếu không có thông tin bác sĩ, reset appointment
+            dispatch(setAppointment({
+                doctor: null,
+            }));
+        }
+    }, [doctor]);
+
+
     function generateTimeSlots(start, end, duration = 30) {
         const slots = [];
         let [startHour, startMin] = start.split(':').map(Number);
@@ -133,7 +148,6 @@ const DetailDoctorPage = () => {
                     width: "100%",
                     padding: "85px 16px",
                     margin: "0 auto",
-                    backgroundColor: "#f5f5f5",
                 }}
             >
                 <div
@@ -175,36 +189,45 @@ const DetailDoctorPage = () => {
                     {/* Lịch làm việc */}
                     <div>
                         <Title level={4}>Lịch làm việc</Title>
-                        <WorkingSchedule
-                            selectedDate={appointment.selectedDate}
-                            isLoading={isLoadingWorkingSchedule}
-                            workingSchedules={workingSchedules}
-                            handleCreateWorkingTime={handleCreateWorkingTime}
-                        />
+                        {workingSchedules && workingSchedules?.data?.length > 0 ? (
+                            <WorkingSchedule
+                                selectedDate={appointment.selectedDate}
+                                isLoading={isLoadingWorkingSchedule}
+                                workingSchedules={workingSchedules}
+                                handleCreateWorkingTime={handleCreateWorkingTime}
+                            />
+                        ) : (
+                            <Text type="secondary">Bác sĩ chưa cập nhật lịch làm việc</Text>
+                        )}
+
                     </div>
 
                     {/* Giờ làm việc */}
                     <div>
                         <Title level={4}>Chọn khung giờ</Title>
-                        <TimeSlot
-                            timeSlots={timeSlots}
-                            selectedDate={appointment.selectedDate}
-                            selectedTime={appointment.selectedTime}
-                            handleCheckTime={handleCheckTime}
-                            handleSelectedTime={handleSelectedTime}
-                        />
+                        {timeSlots.length > 0 ? (
+                            <TimeSlot
+                                timeSlots={timeSlots}
+                                selectedDate={appointment.selectedDate}
+                                selectedTime={appointment.selectedTime}
+                                handleCheckTime={handleCheckTime}
+                                handleSelectedTime={handleSelectedTime}
+                            />
+                        ) : (
+                            <Text type="secondary">Không có khung giờ làm việc cho ngày này</Text>
+                        )}
                     </div>
 
                     <div>
                         <Title level={4}>Giới thiệu</Title>
                         <Text>{doctor?.data?.description}</Text>
-                        <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 4 }}>
+                        {/* <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 4 }}>
                             <Text>• Giảng viên Trường ĐH Y Dược TP.HCM</Text>
                             <Text>• Kinh nghiệm hơn 15 năm trong ngành tim mạch</Text>
-                        </div>
+                        </div> */}
                     </div>
                     <div>
-                        <Title level={4}>Địa chỉ phòng khám: {doctor?.data?.hospital?.address}</Title>
+                        <Title level={4}>Địa chỉ : {doctor?.data?.hospital?.address}</Title>
                         <iframe
                             width="600"
                             height="450"
@@ -249,7 +272,7 @@ const DetailDoctorPage = () => {
                                 fontSize: 16,
                             }}
                             onClick={handleBookingDoctor}
-
+                            disabled={!appointment.doctor || !appointment.schedule}
                         >
                             Đặt lịch khám
                         </ButtonComponent>

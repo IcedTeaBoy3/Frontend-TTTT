@@ -5,8 +5,7 @@ const { Search } = Input;
 
 export const InputContainer = styled(Search)`
     width: 100%;
-    max-width: 700px;
-    margin: 0 auto;
+    max-width: 800px;
 
     .ant-input {
         height: 40px;

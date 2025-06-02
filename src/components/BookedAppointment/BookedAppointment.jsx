@@ -68,7 +68,7 @@ const BookedAppointment = ({ userId }) => {
             <Divider />
             <Row gutter={[28, 16]}>
                 <Col span={8} >
-                    <Row gutter={[16, 16]} style={{ height: '100%' }}>
+                    <Row gutter={[16, 16]} justify="space-between" align="center">
                         {isLoading && <p>Loading...</p>}
                         {isError && Message.error(error.message)}
                         {appointments && appointments.length === 0 && <p>Bạn chưa đặt lịch hẹn nào.</p>}
@@ -111,15 +111,20 @@ const BookedAppointment = ({ userId }) => {
                                 </Col>
                             );
                         })}
-                        <Pagination
-                            style={{ marginTop: '20px' }}
-                            align="center"
-                            showSizeChanger
-                            current={pagination.current}
-                            pageSize={pagination.pageSize}
-                            total={pagination.total}
-                            onChange={handleChangePage}
-                        />
+                        {(appointments && appointments.total >= 5) && (
+                            <Col span={24}>
+                                <Pagination
+                                    style={{ marginTop: '20px' }}
+                                    align="center"
+                                    showSizeChanger
+                                    current={pagination.current}
+                                    pageSize={pagination.pageSize}
+                                    total={pagination.total}
+                                    onChange={handleChangePage}
+                                />
+                            </Col>
+                        )}
+
                     </Row>
                 </Col >
                 <Col span={16}>

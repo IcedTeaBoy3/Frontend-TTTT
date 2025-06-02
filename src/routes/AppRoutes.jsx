@@ -10,7 +10,7 @@ import BookingPage from "../pages/BookingPage/BookingPage";
 import BookingSuccess from "../pages/BookingSuccess/BookingSuccess";
 import VerifyEmail from "../pages/VerifyEmail/VerifyEmail";
 import ProtectedRoute from "../components/ProtectedRoute/ProtectedRoute";
-import { useSelector } from "react-redux";
+import SearchPage from "../pages/SearchPage/SearchPage";
 // Các trang con trong admin
 import Dashboard from "../pages/AdminPage/Dashboard";
 import Appointment from "../pages/AdminPage/Appointment";
@@ -29,6 +29,7 @@ const AppRoutes = () => {
                 <Route path="/detail-doctor/:id" element={<DetailDoctorPage />} />
                 <Route path="/unauthorized" element={<UnauthorizedPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/search" element={<SearchPage />} />
                 <Route path="/booking" element={
                     <ProtectedRoute allowedRoles={["patient", "doctor", "admin"]}>
                         <BookingPage />

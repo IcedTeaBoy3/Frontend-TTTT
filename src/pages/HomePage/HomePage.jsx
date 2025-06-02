@@ -27,13 +27,13 @@ const HomePage = () => {
 
     const queryGetAllSpecialties = useQuery({
         queryKey: ["getAllSpecialties", limit],
-        queryFn: () => SpecialtyService.getAllSpecialties(0, limit),
+        queryFn: () => SpecialtyService.getAllSpecialties(1, limit),
         retry: 3,
         retryDelay: 1000,
         keepPreviousData: true,
     })
     const handleLoadMore = () => {
-        setLimit((prev) => prev + 6);
+        setLimit(specialties?.total);
     };
     const queryGetAllHospitals = useQuery({
         queryKey: ["getAllHospitals"],
@@ -56,6 +56,9 @@ const HomePage = () => {
     const handleNavigate = (path) => {
         navigate(path);
     };
+    const handleSearchSpecialty = (specialtyId) => {
+        navigate(`/search?specialty=${specialtyId}`);
+    }
     return (
         <>
             <DefaultLayout>
@@ -105,6 +108,7 @@ const HomePage = () => {
                             <ButtonComponent
                                 type="primary"
                                 hoverable="true"
+                                onClick={() => handleNavigate('/search')}
                             >
                                 Xem tất cả <RightOutlined />
                             </ButtonComponent>
@@ -195,7 +199,7 @@ const HomePage = () => {
                             <Row gutter={[16, 24]} justify="center" style={{ marginTop: '20px' }}>
                                 {specialties?.data.map((item, index) => (
                                     <Col key={item._id} xs={12} sm={8} md={8} lg={4} xl={4}>
-                                        <Card hoverable="true" style={{ width: '100%', textAlign: 'center' }}>
+                                        <Card hoverable="true" style={{ width: '100%', textAlign: 'center' }} onClick={() => handleSearchSpecialty(item._id)}>
                                             <img
                                                 alt="example"
                                                 src={`${import.meta.env.VITE_APP_BACKEND_URL}${item.image}`}
@@ -207,7 +211,7 @@ const HomePage = () => {
                                 ))}
                             </Row>
                         </LoadingComponent>
-                        {specialties?.total >= limit ? (
+                        {specialties?.total > limit ? (
 
                             <Flex justify="center" align="center" style={{ marginTop: '20px' }}>
 

@@ -1,43 +1,27 @@
-import React from "react";
+
 import InputComponent from "../InputComponent/InputComponent";
 import bannerImage from "../../assets/banner_nobackground.png";
-import { Grid } from "antd";
+import { BannerContainer, BannerImage } from "./style";
+import { Typography } from "antd";
+import { useNavigate } from "react-router-dom";
+const { Title, Paragraph } = Typography;
 const BannerComponent = () => {
-    const { useBreakpoint } = Grid;
-    const screens = useBreakpoint();
+    const navigate = useNavigate();
+    const handleSearch = (value) => {
+        // Handle search logic here
+        if (value) {
+            navigate(`/search?keyword=${encodeURIComponent(value)}`);
+        }
+    }
     return (
-        <div
-            style={{
-                backgroundColor: "#1890ff",
-                position: "relative",
-                minHeight: "500px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexDirection: "column",
-                padding: "20px",
-            }}
-        >
-            <div
-                style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundImage: `url(${bannerImage})`,
-                    backgroundSize: "contain",
-                    backgroundRepeat: "no-repeat",
-                    backgroundPosition: "right",
-                    opacity: 0.3,
-                }}
-            >
-
-            </div>
-            <h1 style={{ color: "white", fontWeight: "bolder" }}>
+        <BannerContainer>
+            <BannerImage
+                image={bannerImage}
+            />
+            <Title level={1} style={{ color: "white", textAlign: "center" }}>
                 Chào mừng bạn đến với MediCare
-            </h1>
-            <p
+            </Title>
+            <Paragraph
                 style={{
                     color: "white",
                     fontSize: "16px",
@@ -46,13 +30,13 @@ const BannerComponent = () => {
             >
                 Đặt khám với hơn 1000 bác sĩ, 25 bệnh viện, 100 phòng khám trên
                 MediCare để có số thứ tự và khung giờ khám trước.
-            </p>
+            </Paragraph>
             <InputComponent
                 placeholder="Tìm kiếm bác sĩ, phòng khám, bệnh viện"
-                onSearch={(value) => console.log(value)}
+                onSearch={handleSearch}
                 size="large"
             />
-        </div>
+        </BannerContainer >
     );
 };
 

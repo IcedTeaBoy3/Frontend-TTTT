@@ -10,7 +10,7 @@ export const createSpecialty = async (data) => {
 };
 export const getAllSpecialties = async (page, pageSize) => {
     try {
-        const response = await axiosInstance.get("/specialties/get-all-specialties");
+        const response = await axiosInstance.get("/specialties/get-all-specialties?page=" + page + "&limit=" + pageSize);
         return response.data;
     } catch (error) {
         throw error.response.data;
