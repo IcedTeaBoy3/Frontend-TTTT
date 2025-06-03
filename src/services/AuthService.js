@@ -50,3 +50,11 @@ export const changePassword = async (data) => {
         throw error?.response?.data || error.message;
     }
 }
+export const googleLogin = async (data) => {
+    try {
+        const response = await axiosInstance.post(`/auth/google-login`, data);
+        return response.data;
+    } catch (error) {
+        throw error?.response?.data || error.message;
+    }
+}

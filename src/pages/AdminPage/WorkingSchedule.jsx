@@ -1,5 +1,5 @@
-import { Form, Select, DatePicker, TimePicker, Table, Space } from "antd";
-import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import { Form, Select, DatePicker, TimePicker, Table, Space, Input } from "antd";
+import { DeleteOutlined, EditOutlined, SearchOutlined } from "@ant-design/icons";
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
 import ModalComponent from '../../components/ModalComponent/ModalComponent';
 import LoadingComponent from "../../components/LoadingComponent/LoadingComponent";
@@ -25,6 +25,89 @@ const WorkingSchedule = () => {
     const [formCreate] = Form.useForm();
     const [formUpdate] = Form.useForm();
     const { Option } = Select;
+    const [searchText, setSearchText] = useState("");
+    const [searchedColumn, setSearchedColumn] = useState("");
+    const searchInput = useRef(null);
+    const getColumnSearchProps = (dataIndex) => ({
+        filterDropdown: ({
+            setSelectedKeys,
+            selectedKeys,
+            confirm,
+            clearFilters,
+            close,
+        }) => (
+            <div style={{ padding: 8 }}>
+                <Input
+                    ref={searchInput}
+                    placeholder={`Tìm theo ${dataIndex}`}
+                    value={selectedKeys[0]}
+                    onChange={(e) =>
+                        setSelectedKeys(e.target.value ? [e.target.value] : [])
+                    }
+                    onPressEnter={() =>
+                        handleSearch(selectedKeys, confirm, dataIndex)
+                    }
+                    style={{ marginBottom: 8, display: "block" }}
+                />
+                <Space>
+                    <ButtonComponent
+                        type="primary"
+                        onClick={() =>
+                            handleSearch(selectedKeys, confirm, dataIndex)
+                        }
+                        icon={<SearchOutlined />}
+                        size="small"
+                        style={{ width: 90 }}
+                    >
+                        Tìm
+                    </ButtonComponent>
+                    <ButtonComponent
+                        onClick={() => handleReset(clearFilters)}
+                        size="small"
+                        style={{ width: 90 }}
+                    >
+                        Xóa
+                    </ButtonComponent>
+                </Space>
+            </div>
+        ),
+        filterIcon: (filtered) => (
+            <SearchOutlined
+                style={{ color: filtered ? "#1890ff" : undefined }}
+            />
+        ),
+        onFilter: (value, record) =>
+            record[dataIndex]
+                ?.toString()
+                .toLowerCase()
+                .includes(value.toLowerCase()),
+        filterDropdownProps: {
+            onOpenChange: (open) => {
+                if (open) {
+                    setTimeout(() => searchInput.current?.select(), 100);
+                }
+            },
+        },
+        render: (text) =>
+            searchedColumn === dataIndex ? (
+                <span style={{ backgroundColor: "#ffc069", padding: 0 }}>
+                    {text}
+                </span>
+            ) : (
+                text
+            ),
+    });
+
+    const handleSearch = (selectedKeys, confirm, dataIndex) => {
+        confirm();
+        setSearchText(selectedKeys[0]);
+        setSearchedColumn(dataIndex);
+    };
+
+    const handleReset = (clearFilters, close) => {
+        clearFilters();
+        setSearchText("");
+    };
     const rowSelection = {
         selectedRowKeys,
         onChange: (selectedKeys, selectedRows) => {
@@ -57,7 +140,7 @@ const WorkingSchedule = () => {
         const workingSchedule = workingSchedules?.data?.find((item) => item._id === id);
         if (workingSchedule) {
             formUpdate.setFieldsValue({
-                name: workingSchedule.doctor._id,
+                name: workingSchedule?.doctor?._id,
                 date: dayjs(workingSchedule.workDate),
                 startTime: dayjs(workingSchedule.startTime, "HH:mm"),
                 endTime: dayjs(workingSchedule.endTime, "HH:mm"),
@@ -76,14 +159,15 @@ const WorkingSchedule = () => {
             title: "Tên bác sĩ",
             dataIndex: "name",
             key: "name",
+            ...getColumnSearchProps("name"),
             render: (_, record) => (
                 <div style={{ display: "flex", alignItems: "center" }}>
                     <img
-                        src={record?.doctor?.image}
-                        alt={record?.doctor?.user?.name}
+                        src={record.doctor?.image}
+                        alt={record.doctor?.user?.name}
                         style={{ width: 30, height: 30, borderRadius: "50%", marginRight: 10 }}
                     />
-                    {record?.doctor?.user?.name}
+                    {record.doctor?.user?.name}
                 </div>
             ),
         },
@@ -96,6 +180,25 @@ const WorkingSchedule = () => {
                     {dayjs(record.workDate).format("DD/MM/YYYY")}
                 </div>
             ),
+            filters: [
+                { text: "Đã qua", value: "past" },
+                { text: "Chưa đến", value: "upcoming" },
+            ],
+            onFilter: (value, record) => {
+                const today = new Date();
+                const recordDate = new Date(record.workDate);
+                // So sánh ngày không tính giờ
+                const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                const recordMidnight = new Date(recordDate.getFullYear(), recordDate.getMonth(), recordDate.getDate());
+
+                if (value === "past") {
+                    return recordMidnight < todayMidnight;
+                }
+                if (value === "upcoming") {
+                    return recordMidnight >= todayMidnight;
+                }
+                return true;
+            },
         },
         {
             title: "Thời gian làm việc",
@@ -218,12 +321,12 @@ const WorkingSchedule = () => {
                     columns={columns}
                     scroll={{ x: "max-content" }}
                     dataSource={dataTable}
-                    locale={{ emptyText: "Không có dữ liệu bệnh viện" }}
+                    locale={{ emptyText: "Không có dữ liệu lịch làm việc" }}
                     pagination={{
                         current: pagination.current,
                         pageSize: pagination.pageSize,
                         position: ["bottomCenter"],
-                        showTotal: (total, range) => `Hiển thị ${range[0]}-${range[1]} trong tổng số ${total} bác sĩ`,
+                        showTotal: (total, range) => `Hiển thị ${range[0]}-${range[1]} trong tổng số ${total} lịch làm việc`,
                         showSizeChanger: true, // Cho phép chọn số dòng/trang
                         pageSizeOptions: ["5", "8", "10", "20", "50"], // Tuỳ chọn số dòng
                         showQuickJumper: true, // Cho phép nhảy đến trang

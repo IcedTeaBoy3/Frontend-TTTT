@@ -67,6 +67,20 @@ export const useAppointmentData = ({
             setMutationResult({ success: false, message: error.message });
         },
     });
+    const mutationConfirmApponintment = useMutation({
+        mutationKey: ["confirmAppointment"],
+        mutationFn: AppointmentService.confirmAppointment,
+        onSuccess: (data) => {
+            const result = handleMutationResponse(data, {
+                clearSelection: () => setRowSelected(null),
+                refetchQuery: queryGetAllAppointments.refetch,
+            });
+            setMutationResult(result);
+        },
+        onError: (error) => {
+            setMutationResult({ success: false, message: error.message });
+        },
+    });
 
     useEffect(() => {
         if (mutationResult) {
@@ -81,6 +95,7 @@ export const useAppointmentData = ({
 
     return {
         queryGetAllAppointments,
+        mutationConfirmApponintment,
         mutationDeleteAppointment,
         mutationUpdateAppointment,
         mutationDeleteManyAppointments,

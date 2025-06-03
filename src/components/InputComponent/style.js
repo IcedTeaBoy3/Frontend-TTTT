@@ -8,13 +8,13 @@ export const InputContainer = styled(Search)`
     max-width: 800px;
 
     .ant-input {
-        height: 40px;
+        
         border-radius: 25px 0 0 25px;
         font-size: 16px;
     }
 
     .ant-input-search-button {
-        height: 40px;
+
         border-radius: 0 25px 25px 0;
         background-color: blue;
         border-color: #1890ff;

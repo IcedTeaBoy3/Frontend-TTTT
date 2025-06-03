@@ -1,9 +1,9 @@
 
 import { Typography, Divider, Row, Col, Card, Tag, Avatar, Flex, Pagination } from 'antd'
-import { UserOutlined } from '@ant-design/icons'
+import { UserOutlined, WarningOutlined } from '@ant-design/icons'
 import { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation } from '@tanstack/react-query'
 import * as AppointmentService from '../../services/AppointmentService'
 import * as Message from '../../components/Message/Message'
 import { StyledCard } from './style'
@@ -21,7 +21,7 @@ const BookedAppointment = ({ userId }) => {
     const getStatusTag = (status) => {
         switch (status) {
             case 'confirmed':
-                return <Tag color="green">Đã xác nhận</Tag>;
+                return <Tag color="blue">Đã xác nhận</Tag>;
             case 'pending':
                 return <Tag color="orange">Đang chờ</Tag>;
             case 'cancelled':
@@ -37,12 +37,26 @@ const BookedAppointment = ({ userId }) => {
         queryFn: () => AppointmentService.getAllAppointmentsByPatient(userId, pagination.current, pagination.pageSize),
         keepPreviousData: true,
     });
+    const mutationCancelAppointment = useMutation({
+        mutationFn: (appointmentId) => AppointmentService.cancelAppointment(appointmentId),
+        onSuccess: () => {
+            Message.success("Huỷ lịch hẹn thành công");
+            queryGetAllAppointmentByPatient.refetch()
+            setSelectedAppointmentId(null); // Reset selected appointment
+            setAppointmentDetails(null); // Reset appointment details
+        },
+        onError: (error) => {
+            Message.error(error.message || "Huỷ lịch hẹn thất bại");
+        }
+    });
+
     const { data: appointments, isLoading, isError, error } = queryGetAllAppointmentByPatient;
-    pagination.total = appointments?.total || 0; // Cập nhật tổng số lượng lịch hẹn từ dữ liệu trả về
+
     useEffect(() => {
         if (appointments && appointments.data && appointments.data.length > 0) {
             setSelectedAppointmentId(appointments.data[0]._id); // Mặc định chọn lịch hẹn đầu tiên
             setAppointmentDetails(appointments.data[0]); // Cập nhật thông tin chi tiết lịch hẹn đầu tiên
+            pagination.total = appointments?.total || 0; // Cập nhật tổng số lượng lịch hẹn từ dữ liệu trả về
         }
     }, [appointments]);
     const handleSelectAppointment = (appointmentId) => {
@@ -53,18 +67,21 @@ const BookedAppointment = ({ userId }) => {
         setSelectedAppointmentId(appointmentId);
     };
     const handleChangePage = (page, pageSize) => {
-        console.log('Changing page to:', page, 'with page size:', pageSize);
-
         setPagination(prev => ({
             ...prev,
             current: page,
             pageSize: pageSize,
         }));
-        queryGetAllAppointmentByPatient.refetch(); // Refetch data when page changes
+    }
+    const handleCancelAppointment = async (id) => {
+        mutationCancelAppointment.mutate(id);
     }
     return (
         <>
             <Title level={3}>Lịch hẹn của bạn</Title>
+            <Paragraph style={{ backgroundColor: "#fed7aa", padding: "10px" }}>
+                <WarningOutlined /> Nếu không đến khám đúng lịch, vui lòng huỷ lịch hẹn để bác sĩ có thể sắp xếp lại thời gian.
+            </Paragraph>
             <Divider />
             <Row gutter={[28, 16]}>
                 <Col span={8} >
@@ -184,10 +201,8 @@ const BookedAppointment = ({ userId }) => {
                                     </Card>
                                     <ButtonComponent
                                         danger
-                                        onClick={() => {
-                                            // Handle action, e.g., navigate to appointment details page
-                                            console.log('Xem chi tiết lịch hẹn:', appointmentDetails._id);
-                                        }}
+                                        onClick={() => handleCancelAppointment(appointmentDetails._id)}
+                                        disabled={appointmentDetails.status === 'cancelled'}
                                         styleButton={{
                                             marginTop: '16px',
                                             width: '100%',

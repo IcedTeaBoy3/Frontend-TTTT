@@ -16,6 +16,8 @@ const AuthenticationPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const from = location.state?.from?.pathname || "/"
+
     const [isRegister, setIsRegister] = useState(false);
     useEffect(() => {
         if (location.state?.message) {
@@ -56,8 +58,9 @@ const AuthenticationPage = () => {
                         dispatch(updateUser(user));
                         if (user.role === "admin") {
                             navigate("/admin/dashboard");
-                        } else {
-                            navigate("/");
+                        }
+                        else {
+                            navigate(from, { replace: true });
                         }
                     }
                 } else {
@@ -71,6 +74,33 @@ const AuthenticationPage = () => {
             Message.error(error.message);
         },
     })
+    const mutationGoogleLogin = useMutation({
+        mutationFn: (data) => {
+            return AuthService.googleLogin(data);
+        },
+        onSuccess: async (data) => {
+            if (data?.status === "success") {
+                Message.success(data?.message);
+                const { access_token } = data;
+                const decode = jwtDecode(access_token);
+                const { id } = decode;
+                dispatch(setUser({ id, access_token }));
+                const user = await getDetailUser(id, access_token);
+                dispatch(updateUser(user));
+                if (user.role === "admin") {
+                    navigate("/admin/dashboard");
+                }
+                else {
+                    navigate(from, { replace: true });
+                }
+            } else if (data?.status === "error") {
+                Message.error(data?.message);
+            }
+        },
+        onError: (error) => {
+            Message.error(error.message);
+        },
+    });
     const { data: dataUser, isPending } = mutationAuth;
     const getDetailUser = async (id, access_token) => {
         const res = await UserService.getUser(id);
@@ -95,6 +125,11 @@ const AuthenticationPage = () => {
             return user;
         }
     };
+    const handleGoogleLogin = async (data) => {
+        mutationGoogleLogin.mutate({
+            idToken: data,
+        });
+    }
     return (
         <DefaultLayout>
             <div
@@ -114,6 +149,7 @@ const AuthenticationPage = () => {
                         mutationAuth.mutate(data);
                     }}
                     onChangeForm={() => setIsRegister((prev) => !prev)}
+                    handleGoogleLogin={handleGoogleLogin}
                 />
             </div>
         </DefaultLayout>

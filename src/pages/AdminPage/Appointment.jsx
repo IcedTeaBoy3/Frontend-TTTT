@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from "react";
-import { Table, Space, Form, Select, Input, Button } from "antd";
-import { DeleteOutlined, EditOutlined, SearchOutlined } from "@ant-design/icons";
+import { useState, useRef } from "react";
+import { Table, Space, Form, Select, Input, Tag, Popconfirm } from "antd";
+import { DeleteOutlined, EditOutlined, SearchOutlined, CheckSquareOutlined } from "@ant-design/icons";
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
 import LoadingComponent from "../../components/LoadingComponent/LoadingComponent";
 import ActionButtonGroup from "../../components/ActionButtonGroup/ActionButtonGroup";
@@ -11,12 +11,11 @@ import { useAppointmentData } from "../../hooks/useAppointmentData";
 import { useDoctorData } from "../../hooks/useDoctorData";
 import { useWorkingScheduleData } from "../../hooks/useWorkingScheduleData";
 import { usePatientData } from "../../hooks/usePatientData";
-import { useWatch } from "antd/es/form/Form"; // Có thể cần cài `antd@4.23.0+`
 import dayjs from "dayjs";
+const { Option } = Select;
 const Appointment = () => {
 
-    const { Option } = Select;
-    const [isOpenAdd, setIsOpenAdd] = useState(false);
+
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [isModalOpenDeleteMany, setIsModalOpenDeleteMany] = useState(false);
     const [isModalOpenDelete, setIsModalOpenDelete] = useState(false);
@@ -34,11 +33,13 @@ const Appointment = () => {
         selectedRowKeys,
         onChange: (selectedKeys, selectedRows) => {
             setSelectedRowKeys(selectedKeys);
+
         },
         type: "checkbox",
     };
     const {
         queryGetAllAppointments,
+        mutationConfirmApponintment,
         mutationDeleteAppointment,
         mutationUpdateAppointment,
         mutationDeleteManyAppointments,
@@ -144,6 +145,12 @@ const Appointment = () => {
         clearFilters();
         setSearchText("");
     };
+    const handleConfirmAppointment = () => {
+        mutationConfirmApponintment.mutate(rowSelected);
+    };
+    const handleCancelConfirm = () => {
+
+    }
     const columns = [
         {
             title: "STT",
@@ -173,7 +180,28 @@ const Appointment = () => {
             title: "Ngày khám",
             dataIndex: "workDate",
             key: "workDate",
-            ...getColumnSearchProps("workDate"),
+            // ...getColumnSearchProps("workDate"),
+            filters: [
+                { text: "Đã qua", value: "past" },
+                { text: "Chưa đến", value: "upcoming" },
+            ],
+            onFilter: (value, record) => {
+                const today = new Date();
+                const recordDate = new Date(record.workDate);
+                // So sánh ngày không tính giờ
+                const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                const recordMidnight = new Date(recordDate.getFullYear(), recordDate.getMonth(), recordDate.getDate());
+
+                if (value === "past") {
+                    return recordMidnight < todayMidnight;
+                }
+                if (value === "upcoming") {
+                    return recordMidnight >= todayMidnight;
+                }
+                return true;
+            },
+            filterMode: "tree",
+            filterMultiple: false,
             render: (text) => {
                 return text ? new Date(text).toLocaleDateString("vi-VN") : "Chưa có thông tin";
             }
@@ -182,7 +210,6 @@ const Appointment = () => {
             title: "Khung giờ",
             dataIndex: "timeSlot",
             key: "timeSlot",
-            ...getColumnSearchProps("timeSlot"),
             render: (text) => {
                 return text ? `${text} - ${addMinutesToTime(text, 30)}` : "Chưa có thông tin";
             }
@@ -198,12 +225,53 @@ const Appointment = () => {
             key: "status",
             render: (text) => {
                 const statusMap = {
-                    "pending": "Chờ xác nhận",
-                    confirmed: "Đã xác nhận",
-                    cancelled: "Đã huỷ",
-                    completed: "Đã hoàn thành",
+                    pending: {
+                        label: "Chờ xác nhận",
+                        color: "orange",
+                    },
+                    confirmed: {
+                        label: "Đã xác nhận",
+                        color: "blue",
+                    },
+                    cancelled: {
+                        label: "Đã huỷ",
+                        color: "red",
+                    },
+                    completed: {
+                        label: "Đã hoàn thành",
+                        color: "green",
+                    },
                 };
-                return statusMap[text] || "Không rõ";
+
+                const status = statusMap[text];
+
+                return (
+                    <Space>
+                        <Tag color={status?.color || "default"}>
+                            {status?.label || text}
+                        </Tag>
+                        {text === "pending" && (
+                            <Popconfirm
+                                title="Duyệt lịch hẹn"
+                                placement="topRight"
+                                description="Bạn có chắc chắn muốn duyệt lịch hẹn này không?"
+                                onConfirm={handleConfirmAppointment}
+                                onCancel={handleCancelConfirm}
+                                okText="Duyệt"
+                                cancelText="Huỷ"
+                            >
+                                <ButtonComponent
+                                    styleButton={{ backgroundColor: "green", color: "white" }}
+                                    size="small"
+                                    icon={<CheckSquareOutlined />}
+                                >
+                                    Duyệt
+                                </ButtonComponent>
+                            </Popconfirm>
+
+                        )}
+                    </Space>
+                );
             },
             filters: [
                 { text: "Chờ xác nhận", value: "pending" },
@@ -212,7 +280,6 @@ const Appointment = () => {
                 { text: "Đã hoàn thành", value: "completed" },
             ],
             onFilter: (value, record) => record.status.includes(value),
-            filterSearch: true,
             filterMode: "tree",
             filterMultiple: false,
         },
@@ -253,8 +320,8 @@ const Appointment = () => {
     })) || [];
 
     const handleEditAppointment = (id) => {
-        const appointment = appointments?.data?.find(item => item._id === id);
         setRowSelected(id);
+        const appointment = appointments?.data?.find(item => item._id === id);
         if (appointment) {
             formUpdate.setFieldsValue({
                 nameDoctor: appointment.doctor?._id,
@@ -262,14 +329,13 @@ const Appointment = () => {
                 workDate: appointment.schedule?._id,
                 timeSlot: `${appointment.timeSlot} - ${addMinutesToTime(appointment.timeSlot, 30)}`,
                 reason: appointment.reason,
+                status: appointment.status,
             });
         }
         setIsDrawerOpen(true);
     }
     const handleOnUpdateAppointment = () => {
         formUpdate.validateFields().then((values) => {
-            console.log("Form values:", values);
-
             const { nameDoctor, namePatient, workDate, timeSlot, reason } = values;
             const appointmentData = {
                 id: rowSelected,
@@ -303,29 +369,6 @@ const Appointment = () => {
     const handleExportExcel = () => { }
     const handleChooseFile = () => { }
     const handleFileChange = (e) => { }
-    const selectedWorkDate = useWatch({
-        control: formUpdate.control,
-        name: "workDate",
-    });
-    useEffect(() => {
-        if (!selectedWorkDate || !workingSchedules?.data) {
-            setTimeSlots([]);
-            return;
-        }
-
-        const selectedSchedule = workingSchedules.data.find(
-            (schedule) => dayjs(schedule.workDate).isSame(dayjs(selectedWorkDate), 'day')
-        );
-
-        if (selectedSchedule) {
-            const slots = generateTimeSlots(selectedSchedule.startTime, selectedSchedule.endTime);
-            setTimeSlots(slots);
-            formUpdate.setFieldsValue({ timeSlot: "" }); // reset timeSlot
-        } else {
-            setTimeSlots([]);
-            formUpdate.setFieldsValue({ timeSlot: "" });
-        }
-    }, [selectedWorkDate, workingSchedules]);
     function generateTimeSlots(start, end, duration = 30) {
         const slots = [];
         let [startHour, startMin] = start.split(':').map(Number);
@@ -340,6 +383,7 @@ const Appointment = () => {
         }
         return slots;
     }
+
     return (
         <>
 
@@ -521,10 +565,6 @@ const Appointment = () => {
                             <Input.TextArea placeholder="Lý do khám" rows={4}></Input.TextArea>
 
                         </Form.Item>
-
-
-
-
                         <Form.Item
                             label={null}
                             wrapperCol={{ offset: 18, span: 6 }}

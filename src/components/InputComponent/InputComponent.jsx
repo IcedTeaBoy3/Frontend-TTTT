@@ -5,6 +5,7 @@ const InputComponent = ({ placeholder, onSearch, ...rests }) => {
         <InputContainer
             placeholder={placeholder}
             onSearch={onSearch}
+            allowClear
             enterButton
             {...rests}
         />

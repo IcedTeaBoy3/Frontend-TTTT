@@ -1,5 +1,5 @@
 
-import { Form, Input, Checkbox } from "antd";
+import { Form, Input, Checkbox, Space } from "antd";
 import TabsComponent from "../TabsComponent/TabsComponent";
 import { MailOutlined, LockOutlined } from "@ant-design/icons";
 import ButtonComponent from "../ButtonComponent/ButtonComponent";
@@ -7,7 +7,8 @@ import LoadingComponent from "../LoadingComponent/LoadingComponent";
 import { FormContainer } from "./style";
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
-const FormLogin = ({ isRegister, onSubmit, onChangeForm, isPending }) => {
+import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
+const FormLogin = ({ isRegister, onSubmit, handleGoogleLogin, onChangeForm, isPending }) => {
     const location = useLocation();
     const [formLogin] = Form.useForm();
     useEffect(() => {
@@ -46,6 +47,13 @@ const FormLogin = ({ isRegister, onSubmit, onChangeForm, isPending }) => {
             confirmPassword: values.confirmPassword,
         }
         onSubmit(data);
+    };
+    const handleSuccess = (response) => {
+        const { credential } = response;
+        handleGoogleLogin(credential)
+    };
+    const handleFailure = (error) => {
+        console.error("Google login failed:", error);
     };
     return (
         <FormContainer>
@@ -186,7 +194,24 @@ const FormLogin = ({ isRegister, onSubmit, onChangeForm, isPending }) => {
                     </Form.Item>
                 </LoadingComponent>
             </Form>
-        </FormContainer>
+            <div style={{ display: 'flex', alignItems: 'center', marginTop: '10px', marginBottom: '10px' }}>
+                <div style={{ flex: 1, height: '1px', backgroundColor: '#ccc' }}></div>
+                <p style={{ margin: '0 10px', whiteSpace: 'nowrap' }}>Hoặc tiếp tục bằng</p>
+                <div style={{ flex: 1, height: '1px', backgroundColor: '#ccc' }}></div>
+            </div>
+            <Space direction="vertical" style={{ width: "100%" }}>
+                <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+                    <GoogleLogin
+                        onSuccess={handleSuccess}
+                        onError={handleFailure}
+                        theme="filled_blue"
+                        size="large"
+                        text="signin_with"
+                        shape="pill"
+                    />
+                </GoogleOAuthProvider>
+            </Space>
+        </FormContainer >
     );
 };
 

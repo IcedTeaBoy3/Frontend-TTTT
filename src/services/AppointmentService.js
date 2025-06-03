@@ -47,3 +47,19 @@ export const getAllAppointmentsByPatient = async (patientId,page, pageSize) => {
         throw error.response.data;
     }
 }
+export const cancelAppointment = async (id) => {
+    try {
+        const response = await axiosInstance.put(`/appointments/cancel-appointment/${id}`);
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
+}
+export const confirmAppointment = async (id) => {
+    try {
+        const response = await axiosInstance.put(`/appointments/confirm-appointment/${id}`);
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
+}

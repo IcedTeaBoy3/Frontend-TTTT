@@ -166,6 +166,7 @@ const ProfilePage = () => {
                                 size={80}
                                 icon={<UserOutlined />}
                                 style={{ backgroundColor: "#1890ff", marginBottom: "10px" }}
+                                src={user?.avatar?.startsWith("https") ? user?.avatar : `${import.meta.env.VITE_APP_BACKEND_URL}${user?.avatar}`}
                             />
                             <ButtonComponent>
                                 Thay đổi

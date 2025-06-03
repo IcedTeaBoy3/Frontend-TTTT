@@ -1,12 +1,16 @@
 // ProtectedRoute.jsx
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
     const user = useSelector((state) => state.auth.user);
-
+    const location = useLocation();
     if (!user) {
-        return <Navigate to="/authentication" replace />;
+        return <Navigate to="/authentication" state={{
+            message: "bạn cần đăng nhập để truy cập trang này",
+            status: "warning",
+            from: location
+        }} replace />;
     }
 
     if (!allowedRoles.includes(user.role)) {

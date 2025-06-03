@@ -39,19 +39,24 @@ const DetailDoctorPage = () => {
     const { data: doctor, isLoading: isLoadingDoctor } = queryGetDoctor
     useEffect(() => {
         if (workingSchedules && workingSchedules?.data?.length > 0) {
-            const schedule = workingSchedules.data[0];
-            dispatch(updateAppointment({
-                schedule: schedule,
-            }));
-            // Cập nhật ngày nếu khác
-            if (schedule && appointment.selectedDate !== schedule.workDate) {
-                dispatch(updateAppointment({ selectedDate: schedule.workDate }));
+
+            // Nếu có lịch làm việc trong tương lai, lấy lịch đầu tiên
+            const schedule = workingSchedules?.data.length > 0 ? workingSchedules?.data[0] : null;
+            if (schedule) {
+                dispatch(updateAppointment({
+                    schedule: schedule,
+                }));
+                const startTime = schedule.startTime;
+                const endTime = schedule.endTime;
+                const timeSlots = generateTimeSlots(startTime, endTime);
+                setTimeSlots(timeSlots);
+                // Cập nhật ngày nếu khác
+                if (!dayjs(schedule.workDate).isSame(dayjs(appointment.selectedDate))) {
+                    dispatch(updateAppointment({ selectedDate: schedule.workDate }));
+                }
+            } else {
+                Message.info("Bác sĩ chưa cập nhật lịch làm việc");
             }
-            // Luôn generate timeSlots
-            const startTime = schedule.startTime;
-            const endTime = schedule.endTime;
-            const timeSlots = generateTimeSlots(startTime, endTime);
-            setTimeSlots(timeSlots);
         } else {
             // Nếu không có lịch làm việc reset appointment
             dispatch(setAppointment({
@@ -60,7 +65,7 @@ const DetailDoctorPage = () => {
                 selectedTime: null,
             }));
             setTimeSlots([]);
-            Message.info("Bác sĩ chưa có lịch làm việc")
+
         }
     }, [workingSchedules]);
     useEffect(() => {
@@ -111,32 +116,13 @@ const DetailDoctorPage = () => {
         const fullSelectedTime = dayjs(`${selectedDay.format('YYYY-MM-DD')} ${time}`, 'YYYY-MM-DD HH:mm');
 
         // Nếu khung giờ < 60 phút so với hiện tại → disable
-        // 
         return fullSelectedTime.diff(now, 'minute') < 60;
     };
     const handleSelectedTime = (time) => {
-        if (!user?.access_token) {
-            navigate("/authentication", {
-                state: {
-                    status: "info",
-                    message: "Vui lòng đăng nhập để đặt lịch khám",
-                }
-            })
-            return;
-        }
         dispatch(updateAppointment({ selectedTime: time }));
         navigate("/booking");
     }
     const handleBookingDoctor = () => {
-        if (!user?.access_token) {
-            navigate("/authentication", {
-                state: {
-                    status: "info",
-                    message: "Vui lòng đăng nhập để đặt lịch khám",
-                }
-            })
-            return;
-        }
         navigate("/booking")
     }
     return (
@@ -187,37 +173,30 @@ const DetailDoctorPage = () => {
                     </div>
                     <Divider />
                     {/* Lịch làm việc */}
-                    <div>
-                        <Title level={4}>Lịch làm việc</Title>
-                        {workingSchedules && workingSchedules?.data?.length > 0 ? (
-                            <WorkingSchedule
-                                selectedDate={appointment.selectedDate}
-                                isLoading={isLoadingWorkingSchedule}
-                                workingSchedules={workingSchedules}
-                                handleCreateWorkingTime={handleCreateWorkingTime}
-                            />
-                        ) : (
-                            <Text type="secondary">Bác sĩ chưa cập nhật lịch làm việc</Text>
-                        )}
-
-                    </div>
-
+                    <Title level={4}>Lịch làm việc</Title>
+                    {workingSchedules && workingSchedules?.data?.length > 0 ? (
+                        <WorkingSchedule
+                            selectedDate={appointment.selectedDate}
+                            isLoading={isLoadingWorkingSchedule}
+                            workingSchedules={workingSchedules}
+                            handleCreateWorkingTime={handleCreateWorkingTime}
+                        />
+                    ) : (
+                        <Text type="secondary">Bác sĩ chưa cập nhật lịch làm việc</Text>
+                    )}
                     {/* Giờ làm việc */}
-                    <div>
-                        <Title level={4}>Chọn khung giờ</Title>
-                        {timeSlots.length > 0 ? (
-                            <TimeSlot
-                                timeSlots={timeSlots}
-                                selectedDate={appointment.selectedDate}
-                                selectedTime={appointment.selectedTime}
-                                handleCheckTime={handleCheckTime}
-                                handleSelectedTime={handleSelectedTime}
-                            />
-                        ) : (
-                            <Text type="secondary">Không có khung giờ làm việc cho ngày này</Text>
-                        )}
-                    </div>
-
+                    <Title level={4}>Chọn khung giờ</Title>
+                    {timeSlots.length > 0 ? (
+                        <TimeSlot
+                            timeSlots={timeSlots}
+                            selectedDate={appointment.selectedDate}
+                            selectedTime={appointment.selectedTime}
+                            handleCheckTime={handleCheckTime}
+                            handleSelectedTime={handleSelectedTime}
+                        />
+                    ) : (
+                        <Text type="secondary">Không có khung giờ làm việc cho ngày này</Text>
+                    )}
                     <div>
                         <Title level={4}>Giới thiệu</Title>
                         <Text>{doctor?.data?.description}</Text>
