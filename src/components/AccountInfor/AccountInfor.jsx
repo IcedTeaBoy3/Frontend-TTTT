@@ -21,7 +21,6 @@ const AccountInfor = ({ user, handleChangeProfile }) => {
         mutationFn: (data) => AuthService.changePassword(data),
         onSuccess: (res) => {
             if (res.status === "success") {
-                Message.success("Đổi mật khẩu thành công!");
                 dispatch(logout());
                 navigate("/authentication", {
                     state: {
@@ -41,7 +40,8 @@ const AccountInfor = ({ user, handleChangeProfile }) => {
     const onFinish = (values) => {
         mutationChangePassword.mutate({
             currentPassword: values.currentPassword,
-            newPassword: values.newPassword
+            newPassword: values.newPassword,
+            confirmPassword: values.confirmPassword
         })
     }
 
@@ -69,20 +69,23 @@ const AccountInfor = ({ user, handleChangeProfile }) => {
                     </ButtonComponent>
                 </Flex>
                 <Flex vertical style={{ flex: 1 }} gap={8}>
-                    <Title level={4}>Thay đổi mật khẩu</Title>
+                    <Title level={4}>{user?.has_password ? 'Thay đổi mật khẩu' : 'Thiết lập mật khẩu'}</Title>
                     <Form
                         form={form}
                         layout="vertical"
                         style={{ width: "100%" }}
                         onFinish={onFinish}
                     >
-                        <Form.Item
-                            name="currentPassword"
-                            label="Mật khẩu hiện tại"
-                            rules={[{ required: true, message: 'Vui lòng nhập mật khẩu hiện tại!' }]}
-                        >
-                            <Input.Password placeholder="Nhập mật khẩu hiện tại" />
-                        </Form.Item>
+                        {user?.has_password && (
+                            <Form.Item
+                                name="currentPassword"
+                                label="Mật khẩu hiện tại"
+                                rules={[{ required: true, message: 'Vui lòng nhập mật khẩu hiện tại!' }]}
+                            >
+                                <Input.Password placeholder="Nhập mật khẩu hiện tại" />
+                            </Form.Item>
+                        )}
+
                         <Form.Item
                             name="newPassword"
                             label="Mật khẩu mới"
@@ -116,7 +119,7 @@ const AccountInfor = ({ user, handleChangeProfile }) => {
                                 size="large"
                                 style={{ width: "100%" }}
                             >
-                                Thay đổi
+                                {user?.has_password ? 'Thay đổi' : 'Thiết lập'}
                             </ButtonComponent>
                         </LoadingComponent>
                     </Form>

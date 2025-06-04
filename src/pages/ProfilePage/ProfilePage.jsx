@@ -5,7 +5,7 @@ import {
     LoginOutlined,
     UserOutlined,
 } from "@ant-design/icons";
-import { Menu, Avatar, Typography, Divider, Flex } from "antd";
+import { Menu, Avatar, Typography, Divider, Flex, Upload } from "antd";
 import * as AuthService from "../../services/AuthService";
 import * as UserService from "../../services/UserService";
 import * as Message from "../../components/Message/Message";
@@ -20,6 +20,7 @@ import PersonalProfile from "../../components/PersonalProfile/PersonalProfile";
 import AccountInfor from "../../components/AccountInfor/AccountInfor";
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
 import BookedAppointment from "../../components/BookedAppointment/BookedAppointment";
+import { ProfilePageContainer, ProfilePageContent, LeftContent, RightContent } from "./style";
 const { Title, Text, Paragraph } = Typography;
 
 const items = [
@@ -130,53 +131,51 @@ const ProfilePage = () => {
     const handleUpdateProfile = async (data) => {
         mutationUpdateUpdateProfile.mutate(data);
     }
+    const handleUpload = async (file) => {
+        const formData = new FormData();
+
+        formData.append("avatar", file?.file);
+        try {
+            const res = await UserService.uploadAvatar(user.id, formData);
+            if (res.status === "success") {
+                Message.success("Cập nhật ảnh đại diện thành công");
+                const updatedUser = { ...user, avatar: res.data.avatar };
+                dispatch(updateUser(updatedUser));
+            } else {
+                Message.error(res.message || "Cập nhật ảnh đại diện thất bại");
+            }
+        } catch (error) {
+            Message.error(error?.response?.data?.message || "Có lỗi xảy ra khi cập nhật ảnh đại diện");
+        }
+    }
     return (
         <DefaultLayout>
-            <div
-                style={{
-                    minHeight: "100vh",
-                    maxWidth: "1200px",
-                    width: "100%",
-                    padding: "85px 0px",
-                    margin: "0 auto",
-                }}
-            >
-                <div
-                    style={{
-                        display: "flex",
-                        backgroundColor: "#fff",
-                        borderRadius: "12px",
-                        overflow: "hidden",
-                        boxShadow: "0 6px 16px rgba(0,0,0,0.1)",
-                        width: "100%",
-                        flexWrap: "wrap",
-                    }}
-                >
+            <ProfilePageContainer>
+                <ProfilePageContent>
                     {/* Left: Avatar + Menu */}
-                    <div
-                        style={{
-                            padding: "24px",
-                            minWidth: "260px",
-                            backgroundColor: "#f0f0f0",
-                            borderRight: "1px solid #e0e0e0",
-                        }}
-                    >
-                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                            <Avatar
-                                size={80}
-                                icon={<UserOutlined />}
-                                style={{ backgroundColor: "#1890ff", marginBottom: "10px" }}
-                                src={user?.avatar?.startsWith("https") ? user?.avatar : `${import.meta.env.VITE_APP_BACKEND_URL}${user?.avatar}`}
-                            />
-                            <ButtonComponent>
-                                Thay đổi
+                    <LeftContent>
+                        <Avatar
+                            size={80}
+                            icon={<UserOutlined />}
+                            style={{ backgroundColor: "#1890ff", marginBottom: "10px" }}
+                            src={user?.avatar?.startsWith("https") ? user?.avatar : `${import.meta.env.VITE_APP_BACKEND_URL}${user?.avatar}`}
+                        />
+                        <Upload
+                            showUploadList={false}
+                            beforeUpload={() => false} // Chặn auto upload
+                            onChange={handleUpload}
+                            accept="image/*"
+                            style={{ marginBottom: "10px" }}
+                        >
+                            <ButtonComponent type="primary" size="small">
+                                Cập nhật ảnh đại diện
                             </ButtonComponent>
-                            <Title level={5} style={{ margin: 0 }}>
-                                {user?.name || "Người dùng"}
-                            </Title>
-                            <Text type="secondary">Bệnh nhân</Text>
-                            <Divider></Divider>
-                        </div>
+                        </Upload>
+                        <Title level={5} style={{ margin: 0 }}>
+                            {user?.name || "Người dùng"}
+                        </Title>
+                        <Text type="secondary">Bệnh nhân</Text>
+                        <Divider />
                         <Menu
                             onClick={handleMenuClick}
                             defaultOpenKeys={["info"]}
@@ -184,15 +183,13 @@ const ProfilePage = () => {
                             mode="inline"
                             items={items}
                         />
-                    </div>
-
+                    </LeftContent>
                     {/* Right: Content */}
-                    <div style={{ flex: 1, padding: "30px" }}>
+                    <RightContent>
                         {renderContent()}
-
-                    </div>
-                </div>
-            </div>
+                    </RightContent>
+                </ProfilePageContent>
+            </ProfilePageContainer>
             <ModalUpdateUser
                 isModalOpen={isModalOpen}
                 handleUpdateProfile={handleUpdateProfile}

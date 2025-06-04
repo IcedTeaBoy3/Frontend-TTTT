@@ -39,24 +39,12 @@ const DetailDoctorPage = () => {
     const { data: doctor, isLoading: isLoadingDoctor } = queryGetDoctor
     useEffect(() => {
         if (workingSchedules && workingSchedules?.data?.length > 0) {
-
             // Nếu có lịch làm việc trong tương lai, lấy lịch đầu tiên
-            const schedule = workingSchedules?.data.length > 0 ? workingSchedules?.data[0] : null;
-            if (schedule) {
-                dispatch(updateAppointment({
-                    schedule: schedule,
-                }));
-                const startTime = schedule.startTime;
-                const endTime = schedule.endTime;
-                const timeSlots = generateTimeSlots(startTime, endTime);
-                setTimeSlots(timeSlots);
-                // Cập nhật ngày nếu khác
-                if (!dayjs(schedule.workDate).isSame(dayjs(appointment.selectedDate))) {
-                    dispatch(updateAppointment({ selectedDate: schedule.workDate }));
-                }
-            } else {
-                Message.info("Bác sĩ chưa cập nhật lịch làm việc");
-            }
+            const schedule = workingSchedules?.data[0];
+            dispatch(updateAppointment({
+                schedule: schedule,
+            }));
+            handleCreateWorkingTime(schedule);
         } else {
             // Nếu không có lịch làm việc reset appointment
             dispatch(setAppointment({
@@ -65,7 +53,6 @@ const DetailDoctorPage = () => {
                 selectedTime: null,
             }));
             setTimeSlots([]);
-
         }
     }, [workingSchedules]);
     useEffect(() => {
@@ -98,11 +85,10 @@ const DetailDoctorPage = () => {
         return slots;
     }
     const handleCreateWorkingTime = (schedule) => {
-        const startTime = schedule.startTime;
-        const endTime = schedule.endTime;
-        const timeSlots = generateTimeSlots(startTime, endTime);
-        dispatch(updateAppointment({ selectedDate: schedule.workDate }))
+        if (!schedule.startTime || !schedule.endTime || !schedule.workDate) return;
+        const timeSlots = generateTimeSlots(schedule.startTime, schedule.endTime);
         setTimeSlots(timeSlots);
+        dispatch(updateAppointment({ selectedDate: schedule.workDate }))
     }
     const handleCheckTime = (selectedDate, time) => {
         if (!selectedDate || !time) return false;
@@ -131,7 +117,6 @@ const DetailDoctorPage = () => {
                 style={{
                     minHeight: "100vh",
                     maxWidth: 1200,
-                    width: "100%",
                     padding: "85px 16px",
                     margin: "0 auto",
                 }}
@@ -200,12 +185,8 @@ const DetailDoctorPage = () => {
                     <div>
                         <Title level={4}>Giới thiệu</Title>
                         <Text>{doctor?.data?.description}</Text>
-                        {/* <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 4 }}>
-                            <Text>• Giảng viên Trường ĐH Y Dược TP.HCM</Text>
-                            <Text>• Kinh nghiệm hơn 15 năm trong ngành tim mạch</Text>
-                        </div> */}
                     </div>
-                    <div>
+                    <div width="100%">
                         <Title level={4}>Địa chỉ : {doctor?.data?.hospital?.address}</Title>
                         <iframe
                             width="600"

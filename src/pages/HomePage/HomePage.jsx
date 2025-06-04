@@ -94,6 +94,7 @@ const HomePage = () => {
 
 
                     <div
+                        id="section1"
                         style={{
                             width: '100%',
                             maxWidth: '1200px',     // Giới hạn chiều rộng

@@ -11,6 +11,8 @@ import BookingSuccess from "../pages/BookingSuccess/BookingSuccess";
 import VerifyEmail from "../pages/VerifyEmail/VerifyEmail";
 import ProtectedRoute from "../components/ProtectedRoute/ProtectedRoute";
 import SearchPage from "../pages/SearchPage/SearchPage";
+import ForgotPassword from "../pages/ForgotPassword/ForgotPassword";
+import ResetPassword from "../pages/ResetPassword/ResetPassword";
 // Các trang con trong admin
 import Dashboard from "../pages/AdminPage/Dashboard";
 import Appointment from "../pages/AdminPage/Appointment";
@@ -41,6 +43,8 @@ const AppRoutes = () => {
                     </ProtectedRoute>
                 } />
                 <Route path="/verify-email" element={<VerifyEmail />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 {/* Admin Routes */}
                 <Route
                     path="/admin"

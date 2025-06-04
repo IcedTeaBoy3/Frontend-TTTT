@@ -5,12 +5,15 @@ import { MailOutlined, LockOutlined } from "@ant-design/icons";
 import ButtonComponent from "../ButtonComponent/ButtonComponent";
 import LoadingComponent from "../LoadingComponent/LoadingComponent";
 import { FormContainer } from "./style";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 const FormLogin = ({ isRegister, onSubmit, handleGoogleLogin, onChangeForm, isPending }) => {
     const location = useLocation();
+    const navigate = useNavigate();
     const [formLogin] = Form.useForm();
+    console.log("location.state?.email", location.state?.email);
+
     useEffect(() => {
         if (location.state?.email) {
             formLogin.setFieldsValue({
@@ -170,7 +173,7 @@ const FormLogin = ({ isRegister, onSubmit, handleGoogleLogin, onChangeForm, isPe
                             <Checkbox>Ghi nhớ tôi</Checkbox>
                         </Form.Item>
 
-                        <span style={{ float: "right", color: "#1890ff" }}>
+                        <span style={{ float: "right", color: "#1890ff" }} onClick={() => navigate("/forgot-password")}>
                             Quên mật khẩu?
                         </span>
                     </Form.Item>

@@ -6,6 +6,7 @@ export const getWeekdayFromDate = (date) => {
     return weekdayVi[day.getDay()];
 }
 export const formatDateToDDMMYYYY = (date) => {
+    if (!date) return "";
     return dayjs(date).format("DD-MM-YYYY");
 }
 export const formatDateToDDMM = (date) => {

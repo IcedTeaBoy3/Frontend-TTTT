@@ -1,6 +1,6 @@
 
 import DefaultLayout from '../../components/DefaultLayout/DefaultLayout'
-import { Steps, Typography, Avatar, Flex, Divider, Input } from 'antd'
+import { Steps, Typography, Avatar, Flex, Divider, Input, Card } from 'antd'
 import { useSelector } from 'react-redux'
 import { UserOutlined, SolutionOutlined, LoadingOutlined, SmileOutlined, FieldTimeOutlined } from '@ant-design/icons'
 import { addMinutesToTime } from '../../utils/timeUtils'
@@ -13,7 +13,7 @@ import * as WorkingScheduleService from '../../services/workingScheduleService'
 import * as AppointmentService from '../../services/AppointmentService'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
-import { updateAppointment, resetAppointment } from '../../redux/Slice/appointmentSlice'
+import { updateAppointment, setAppointment } from '../../redux/Slice/appointmentSlice'
 import { updateUser } from '../../redux/Slice/authSlice'
 import TimeSlot from '../../components/TimeSlot/TimeSlot'
 import { useNavigate } from 'react-router-dom'
@@ -23,6 +23,7 @@ import * as UserService from '../../services/UserService';
 import dayjs from 'dayjs'
 import LoadingComponent from '../../components/LoadingComponent/LoadingComponent'
 import { convertGender } from '../../utils/convertGender'
+import { BookingPageContainer, LeftContent, RightContent, WrapperDoctorInfo, WrapperAppointmentInfo } from './style'
 
 const { Title, Text } = Typography;
 const BookingPage = () => {
@@ -93,39 +94,31 @@ const BookingPage = () => {
         }
     })
     const { data: workingSchedules, isLoading: isLoadingWorkingSchedule } = queryGetWorkingScheduleByDoctor
-    const { data: appointmentSchedule, isPending: isPendingCreate } = mutationCreateAppointment
+    const { isPending: isPendingCreate } = mutationCreateAppointment
     const { isPending: isPendingUpdateProfile } = mutationUpdateUpdateProfile
-    useEffect(() => {
-        if (
-            doctor?.status === "success" &&
-            workingSchedules?.status === "success" &&
-            Array.isArray(workingSchedules.data) &&
-            workingSchedules.data.length > 0
-        ) {
-            const schedule = workingSchedules.data[0];
 
-            dispatch(updateAppointment({
-                doctor: doctor.data,
-                schedule,
-            }));
-
-            // Nếu ngày đang chọn khác lịch → cập nhật
-            if (schedule.workDate !== appointment.selectedDate) {
-                dispatch(updateAppointment({ selectedDate: schedule.workDate }));
-            }
-
-            handleCreateWorkingTime(schedule); // 👉 dùng luôn hàm có sẵn
-        }
-    }, [workingSchedules, doctor, appointment.selectedDate, dispatch]);
     const handleCreateWorkingTime = (schedule) => {
         if (!schedule?.startTime || !schedule?.endTime || !schedule?.workDate) return;
-
         const timeSlots = generateTimeSlots(schedule.startTime, schedule.endTime);
         setIsLoaded(false); // reset loading
         setTimeSlots(timeSlots);
-
         dispatch(updateAppointment({ selectedDate: schedule.workDate }));
     };
+    useEffect(() => {
+        if (workingSchedules?.data && workingSchedules.data.length > 0) {
+            const schedule = workingSchedules.data[0];
+            dispatch(updateAppointment({ schedule }));
+            handleCreateWorkingTime(schedule);
+        } else {
+            dispatch(setAppointment({
+                selectedDate: null,
+                selectedTime: null,
+                schedule: null,
+            }));
+            setTimeSlots([]);
+        }
+    }, [workingSchedules])
+
     useEffect(() => {
         if (appointment?.selectedDate && Array.isArray(workingSchedules?.data)) {
             const schedule = workingSchedules.data.find(item => dayjs(item?.workDate).isSame(dayjs(appointment.selectedDate), 'day'));
@@ -287,21 +280,21 @@ const BookingPage = () => {
                 >
                     <Flex justify='space-between' align='center' style={{ padding: "12px 0", borderBottom: "1px solid #f0f0f0" }}>
                         <Text strong>Họ và tên</Text>
-                        <Text>{patient?.name}</Text>
+                        <Text>{patient?.name || '--'}</Text>
                     </Flex>
                     <Flex justify='space-between' align='center' style={{ paddingBottom: "12px", borderBottom: "1px solid #f0f0f0" }}>
 
                         <Text strong>Giới tính</Text>
-                        <Text>{convertGender(patient?.gender)}</Text>
+                        <Text>{convertGender(patient?.gender) || '--'}</Text>
                     </Flex>
                     <Flex justify='space-between' align='center' style={{ paddingBottom: "12px", borderBottom: "1px solid #f0f0f0" }}>
                         <Text strong>Ngày sinh</Text>
-                        <Text>{formatDateToDDMMYYYY(patient?.dateOfBirth)}</Text>
+                        <Text>{formatDateToDDMMYYYY(patient?.dateOfBirth) || '--'}</Text>
                     </Flex>
                     <Flex justify='space-between' align='center' style={{ paddingBottom: "12px", borderBottom: "1px solid #f0f0f0" }}>
 
                         <Text strong>Số điện thoại</Text>
-                        <Text>{patient?.phone}</Text>
+                        <Text>{patient?.phone || '--'}</Text>
                     </Flex>
                     <ButtonComponent
                         type="primary"
@@ -343,38 +336,22 @@ const BookingPage = () => {
     ];
     return (
         <DefaultLayout>
-            <div
-                style={{
-                    minHeight: "100vh",
-                    maxWidth: 1200,
-                    width: "100%",
-                    padding: "85px 16px",
-                    margin: "0 auto",
-                    backgroundColor: "#f5f5f5",
-                }}
-            >
-                <Steps
-                    current={currentStep}
-                    items={itemsStep}
-                />
+            <BookingPageContainer>
+                <Card>
+                    <Steps
+                        current={currentStep}
+                        items={itemsStep}
+                    />
+                </Card>
                 <Divider />
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        gap: '20px'
-                    }}
+                <Flex
+                    justify="space-between"
+                    align="start"
+                    gap={24}
+                    flexDirection="row"
                 >
 
-                    <div
-                        style={{
-                            backgroundColor: "#fff",
-                            borderRadius: 16,
-                            boxShadow: "0 8px 24px rgba(0,0,0,0.1)",
-                            padding: 16,
-                            flex: 1,
-                        }}
-                    >
+                    <LeftContent>
 
                         <Collapse
 
@@ -384,71 +361,48 @@ const BookingPage = () => {
                         />
 
 
-                    </div>
-                    <div
-                        style={{
-                            backgroundColor: "#fff",
-                            boxShadow: "0 8px 24px rgba(0,0,0,0.1)",
-                            padding: 24,
-                            borderRadius: 12,
-                        }}
+                    </LeftContent>
+                    <RightContent
                     >
                         <Title level={4} style={{ marginBottom: 20 }}>Thông tin đặt khám</Title>
 
                         {/* Doctor info */}
-                        <div
-                            style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 16,
-                                padding: "12px 0",
-                                borderTop: "1px solid #f0f0f0",
-                                borderBottom: "1px solid #f0f0f0",
-                            }}
+                        <WrapperDoctorInfo
                         >
                             <Avatar size={56} icon={<UserOutlined />} />
                             <div style={{ display: "flex", flexDirection: "column" }}>
                                 <Text strong style={{ fontSize: "18px" }}>Bác sĩ {doctor?.user?.name}</Text>
                                 <Text type="secondary">{doctor?.hospital?.address}</Text>
                             </div>
-                        </div>
+                        </WrapperDoctorInfo>
 
                         {/* Appointment info */}
-                        <div
-                            style={{
-                                display: "flex",
-                                flexDirection: "column",
-                                gap: 16,
-                                padding: "20px 0",
-                                borderBottom: "1px solid #f0f0f0",
-                                marginBottom: 16,
-                            }}
-                        >
+                        <WrapperAppointmentInfo>
                             <Flex justify="space-between" align="center">
                                 <Text style={{ fontSize: "16px" }}>🗓️ Ngày khám</Text>
-                                <Text strong style={{ fontSize: "18px", color: "#1677ff" }}>
-                                    {formatDateToDDMMYYYY(appointment?.selectedDate)}
+                                <Text strong style={{ fontSize: "16px", color: "#1677ff" }}>
+                                    {formatDateToDDMMYYYY(appointment?.selectedDate) || "--"}
                                 </Text>
                             </Flex>
 
                             <Flex justify="space-between" align="center">
                                 <Text style={{ fontSize: "16px" }}>🕒 Giờ khám</Text>
                                 {dayjs(appointment?.selectedTime, ['H:mm', 'HH:mm'], true).isValid() ? (
-                                    <Text strong style={{ fontSize: "18px", color: "#52c41a" }}>
+                                    <Text strong style={{ fontSize: "16px", color: "#52c41a" }}>
                                         {`${appointment?.selectedTime} - ${addMinutesToTime(appointment?.selectedTime, 30)}`}
                                     </Text>
                                 ) : (
-                                    <Text strong type="danger" style={{ fontSize: "18px" }}>
-                                        Chưa chọn giờ khám
+                                    <Text strong type="danger" style={{ fontSize: "16px" }}>
+                                        --
                                     </Text>
                                 )}
                             </Flex>
 
                             <Flex justify="space-between" align="center">
                                 <Text style={{ fontSize: "16px" }}>👤 Bệnh nhân</Text>
-                                <Text strong style={{ fontSize: "18px" }}>{patient?.name}</Text>
+                                <Text strong style={{ fontSize: "16px" }}>{patient?.name}</Text>
                             </Flex>
-                        </div>
+                        </WrapperAppointmentInfo>
                         <LoadingComponent
                             isLoading={isPendingCreate}
                         >
@@ -463,9 +417,9 @@ const BookingPage = () => {
                                 Đặt lịch
                             </ButtonComponent>
                         </LoadingComponent>
-                    </div>
-                </div>
-            </div>
+                    </RightContent>
+                </Flex>
+            </BookingPageContainer>
             <ModalUpdateUser
                 isModalOpen={isModalOpen}
                 patient={patient}
@@ -476,7 +430,7 @@ const BookingPage = () => {
 
             </ModalUpdateUser>
 
-        </DefaultLayout>
+        </DefaultLayout >
     )
 }
 

@@ -105,7 +105,7 @@ const AuthenticationPage = () => {
     const getDetailUser = async (id, access_token) => {
         const res = await UserService.getUser(id);
         if (res?.status == "success") {
-            const { email, name, role, phone, address, dateOfBirth, gender, avatar, ethnic, idCard, insuranceCode, job } = res.data;
+            const { email, name, role, phone, address, dateOfBirth, gender, avatar, ethnic, idCard, insuranceCode, job, has_password } = res.data;
             const user = {
                 id,
                 access_token,
@@ -121,6 +121,7 @@ const AuthenticationPage = () => {
                 idCard,
                 insuranceCode,
                 job,
+                has_password
             };
             return user;
         }

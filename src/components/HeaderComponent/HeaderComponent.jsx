@@ -1,6 +1,5 @@
-import React from "react";
 import { useState, useMemo } from "react";
-import { Row, Col, Image, Popover, Drawer, Menu, Dropdown } from "antd";
+import { Row, Col, Image, Popover, Drawer, Menu, Dropdown, Anchor } from "antd";
 import { useNavigate } from "react-router-dom";
 import {
     HeaderContainer,
@@ -26,6 +25,7 @@ import { resetAppointment } from "../../redux/Slice/appointmentSlice";
 import * as Message from "../Message/Message";
 import * as AuthService from "../../services/AuthService";
 
+const { Link } = Anchor;
 const HeaderComponent = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -37,10 +37,10 @@ const HeaderComponent = () => {
         const res = await AuthService.logoutUser();
         if (res?.status == "success") {
             Message.success(res?.message);
+            navigate("/authentication");
             setIsOpenPopupUser(false);
             dispatch(logout());
             dispatch(resetAppointment());
-            navigate("/authentication");
         } else if (res?.status == "error") {
             Message.error(res?.message);
         }
@@ -121,21 +121,10 @@ const HeaderComponent = () => {
                 {/* Desktop Menu */}
                 <Col xs={0} md={12}>
                     <NavButtons>
-                        <ButtonComponent
-                            size="middle"
-                            type="default"
-                            icon={<CustomerServiceOutlined />}
-                        >
-                            Đặt khám
-                        </ButtonComponent>
-                        <ButtonComponent
-                            type="default"
-                            icon={<CustomerServiceOutlined />}
-                            size="middle"
-                            onClick={() => navigate("/register")}
-                        >
-                            Tin y tế
-                        </ButtonComponent>
+                        <Anchor affix={false}>
+                            <Link href="#section1" title={<span><InfoCircleFilled /> Đặt khám</span>} />
+                        </Anchor>
+
                         {user?.access_token ? (
                             <Popover
                                 content={popupContent}
@@ -190,22 +179,13 @@ const HeaderComponent = () => {
                 open={isDrawerOpen}
                 forceRender
             >
+
                 <ButtonComponent
                     type="default"
                     icon={<CustomerServiceOutlined />}
                     style={{ width: "100%", marginBottom: 10 }}
                 >
                     Đặt khám
-                </ButtonComponent>
-                <ButtonComponent
-                    type="default"
-                    onClick={() => {
-                        navigate("/register");
-                        setIsDrawerOpen(false);
-                    }}
-                    style={{ width: "100%", marginBottom: 10 }}
-                >
-                    Tin y tế
                 </ButtonComponent>
                 {user?.access_token ? (
                     <Dropdown

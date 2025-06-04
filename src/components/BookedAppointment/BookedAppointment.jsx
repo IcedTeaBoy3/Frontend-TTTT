@@ -83,12 +83,13 @@ const BookedAppointment = ({ userId }) => {
                 <WarningOutlined /> Nếu không đến khám đúng lịch, vui lòng huỷ lịch hẹn để bác sĩ có thể sắp xếp lại thời gian.
             </Paragraph>
             <Divider />
+            {isLoading && <p>Loading...</p>}
+            {isError && Message.error(error.message)}
+            {appointments && appointments?.data.length === 0 && <Paragraph style={{ textAlign: 'left', width: '100%' }}>Bạn chưa có lịch hẹn nào.</Paragraph>}
             <Row gutter={[28, 16]}>
                 <Col span={8} >
                     <Row gutter={[16, 16]} justify="space-between" align="center">
-                        {isLoading && <p>Loading...</p>}
-                        {isError && Message.error(error.message)}
-                        {appointments && appointments.length === 0 && <p>Bạn chưa đặt lịch hẹn nào.</p>}
+
                         {appointments && appointments?.data.map((appointment) => {
                             const isSelected = selectedAppointmentId === appointment._id;
                             return (
@@ -147,10 +148,10 @@ const BookedAppointment = ({ userId }) => {
                 <Col span={16}>
                     <Row gutter={[16, 16]}>
                         <Col span={24}>
-                            <Title level={4}>Thông tin chi tiết</Title>
 
-                            {(selectedAppointmentId && appointmentDetails) ? (
+                            {(selectedAppointmentId && appointmentDetails) && (
                                 <>
+                                    <Title level={4}>Thông tin chi tiết</Title>
                                     <Flex justify="space-between" align="center" style={{ marginBottom: '16px' }}>
                                         <Title level={4} style={{ margin: 0, color: "#52c41a" }}>STT: {appointmentDetails.stt}</Title>
                                         <Title level={4} style={{ margin: 0 }}>{getStatusTag(appointmentDetails.status)}</Title>
@@ -211,8 +212,6 @@ const BookedAppointment = ({ userId }) => {
                                         Huỷ lịch hẹn
                                     </ButtonComponent>
                                 </>
-                            ) : (
-                                <p>Vui lòng chọn một lịch hẹn để xem thông tin chi tiết.</p>
                             )}
                         </Col>
                     </Row>

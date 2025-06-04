@@ -65,3 +65,12 @@ export const insertManyUsers = async (users) => {
         throw error;
     }
 }
+export const uploadAvatar = async (id, formData) => {
+    try {
+        const response = await axiosInstance.post(`/users/upload-avatar/${id}`,formData);
+        return response.data;
+    } catch (error) {
+        console.error("Error uploading avatar:", error);
+        throw error;
+    }
+}
