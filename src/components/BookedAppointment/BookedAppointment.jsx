@@ -23,7 +23,7 @@ const BookedAppointment = ({ userId }) => {
             case 'confirmed':
                 return <Tag color="blue">Đã xác nhận</Tag>;
             case 'pending':
-                return <Tag color="orange">Đang chờ</Tag>;
+                return <Tag color="orange">Chờ xác nhận</Tag>;
             case 'cancelled':
                 return <Tag color="red">Đã huỷ</Tag>;
             case 'completed':
@@ -203,7 +203,8 @@ const BookedAppointment = ({ userId }) => {
                                     <ButtonComponent
                                         danger
                                         onClick={() => handleCancelAppointment(appointmentDetails._id)}
-                                        disabled={appointmentDetails.status === 'cancelled'}
+                                        disabled={appointmentDetails.status === 'cancelled' || appointmentDetails.status === 'completed'}
+                                        loading={mutationCancelAppointment.isLoading}
                                         styleButton={{
                                             marginTop: '16px',
                                             width: '100%',

@@ -211,8 +211,10 @@ const Appointment = () => {
             dataIndex: "timeSlot",
             key: "timeSlot",
             render: (text) => {
-                return text ? `${text} - ${addMinutesToTime(text, 30)}` : "Chưa có thông tin";
-            }
+                if (!text) return "Chưa có thông tin";
+                const [start, end] = text.split(" - ");
+                return `${start} - ${end || addMinutesToTime(start, 30)}`;
+            },
         },
         {
             title: "Lý do khám",
@@ -370,6 +372,7 @@ const Appointment = () => {
     const handleChooseFile = () => { }
     const handleFileChange = (e) => { }
     function generateTimeSlots(start, end, duration = 30) {
+        if (!start || !end) return [];
         const slots = [];
         let [startHour, startMin] = start.split(':').map(Number);
         let [endHour, endMin] = end.split(':').map(Number);
