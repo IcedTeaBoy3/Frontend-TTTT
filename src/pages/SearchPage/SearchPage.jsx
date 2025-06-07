@@ -67,7 +67,6 @@ const SearchPage = () => {
     });
     const { queryGetAllSpecialties } = useSpecialtyData({});
     const { data: specialties = [], isLoading: isLoadingSpecialty } = queryGetAllSpecialties;
-    console.log('doctors', doctors);
 
     useEffect(() => {
         if (doctors?.total) {
@@ -113,8 +112,14 @@ const SearchPage = () => {
                                 type="default"
                                 icon={<MedicineBoxOutlined />}
                                 onClick={() => setIsModalOpen(true)}
+                                style={{
+                                    color: selectedSpecialty ? '#1677ff' : undefined,
+                                    borderColor: selectedSpecialty ? '#1677ff' : undefined,
+                                }}
                             >
-                                Chọn chuyên khoa
+                                {selectedSpecialty
+                                    ? `${specialties?.data?.find(item => item._id === selectedSpecialty)?.name || 'Tất cả'}`
+                                    : 'Chuyên khoa'}
                             </ButtonComponent>
                             <ButtonComponent type="default" icon={<EnvironmentFilled />}>
                                 Khu vực

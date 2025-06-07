@@ -10,6 +10,7 @@ const CardDoctor = ({ doctor }) => {
     return (
         <CardDoctorContainer
             onClick={() => navigate(`/detail-doctor/${doctor?._id}`)}
+
         >
             <Space direction="horizontal" style={{ gap: 16 }}>
                 <Avatar size={100} icon={<UserOutlined />} />

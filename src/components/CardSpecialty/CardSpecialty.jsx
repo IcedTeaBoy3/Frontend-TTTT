@@ -1,11 +1,12 @@
 import { Flex, Image, Typography } from 'antd'
 import { StyledCard } from './style';
 const { Text } = Typography;
-const CardSpecialty = ({ specialty, isSelected, onClick }) => {
+const CardSpecialty = ({ specialty, isSelected, onClick, ...rests }) => {
     return (
         <StyledCard
             isSelected={isSelected}
             onClick={onClick}
+            {...rests}
         >
 
             <Flex
