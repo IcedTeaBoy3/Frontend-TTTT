@@ -1,9 +1,9 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect } from 'react';
 import DefaultLayout from '../../components/DefaultLayout/DefaultLayout';
 import { Avatar } from 'antd';
-import { Typography, Divider, Card, Flex } from 'antd';
+import { Typography, Divider } from 'antd';
 import ButtonComponent from '../../components/ButtonComponent/ButtonComponent';
 import * as DoctorService from '../../services/DoctorService';
 import * as WorkingScheduleService from '../../services/WorkingScheduleService';
@@ -15,7 +15,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { updateAppointment, setAppointment } from '../../redux/Slice/appointmentSlice';
 import WorkingSchedule from '../../components/WorkingSchedule/WorkingSchedule';
 import TimeSlot from '../../components/TimeSlot/TimeSlot';
-import * as Message from '../../components/Message/Message';
+import { Container, ContentBox, DoctorInfo, InfoSection, StickyFooter, Hotline, StyledIframe, BookingButton } from './style';
 dayjs.extend(utc)
 const { Title, Text } = Typography;
 const DetailDoctorPage = () => {
@@ -113,53 +113,43 @@ const DetailDoctorPage = () => {
     }
     return (
         <DefaultLayout>
-            <div
-                style={{
-                    minHeight: "100vh",
-                    maxWidth: 1200,
-                    padding: "85px 16px",
-                    margin: "0 auto",
-                }}
-            >
-                <div
-                    style={{
-                        backgroundColor: "#fff",
-                        borderRadius: 16,
-                        boxShadow: "0 8px 24px rgba(0,0,0,0.1)",
-                        padding: 32,
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 10
-                    }}
-                >
-                    {/* Thông tin bác sĩ */}
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 32, alignItems: "center", justifyContent: "center" }}>
+            <Container>
+                <ContentBox>
+                    <DoctorInfo>
                         <Avatar size={170} src={doctor?.data?.user?.avatar} />
-                        <div style={{ flex: 1, minWidth: 280 }}>
+                        <InfoSection>
                             <Title level={3}>
                                 {doctor?.data?.qualification} Bác sĩ {doctor?.data?.user?.name}
                             </Title>
                             <div>
-                                <Title level={4} style={{ fontSize: 18, color: "#1890ff" }}><CheckCircleOutlined /> Bác sĩ {doctor?.data?.experience}</Title>
+                                <Title level={4} style={{ fontSize: 18, color: "#1890ff" }}>
+                                    <CheckCircleOutlined /> Bác sĩ {doctor?.data?.experience}
+                                </Title>
                                 <Text type="secondary">Chuyên khoa:</Text>{" "}
-                                <Text strong style={{ fontSize: "18px", color: "#1890ff" }} > {doctor?.data?.specialty?.name}</Text>
+                                <Text strong style={{ fontSize: "18px", color: "#1890ff" }}>
+                                    {doctor?.data?.specialty?.name}
+                                </Text>
                             </div>
 
                             <div>
                                 <Text type="secondary">Chức vụ:</Text>{" "}
-                                <Text strong style={{ fontSize: "18px", }}>{doctor?.data?.position || "Không có"}</Text>
+                                <Text strong style={{ fontSize: "18px" }}>
+                                    {doctor?.data?.position || "Không có"}
+                                </Text>
                             </div>
 
                             <div>
                                 <Text type="secondary">Nơi công tác:</Text>{" "}
-                                <Text strong style={{ fontSize: "18px", }}>{doctor?.data?.hospital?.name}</Text>
+                                <Text strong style={{ fontSize: "18px" }}>
+                                    {doctor?.data?.hospital?.name}
+                                </Text>
                             </div>
-                        </div>
-                    </div>
+                        </InfoSection>
+                    </DoctorInfo>
+
                     <Divider />
-                    {/* Lịch làm việc */}
                     <Title level={4}>Lịch làm việc</Title>
-                    {workingSchedules && workingSchedules?.data?.length > 0 ? (
+                    {workingSchedules?.data?.length > 0 ? (
                         <WorkingSchedule
                             selectedDate={appointment.selectedDate}
                             isLoading={isLoadingWorkingSchedule}
@@ -169,7 +159,7 @@ const DetailDoctorPage = () => {
                     ) : (
                         <Text type="secondary">Bác sĩ chưa cập nhật lịch làm việc</Text>
                     )}
-                    {/* Giờ làm việc */}
+
                     <Title level={4}>Chọn khung giờ</Title>
                     {timeSlots.length > 0 ? (
                         <TimeSlot
@@ -182,63 +172,39 @@ const DetailDoctorPage = () => {
                     ) : (
                         <Text type="secondary">Không có khung giờ làm việc cho ngày này</Text>
                     )}
+
                     <div>
                         <Title level={4}>Giới thiệu</Title>
-                        <Text>{doctor?.data?.description}</Text>
+                        <Text style={{ fontSize: '16px' }}>{doctor?.data?.description || 'Chưa có giới thiệu'}</Text>
                     </div>
-                    <div width="100%">
-                        <Title level={4}>Địa chỉ : {doctor?.data?.hospital?.address}</Title>
-                        <iframe
-                            width="600"
-                            height="450"
-                            style={{ border: 0, borderRadius: 12 }}
+
+                    <div>
+                        <Title level={4}>Địa chỉ : {doctor?.data?.hospital?.address || 'Chưa có địa chỉ'}</Title>
+                        <StyledIframe
                             loading="lazy"
                             allowFullScreen
                             referrerPolicy="no-referrer-when-downgrade"
-                            src={`https://www.google.com/maps?q=${doctor?.data?.hospital?.address}&output=embed`}>
-                        </iframe>
+                            src={`https://www.google.com/maps?q=${doctor?.data?.hospital?.address}&output=embed`}
+                        />
                     </div>
 
-                    {/* Hotline và nút đặt lịch */}
                     <Divider />
-                    <div
-                        style={{
-                            display: "flex",
-                            gap: 20,
-                            flexWrap: "wrap",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            backgroundColor: "#f0f2f5",
-                            padding: 16,
-                            borderRadius: 12,
-                            position: "sticky",
-                            bottom: 0, // Dính ở cuối màn hình khi cuộn
-                            zIndex: 1000, // Đảm bảo không bị che
-                            boxShadow: "0 -2px 8px rgba(0, 0, 0, 0.1)", // Đổ bóng cho nổi
-                        }}
-                    >
-                        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    <StickyFooter>
+                        <Hotline>
                             <Text strong>Hỗ trợ đặt khám qua hotline:</Text>
-                            <Text strong style={{ fontSize: 18, color: "#1890ff" }}>
-                                1900 8888
-                            </Text>
-                        </div>
-                        <ButtonComponent
+                            <Text strong style={{ fontSize: 18, color: "#1890ff" }}>1900 8888</Text>
+                        </Hotline>
+                        <BookingButton
                             type="primary"
                             size="large"
-                            style={{
-                                width: "50%",
-                                fontWeight: "bold",
-                                fontSize: 16,
-                            }}
                             onClick={handleBookingDoctor}
                             disabled={!appointment.doctor || !appointment.schedule}
                         >
                             Đặt lịch khám
-                        </ButtonComponent>
-                    </div>
-                </div>
-            </div>
+                        </BookingButton>
+                    </StickyFooter>
+                </ContentBox>
+            </Container>
         </DefaultLayout >
     )
 }

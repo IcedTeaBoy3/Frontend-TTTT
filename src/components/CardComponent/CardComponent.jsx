@@ -12,7 +12,7 @@ const CardComponent = ({ avatar, name, specialty, hospital, onClick }) => {
     </>
     return (
         <WarpperCardStyle
-            style={{ width: 260, textAlign: 'center' }}
+            style={{ textAlign: 'center' }}
             hoverable={true}
             actions={[
 

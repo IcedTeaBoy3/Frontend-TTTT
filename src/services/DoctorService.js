@@ -10,7 +10,14 @@ export const createDoctor = async (data) => {
 };
 export const getAllDoctors = async (page, pageSize) => {
     try {
-        const response = await axiosInstance.get(`/doctors/get-all-doctors`,);
+        const response = await axiosInstance.get(`/doctors/get-all-doctors`,
+            {
+                params: {
+                    page: page,
+                    limit: pageSize
+                }
+            }
+        );
         return response.data;
     } catch (error) {
         throw error.response.data;

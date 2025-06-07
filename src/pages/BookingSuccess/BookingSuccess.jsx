@@ -8,6 +8,15 @@ import { useSelector } from 'react-redux'
 import { addMinutesToTime } from '../../utils/timeUtils'
 import { convertGender } from '../../utils/convertGender'
 import { useNavigate } from 'react-router-dom'
+import {
+    Wrapper, CenteredBox,
+    DoctorCard,
+    MainContent,
+    StickyFooter,
+    InfoText,
+    Highlight,
+    SectionTitle
+} from './style'
 const { Title, Paragraph, Text } = Typography
 const BookingSuccess = () => {
     const doctor = useSelector((state) => state.appointment.doctor)
@@ -41,137 +50,95 @@ const BookingSuccess = () => {
     return (
         <DefaultLayout>
 
-            <div
-                style={{
-                    minHeight: "100vh",
-                    maxWidth: 1200,
-                    width: "100%",
-                    padding: "85px 16px",
-                    margin: "0 auto",
-                    backgroundColor: "#f5f5f5",
-                }}
-            >
-
-                <div
-                    style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        height: "100%",
-                    }}
-                >
+            <Wrapper>
+                <CenteredBox>
                     <GreenCheckmark />
-                    <Title level={2} style={{ color: "#52c41a", fontWeight: 'bold' }}>Đặt lịch khám thành công!</Title>
-                    <Title level={2} style={{ color: "#52c41a", fontWeight: 'bold', margin: 0 }}>STT: {appointment?.stt}</Title>
+                    <Title level={2} style={{ color: "#52c41a", fontWeight: "bold" }}>
+                        Đặt lịch khám thành công!
+                    </Title>
+                    <Title level={2} style={{ color: "#52c41a", fontWeight: "bold", margin: 0 }}>
+                        STT: {appointment?.stt}
+                    </Title>
                     <Text strong>
                         Cảm ơn bạn đã đặt lịch khám với chúng tôi. Thông tin về lịch khám bệnh đã được gửi đến email của bạn.
                     </Text>
-                </div>
+                </CenteredBox>
 
-
-                <div
-                    style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 16,
-                        margin: "16px 32px",
-                        borderRadius: 8,
-                        zIndex: 30,
-                        background: "#fff",
-                        padding: 16,
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                    }}
-                >
+                <DoctorCard>
                     <Avatar size={80} icon={<UserOutlined />} />
                     <div style={{ display: "flex", flexDirection: "column" }}>
-                        <Text strong style={infoStyle}>
-                            Bác sĩ {doctor?.user?.name}
-                        </Text>
-                        <Text type="secondary" style={infoStyle}>
-                            <Text strong style={infoStyle}>Phòng mạch:</Text> {doctor?.hospital?.address}
+                        <InfoText strong>Bác sĩ {doctor?.user?.name}</InfoText>
+                        <Text type="secondary">
+                            <Text strong>Phòng mạch:</Text> {doctor?.hospital?.address}
                         </Text>
                     </div>
                     <CheckCircleTwoTone twoToneColor="#52c41a" style={{ fontSize: 32, marginLeft: "auto" }} />
-                </div>
+                </DoctorCard>
 
-                {/* Nội dung chính */}
-                <div style={{ padding: 32, background: "#f5f5f5", minHeight: "100vh" }}>
-                    {/* Thông tin đặt lịch */}
+                <MainContent>
                     <Card
-                        title={<Title level={4} style={titleStyle}>Thông tin đặt lịch khám</Title>}
+                        title={<SectionTitle level={4}>Thông tin đặt lịch khám</SectionTitle>}
                         style={{ marginBottom: 24 }}
-                        variant="borderless"
-                        styles={{ header: headStyle }}
+                        bordered={false}
                     >
                         <Row gutter={[16, 12]}>
                             <Col xs={24} sm={12}>
-                                <Text strong style={infoStyle}>Ngày khám:</Text>
-                                <Paragraph style={highlightStyle} >
+                                <InfoText strong>Ngày khám:</InfoText>
+                                <Highlight>
                                     {new Date(appointment.selectedDate).toLocaleDateString("vi-VN", {
                                         year: "numeric",
                                         month: "2-digit",
                                         day: "2-digit",
                                     })}
-                                </Paragraph>
+                                </Highlight>
                             </Col>
-
                             <Col xs={24} sm={12}>
-                                <Text strong style={infoStyle}>Giờ khám:</Text>
-                                <Paragraph style={highlightStyle}>
+                                <InfoText strong>Giờ khám:</InfoText>
+                                <Highlight>
                                     {`${appointment.selectedTime}-${addMinutesToTime(appointment.selectedTime, 30)}`}
-                                </Paragraph>
+                                </Highlight>
                             </Col>
-
                             <Col xs={24} sm={12}>
-                                <Text strong style={infoStyle}>Chuyên khoa:</Text>
-                                <Paragraph style={infoStyle} type='secondary'>{doctor?.specialty?.name}</Paragraph>
+                                <InfoText strong>Chuyên khoa:</InfoText>
+                                <Paragraph type="secondary">{doctor?.specialty?.name}</Paragraph>
                             </Col>
-
                             <Col xs={24} sm={12}>
-                                <Text strong style={infoStyle}>STT:</Text>
-                                <Paragraph style={infoStyle} type='success'>{appointment.stt}</Paragraph>
+                                <InfoText strong>STT:</InfoText>
+                                <Paragraph type="success">{appointment.stt}</Paragraph>
                             </Col>
-
                             {appointment?.reason && (
                                 <Col span={24}>
-                                    <Text strong style={infoStyle}>Lý do khám:</Text>
-                                    <Paragraph style={infoStyle} type='secondary'>{appointment.reason}</Paragraph>
+                                    <InfoText strong>Lý do khám:</InfoText>
+                                    <Paragraph type="secondary">{appointment.reason}</Paragraph>
                                 </Col>
                             )}
                         </Row>
                     </Card>
 
-                    {/* Thông tin bệnh nhân */}
                     <Card
-                        title={<Title level={4} style={titleStyle}>Thông tin bệnh nhân</Title>}
-                        variant="borderless"
-                        styles={{ header: headStyle }}
+                        title={<SectionTitle level={4}>Thông tin bệnh nhân</SectionTitle>}
+                        bordered={false}
                     >
                         <Row gutter={[16, 12]}>
                             <Col xs={24} sm={12}>
-                                <Text strong style={infoStyle}>Tên bệnh nhân:</Text>
-                                <Paragraph style={infoStyle} type='secondary'>{patient?.name}</Paragraph>
+                                <InfoText strong>Tên bệnh nhân:</InfoText>
+                                <Paragraph type="secondary">{patient?.name}</Paragraph>
                             </Col>
-
                             <Col xs={24} sm={12}>
-                                <Text strong style={infoStyle}>Số điện thoại:</Text>
-                                <Paragraph style={infoStyle} type='secondary'>{patient?.phone}</Paragraph>
+                                <InfoText strong>Số điện thoại:</InfoText>
+                                <Paragraph type="secondary">{patient?.phone}</Paragraph>
                             </Col>
-
                             <Col xs={24} sm={12}>
-                                <Text strong style={infoStyle}>Email:</Text>
-                                <Paragraph style={infoStyle} type='secondary'>{patient?.email}</Paragraph>
+                                <InfoText strong>Email:</InfoText>
+                                <Paragraph type="secondary">{patient?.email}</Paragraph>
                             </Col>
-
                             <Col xs={24} sm={12}>
-                                <Text strong style={infoStyle}>Giới tính:</Text>
-                                <Paragraph style={infoStyle} type='secondary'>{convertGender(patient?.gender)}</Paragraph>
+                                <InfoText strong>Giới tính:</InfoText>
+                                <Paragraph type="secondary">{convertGender(patient?.gender)}</Paragraph>
                             </Col>
-
                             <Col xs={24} sm={12}>
-                                <Text strong style={infoStyle}>Ngày sinh:</Text>
-                                <Paragraph style={infoStyle} type='secondary'>
+                                <InfoText strong>Ngày sinh:</InfoText>
+                                <Paragraph type="secondary">
                                     {patient?.dateOfBirth
                                         ? new Date(patient.dateOfBirth).toLocaleDateString("vi-VN", {
                                             year: "numeric",
@@ -183,31 +150,12 @@ const BookingSuccess = () => {
                             </Col>
                         </Row>
                     </Card>
-                    <div
-                        style={{
-                            display: "flex",
-                            gap: 20,
-                            flexWrap: "nowrap",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            backgroundColor: "#f0f2f5",
-                            padding: 16,
-                            borderRadius: 12,
-                            position: "sticky",
-                            bottom: 0, // Dính ở cuối màn hình khi cuộn
-                            zIndex: 1000, // Đảm bảo không bị che
-                            marginTop: 32,
-                            boxShadow: "0 -2px 8px rgba(0, 0, 0, 0.1)", // Đổ bóng cho nổi
-                        }}
-                    >
+
+                    <StickyFooter>
                         <ButtonComponent
                             type="default"
                             size="large"
-                            style={{
-                                width: "50%",
-                                fontWeight: "bold",
-                                fontSize: 16,
-                            }}
+                            style={{ width: "50%", fontWeight: "bold", fontSize: 16 }}
                             onClick={handleViewAppointment}
                         >
                             Xem phiếu khám
@@ -215,18 +163,13 @@ const BookingSuccess = () => {
                         <ButtonComponent
                             type="primary"
                             size="large"
-                            style={{
-                                width: "50%",
-                                fontWeight: "bold",
-                                fontSize: 16,
-                            }}
-
+                            style={{ width: "50%", fontWeight: "bold", fontSize: 16 }}
                         >
                             Lưu lại phiếu
                         </ButtonComponent>
-                    </div>
-                </div>
-            </div>
+                    </StickyFooter>
+                </MainContent>
+            </Wrapper>
         </DefaultLayout >
     )
 }

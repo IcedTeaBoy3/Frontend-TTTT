@@ -11,6 +11,7 @@ import * as AuthService from "../../services/AuthService";
 import * as UserService from "../../services/UserService";
 import { setUser, updateUser } from "../../redux/Slice/authSlice";
 import backgroundImage from "../../assets/anh_dang_nhap.png";
+import { BackgroundContainer } from "./style";
 import { jwtDecode } from "jwt-decode";
 const AuthenticationPage = () => {
     const location = useLocation();
@@ -133,14 +134,8 @@ const AuthenticationPage = () => {
     }
     return (
         <DefaultLayout>
-            <div
-                style={{
-                    minHeight: "100vh",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundImage: `url(${backgroundImage})`,
-                }}
+            <BackgroundContainer
+                backgroundImage={backgroundImage}
             >
                 <FormLogin
                     isRegister={isRegister}
@@ -152,7 +147,7 @@ const AuthenticationPage = () => {
                     onChangeForm={() => setIsRegister((prev) => !prev)}
                     handleGoogleLogin={handleGoogleLogin}
                 />
-            </div>
+            </BackgroundContainer>
         </DefaultLayout>
     );
 };

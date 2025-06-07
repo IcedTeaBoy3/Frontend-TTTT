@@ -14,7 +14,9 @@ import LoadingComponent from "../../components/LoadingComponent/LoadingComponent
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import CardComponent from "../../components/CardComponent/CardComponent";
-const { Text } = Typography;
+import { SpecialtyCard, SpecialtyImage, HospitalCard, HospitalImage } from "./style";
+import { Wrapper, CenteredTitleWrapper, Section } from "./style";
+const { Text, Title } = Typography;
 const HomePage = () => {
     const [limit, setLimit] = useState(6)
     const navigate = useNavigate();
@@ -37,7 +39,7 @@ const HomePage = () => {
     };
     const queryGetAllHospitals = useQuery({
         queryKey: ["getAllHospitals"],
-        queryFn: () => HospitalService.getAllHospitals(),
+        queryFn: () => HospitalService.getAllHospitals(1, 10),
         retry: 3,
         retryDelay: 1000,
         keepPreviousData: true,
@@ -45,7 +47,7 @@ const HomePage = () => {
     const queryGetAllDoctors = useQuery({
         queryKey: ["getAllDoctors"],
 
-        queryFn: () => DoctorService.getAllDoctors(),
+        queryFn: () => DoctorService.getAllDoctors(1, 10),
         retry: 3,
         retryDelay: 1000,
         keepPreviousData: true,
@@ -59,53 +61,26 @@ const HomePage = () => {
     const handleSearchSpecialty = (specialtyId) => {
         navigate(`/search?specialty=${specialtyId}`);
     }
+
     return (
         <>
             <DefaultLayout>
 
                 <BannerComponent />
-                <div
-                    style={{
-
-                        minHeight: "80vh",
-                        paddingTop: "20px",
-                    }}
-                >
-                    <div
-                        style={{
-
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            flexDirection: "column",
-
-                        }}
-                    >
-                        <h1 style={{ color: "black", textAlign: "center", fontWeight: "bold" }}>
+                <Wrapper>
+                    <CenteredTitleWrapper>
+                        <Title level={2} style={{ fontWeight: 'bold' }}>
                             Đặt lịch khám trực tuyến
-                        </h1>
-                        <Text
-                            type="secondary"
-                        >
+                        </Title>
+                        <Text type="secondary">
                             Tìm bác sĩ chính xác, đặt lịch khám dễ dàng và nhanh chóng
                         </Text>
+                    </CenteredTitleWrapper>
 
-                    </div>
-
-
-                    <div
-                        id="section1"
-                        style={{
-                            width: '100%',
-                            maxWidth: '1200px',     // Giới hạn chiều rộng
-                            margin: '0 auto',// Căn giữa ngang
-                            padding: '30px 20px',
-                            overflowX: 'auto',
-                        }}
-                    >
+                    {/* Đặt khám bác sĩ */}
+                    <Section id="doctors-section">
                         <Flex justify="space-between" align="center">
-
-                            <h3 style={{ fontWeight: 'bold' }}>Đặt khám bác sĩ</h3>
+                            <Title level={3} style={{ fontWeight: 'bold' }}>Đặt khám bác sĩ</Title>
                             <ButtonComponent
                                 type="primary"
                                 hoverable="true"
@@ -114,130 +89,90 @@ const HomePage = () => {
                                 Xem tất cả <RightOutlined />
                             </ButtonComponent>
                         </Flex>
-                        <Text type="secondary">Phiếu khám kèm số thứ tự và thời gian của bạn được xác nhận.</Text>
+                        <Text type="secondary">
+                            Phiếu khám kèm số thứ tự và thời gian của bạn được xác nhận.
+                        </Text>
                         <LoadingComponent isLoading={isLoadingDoctor}>
                             <SlideComponent>
-                                {doctors?.data.map((item, index) => {
-                                    return (
-                                        <CardComponent
-                                            key={item._id}
-                                            avatar={item.image}
-                                            name={item.user?.name}
-                                            specialty={item.specialty?.name}
-                                            hospital={item.hospital?.name}
-                                            onClick={() => handleNavigate(`/detail-doctor/${item._id}`)}
-                                        >
-
-                                        </CardComponent>
-                                    )
-                                })}
+                                {doctors?.data.map((item) => (
+                                    <CardComponent
+                                        key={item._id}
+                                        avatar={item.image}
+                                        name={item.user?.name}
+                                        specialty={item.specialty?.name}
+                                        hospital={item.hospital?.name}
+                                        onClick={() => handleNavigate(`/detail-doctor/${item._id}`)}
+                                    />
+                                ))}
                             </SlideComponent>
                         </LoadingComponent>
+                    </Section>
 
-                    </div>
-                    <div
-                        style={{
-                            width: '100%',
-                            maxWidth: '1200px',     // Giới hạn chiều rộng
-                            margin: '0 auto',// Căn giữa ngang
-                            padding: '30px 20px',
-                            overflowX: 'auto',
-                        }}
-                    >
+                    {/* Bác sĩ theo phòng khám */}
+                    <Section>
                         <Flex justify="space-between" align="center">
-
-
-                            <h3 style={{ fontWeight: 'bold' }}>Đặt khám bệnh viện</h3>
-                            <ButtonComponent
-                                type="primary"
-                                hoverable="true"
-                            >
+                            <Title level={3} style={{ fontWeight: 'bold' }}>Phòng khám</Title>
+                            <ButtonComponent type="primary" hoverable="true">
                                 Xem tất cả <RightOutlined />
                             </ButtonComponent>
                         </Flex>
-                        <Text type="secondary">Đa dạng bệnh viện khác nhau</Text>
+                        <Text type="secondary">Nhiều loại phòng khám khác nhau</Text>
                         <LoadingComponent isLoading={isLoadingHospital}>
-                            <SlideComponent >
-
-                                {hospitals?.data.map((item, index) => (
-
-                                    <Card
+                            <SlideComponent>
+                                {hospitals?.data.map((item) => (
+                                    <HospitalCard
                                         hoverable="true"
                                         key={item._id}
-                                        style={{ width: 260, textAlign: 'center' }}
-                                        cover={<img
-                                            alt="example"
-                                            src={`${import.meta.env.VITE_APP_BACKEND_URL}${item.image}`}
-                                            style={{
-                                                height: 200,
-                                                objectFit: 'cover',
-                                            }}
-                                        />}
-
+                                        cover={
+                                            <HospitalImage
+                                                src={`${import.meta.env.VITE_APP_BACKEND_URL}${item.image}`}
+                                                alt={item.name}
+                                            />
+                                        }
                                     >
-                                        <Card.Meta title={item?.name} description={item.address} />
-
-                                    </Card>
-
+                                        <Card.Meta title={item.name} description={item.address} />
+                                    </HospitalCard>
                                 ))}
-
                             </SlideComponent>
                         </LoadingComponent>
+                    </Section>
 
-                    </div>
-                    <div
-                        style={{
-                            width: '100%',
-                            maxWidth: '1200px',     // Giới hạn chiều rộng
-                            margin: '0 auto',// Căn giữa ngang
-                            padding: '30px 20px',
-                            overflowX: 'auto',
-                        }}
-                    >
-                        <h3 style={{ fontWeight: 'bold' }}>Đặt khám theo chuyên khoa</h3>
+                    {/* Đặt khám theo chuyên khoa */}
+                    <Section>
+                        <Title level={3} style={{ fontWeight: 'bold' }}>Đặt khám theo chuyên khoa</Title>
                         <Text type="secondary">Đa dạng chuyên khoa khác nhau</Text>
                         <LoadingComponent isLoading={isLoadingSpecialty}>
                             <Row gutter={[16, 24]} justify="center" style={{ marginTop: '20px' }}>
-                                {specialties?.data.map((item, index) => (
+                                {specialties?.data.map((item) => (
                                     <Col key={item._id} xs={12} sm={8} md={8} lg={4} xl={4}>
-                                        <Card hoverable="true" style={{ width: '100%', textAlign: 'center' }} onClick={() => handleSearchSpecialty(item._id)}>
-                                            <img
-                                                alt="example"
+                                        <SpecialtyCard
+                                            hoverable="true"
+                                            onClick={() => handleSearchSpecialty(item._id)}
+                                        >
+                                            <SpecialtyImage
                                                 src={`${import.meta.env.VITE_APP_BACKEND_URL}${item.image}`}
-                                                style={{ width: '64px', height: '64px', objectFit: 'cover' }}
+                                                alt={item.name}
                                             />
-                                            <Card.Meta title={item?.name} />
-                                        </Card>
+                                            <Card.Meta title={item.name} />
+                                        </SpecialtyCard>
                                     </Col>
                                 ))}
                             </Row>
                         </LoadingComponent>
-                        {specialties?.total > limit ? (
 
-                            <Flex justify="center" align="center" style={{ marginTop: '20px' }}>
-
-                                <ButtonComponent
-                                    type="primary"
-                                    hoverable="true"
-                                    onClick={handleLoadMore}
-                                >
+                        <Flex justify="center" align="center" style={{ marginTop: '20px' }}>
+                            {specialties?.total > limit ? (
+                                <ButtonComponent type="primary" hoverable="true" onClick={handleLoadMore}>
                                     Xem thêm
                                 </ButtonComponent>
-                            </Flex>
-                        ) : (
-                            <Flex justify="center" align="center" style={{ marginTop: '20px' }}>
-                                <ButtonComponent
-                                    type="primary"
-                                    hoverable="true"
-                                    onClick={() => setLimit(6)}
-                                >
+                            ) : (
+                                <ButtonComponent type="primary" hoverable="true" onClick={() => setLimit(6)}>
                                     Thu hẹp danh sách
                                 </ButtonComponent>
-                            </Flex>
-                        )}
-                    </div>
-
-                </div>
+                            )}
+                        </Flex>
+                    </Section>
+                </Wrapper>
 
 
             </DefaultLayout>

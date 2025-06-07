@@ -348,7 +348,7 @@ const BookingPage = () => {
                     justify="space-between"
                     align="start"
                     gap={24}
-                    flexDirection="row"
+                    wrap="wrap"
                 >
 
                     <LeftContent>

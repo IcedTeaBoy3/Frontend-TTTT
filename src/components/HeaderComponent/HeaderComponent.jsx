@@ -95,8 +95,7 @@ const HeaderComponent = () => {
 
         return items;
     }, [navigate, location.pathname, isAdmin, handleLogoutUser]);
-    const dropdownMenu = useMemo(() => <Menu items={menuItems} />, [menuItems]);
-
+    const dropdownMenu = { items: menuItems };
     const popupContent = useMemo(() => (
         <>
             {menuItems.map((item) => (
@@ -104,6 +103,20 @@ const HeaderComponent = () => {
             ))}
         </>
     ), [menuItems])
+    const anchorItems = [
+        {
+            key: 'section1',
+            href: '#doctors-section',
+            title: (
+                <ButtonComponent
+                    type="default"
+
+                >
+                    Đặt khám bác sĩ
+                </ButtonComponent>
+            )
+        },
+    ];
     return (
         <HeaderContainer>
             <Row justify="space-between">
@@ -121,9 +134,7 @@ const HeaderComponent = () => {
                 {/* Desktop Menu */}
                 <Col xs={0} md={12}>
                     <NavButtons>
-                        <Anchor affix={false}>
-                            <Link href="#section1" title={<span><InfoCircleFilled /> Đặt khám</span>} />
-                        </Anchor>
+                        <Anchor items={anchorItems} />
 
                         {user?.access_token ? (
                             <Popover
@@ -193,15 +204,15 @@ const HeaderComponent = () => {
                         trigger={["click"]}
                         getPopupContainer={(trigger) => trigger.parentNode}
                     >
-                        <>
-                            <ButtonComponent
-                                type="default"
-                                icon={<UserOutlined />}
-                                style={{ width: "100%", marginBottom: 10 }}
-                            >
-                                {user?.name || user?.email} ▼
-                            </ButtonComponent>
-                        </>
+
+                        <ButtonComponent
+                            type="default"
+                            icon={<UserOutlined />}
+                            style={{ width: "100%", marginBottom: 10 }}
+                        >
+                            {user?.name || user?.email} ▼
+                        </ButtonComponent>
+
                     </Dropdown>
                 ) : (
                     <ButtonComponent

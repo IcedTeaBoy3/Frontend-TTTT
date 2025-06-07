@@ -14,6 +14,17 @@ import ModalComponent from '../../components/ModalComponent/ModalComponent'
 import { useSpecialtyData } from '../../hooks/useSpecialtyData'
 import LoadingComponent from '../../components/LoadingComponent/LoadingComponent'
 import CardSpecialty from '../../components/CardSpecialty/CardSpecialty'
+import {
+    Wrapper,
+    Container,
+    SearchBox,
+    FilterWrapper,
+    ResultBox,
+    ResultHeader,
+    DoctorList,
+    PaginationWrapper
+} from './style'
+
 const { Text, Title, Paragraph } = Typography
 const SearchPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -56,6 +67,7 @@ const SearchPage = () => {
     });
     const { queryGetAllSpecialties } = useSpecialtyData({});
     const { data: specialties = [], isLoading: isLoadingSpecialty } = queryGetAllSpecialties;
+    console.log('doctors', doctors);
 
     useEffect(() => {
         if (doctors?.total) {
@@ -82,35 +94,12 @@ const SearchPage = () => {
         navigate({ search: params.toString() }, { replace: true });
         setSelectedSpecialty(null); // Reset selected specialty
     }
-
-
-
     return (
         <DefaultLayout>
-            <div
-                style={{
-                    minHeight: "100vh",
-                    backgroundColor: "#f0f2f5",
-                    padding: "100px 16px 60px",
-                    display: "flex",
-                    justifyContent: "center",
-                }}
-            >
-                <div
-                    style={{
-                        width: "100%",
-                        maxWidth: "800px",
-                    }}
-                >
+            <Wrapper>
+                <Container>
                     {/* Ô tìm kiếm */}
-                    <div
-                        style={{
-                            background: "#fff",
-                            padding: "32px",
-                            borderRadius: "12px",
-                            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
-                        }}
-                    >
+                    <SearchBox>
                         <InputComponent
                             placeholder="Tìm kiếm bác sĩ, phòng khám, chuyên khoa..."
                             onSearch={handleSearch}
@@ -119,52 +108,48 @@ const SearchPage = () => {
                         />
 
                         {/* Bộ lọc */}
-                        <Space style={{ marginTop: "16px", flexWrap: "wrap" }} size="middle">
-                            <ButtonComponent type="default" icon={<MedicineBoxOutlined />} onClick={() => setIsModalOpen(true)}>Chọn chuyên khoa</ButtonComponent>
-                            <ButtonComponent type="default" icon={<EnvironmentFilled />}>Khu vực</ButtonComponent>
-                            <ButtonComponent type="default">Gần nhất</ButtonComponent>
-                        </Space>
-                    </div>
+                        <FilterWrapper>
+                            <ButtonComponent
+                                type="default"
+                                icon={<MedicineBoxOutlined />}
+                                onClick={() => setIsModalOpen(true)}
+                            >
+                                Chọn chuyên khoa
+                            </ButtonComponent>
+                            <ButtonComponent type="default" icon={<EnvironmentFilled />}>
+                                Khu vực
+                            </ButtonComponent>
+                        </FilterWrapper>
+                    </SearchBox>
 
                     {/* Kết quả */}
-                    <div
-                        style={{
-                            marginTop: "32px",
-                            background: "#fff",
-                            borderRadius: "12px",
-                            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
-                        }}
-                    >
-                        {(debouncedSearchQuery || specialty) ? (
-                            <Title level={4} style={{ padding: "16px" }}>
+                    <ResultBox>
+                        {debouncedSearchQuery || specialty ? (
+                            <ResultHeader level={4}>
                                 Tìm thấy {`"${doctors?.total}"`} kết quả
-                            </Title>
+                            </ResultHeader>
                         ) : (
-                            <Title level={4} style={{ padding: "16px" }}>
-                                Tất cả bác sĩ
-                            </Title>
+                            <ResultHeader level={4}>Tất cả bác sĩ</ResultHeader>
                         )}
 
-
                         {/* Danh sách bác sĩ */}
-                        <div style={{ padding: "16px" }}>
+                        <DoctorList>
                             {isLoading ? (
                                 <Paragraph>Đang tải...</Paragraph>
                             ) : isError ? (
                                 <Paragraph>Lỗi khi tải dữ liệu.</Paragraph>
-                            ) : (doctors?.data?.length > 0 && doctors) ? (
-                                doctors?.data?.map((doctor) => (
+                            ) : doctors?.data?.length > 0 && doctors ? (
+                                doctors.data.map((doctor) => (
                                     <CardDoctor key={doctor._id} doctor={doctor} />
                                 ))
                             ) : (
                                 <Paragraph>Không tìm thấy kết quả nào.</Paragraph>
                             )}
-                        </div>
+                        </DoctorList>
+                    </ResultBox>
 
-
-                    </div>
                     {/* Phân trang */}
-                    <Flex justify='center' style={{ marginTop: "16px" }}>
+                    <PaginationWrapper justify="center">
                         <Pagination
                             defaultCurrent={1}
                             current={pagination.current}
@@ -177,12 +162,10 @@ const SearchPage = () => {
                                 });
                             }}
                             showSizeChanger
-                        >
-                        </Pagination>
-                    </Flex>
-
-                </div>
-            </div>
+                        />
+                    </PaginationWrapper>
+                </Container>
+            </Wrapper>
             <ModalComponent
                 title="Chọn chuyên khoa"
                 isOpen={isModalOpen}
