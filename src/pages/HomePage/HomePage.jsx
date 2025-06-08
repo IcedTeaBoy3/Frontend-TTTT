@@ -84,7 +84,7 @@ const HomePage = () => {
                             <ButtonComponent
                                 type="primary"
                                 hoverable="true"
-                                onClick={() => handleNavigate('/search')}
+                                onClick={() => handleNavigate('/search?type=doctor')}
                             >
                                 Xem tất cả <RightOutlined />
                             </ButtonComponent>

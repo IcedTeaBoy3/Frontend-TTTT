@@ -5,7 +5,7 @@ import ButtonComponent from "../ButtonComponent/ButtonComponent"
 import { CardDoctorContainer } from "./style"
 import { useNavigate } from "react-router-dom"
 const { Text, Paragraph } = Typography
-const CardDoctor = ({ doctor }) => {
+const CardDoctor = ({ doctor, isHospital }) => {
     const navigate = useNavigate()
     return (
         <CardDoctorContainer
@@ -15,9 +15,19 @@ const CardDoctor = ({ doctor }) => {
             <Space direction="horizontal" style={{ gap: 16 }}>
                 <Avatar size={100} icon={<UserOutlined />} />
                 <Space direction="vertical">
-                    <Text style={{ fontSize: '20px' }} strong>Bác sĩ {doctor?.user?.name}</Text>
-                    <Tag>{doctor?.specialty?.name}</Tag>
-                    <Paragraph>{doctor?.hospital?.address}</Paragraph>
+                    <Text style={{ fontSize: '20px' }} strong>{isHospital ? 'Phòng khám' : 'Bác sĩ'} {doctor?.user?.name || doctor?.name}</Text>
+                    {doctor?.specialties?.length > 0 ? (
+                        <Space direction="horizontal" style={{ gap: 8 }}>
+                            {doctor?.specialties?.map((item) => (
+                                <Tag key={item._id} color="blue">
+                                    {item.name}
+                                </Tag>
+                            ))}
+                        </Space>
+                    ) : (
+                        <Tag color="blue">{doctor.specialty?.name}</Tag>
+                    )}
+                    <Paragraph>{doctor?.hospital?.address || doctor?.address}</Paragraph>
                 </Space>
             </Space>
 

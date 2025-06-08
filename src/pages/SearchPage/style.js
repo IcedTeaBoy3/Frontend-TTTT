@@ -46,3 +46,13 @@ export const DoctorList = styled.div`
 export const PaginationWrapper = styled(Flex)`
   margin-top: 16px;
 `;
+export const PopupItem = styled.p`
+  margin: 0;
+  padding: 8px 16px;
+  cursor: pointer;
+  &:hover {
+    background: #e6f7ff;
+    color: #1890ff;
+  }
+
+`;

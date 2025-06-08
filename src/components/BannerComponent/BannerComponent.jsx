@@ -12,7 +12,7 @@ const BannerComponent = () => {
     const handleSearch = (value) => {
         // Handle search logic here
         if (value) {
-            navigate(`/search?keyword=${encodeURIComponent(value)}`);
+            navigate(`/search?keyword=${encodeURIComponent(value)}&type=all`);
         }
     }
     return (

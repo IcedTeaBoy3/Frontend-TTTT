@@ -2,12 +2,13 @@
 import ButtonComponent from '../../components/ButtonComponent/ButtonComponent'
 import DefaultLayout from '../../components/DefaultLayout/DefaultLayout'
 import InputComponent from '../../components/InputComponent/InputComponent'
-import { MedicineBoxOutlined, EnvironmentFilled } from '@ant-design/icons'
-import { Typography, Pagination, Flex, Space } from 'antd'
+import { MedicineBoxOutlined, EnvironmentFilled, DownOutlined } from '@ant-design/icons'
+import { Typography, Pagination, Popover } from 'antd'
 import { useLocation, useNavigate } from 'react-router-dom'
 import * as DoctorService from '../../services/DoctorService'
+import * as HospitalService from '../../services/HospitalService'
 import { useDebounce } from '../../hooks/useDebounce'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import CardDoctor from '../../components/CardDoctor/CardDoctor'
 import ModalComponent from '../../components/ModalComponent/ModalComponent'
@@ -22,7 +23,8 @@ import {
     ResultBox,
     ResultHeader,
     DoctorList,
-    PaginationWrapper
+    PaginationWrapper,
+    PopupItem
 } from './style'
 
 const { Text, Title, Paragraph } = Typography
@@ -33,9 +35,12 @@ const SearchPage = () => {
 
     const queryParams = new URLSearchParams(location.search);
     const keyWord = queryParams.get('keyword') || '';
-    const specialty = queryParams.get('specialty') || ''
+    const specialty = queryParams.get('specialty') || '';
+    const type = queryParams.get('type') || 'all';
 
-    const [selectedSpecialty, setSelectedSpecialty] = useState(specialty); // mặc định lấy từ URL
+    const [selectedSpecialty, setSelectedSpecialty] = useState(specialty);
+    const [selectedType, setSelectedType] = useState(type);
+    const [isOpen, setIsOpen] = useState(false);
 
     const [inputValue, setInputValue] = useState(keyWord);
     const debouncedSearchQuery = useDebounce(inputValue, 500);
@@ -45,44 +50,111 @@ const SearchPage = () => {
         total: 0,
     });
 
-    const handleSearch = (value) => {
-        setInputValue(value);
-    };
-    // Đồng bộ URL khi người dùng thay đổi ô input
-    useEffect(() => {
-        const params = new URLSearchParams(location.search);
-        if (inputValue) {
-            params.set('keyword', inputValue);
-        } else {
-            params.delete('keyword');
-        }
-        navigate({ search: params.toString() }, { replace: true });
-    }, [inputValue, navigate]);
+    const handleSearch = (value) => setInputValue(value);
 
-    const { data: doctors = [], isLoading, isError } = useQuery({
-        queryKey: ['searchDoctors', debouncedSearchQuery, pagination.current, specialty],
-        queryFn: () => DoctorService.searchDoctors(debouncedSearchQuery, specialty, pagination.current, pagination.pageSize),
-        enabled: true,
-        keepPreviousData: true, // giữ dữ liệu cũ trong lúc load trang mới
+
+    // Gọi 2 API với pageSize lớn hơn khi type === 'all'
+    const doctorPageSize = selectedType === 'all' ? 100 : pagination.pageSize;
+    const hospitalPageSize = selectedType === 'all' ? 100 : pagination.pageSize;
+
+    // Các API
+    const { data: doctors = {}, isLoading } = useQuery({
+        queryKey: ['searchDoctors', debouncedSearchQuery, specialty, selectedType === 'all' ? 'all' : pagination.current],
+        queryFn: () => DoctorService.searchDoctors(debouncedSearchQuery, specialty, selectedType === 'all' ? 1 : pagination.current, doctorPageSize),
+        enabled: selectedType === 'all' || selectedType === 'doctor',
+        keepPreviousData: true,
     });
+
+    const { data: hospitals = {}, isLoading: isLoadingHospital } = useQuery({
+        queryKey: ['searchHospitals', debouncedSearchQuery, specialty, selectedType === 'all' ? 'all' : pagination.current],
+        queryFn: () => HospitalService.searchHospital(debouncedSearchQuery, specialty, selectedType === 'all' ? 1 : pagination.current, hospitalPageSize),
+        enabled: selectedType === 'all' || selectedType === 'hospital',
+        keepPreviousData: true,
+    });
+
+
     const { queryGetAllSpecialties } = useSpecialtyData({});
     const { data: specialties = [], isLoading: isLoadingSpecialty } = queryGetAllSpecialties;
 
-    useEffect(() => {
-        if (doctors?.total) {
-            setPagination(prev => ({
-                ...prev,
-                total: doctors.total
-            }));
+
+    const content = (
+        <>
+            <PopupItem onClick={() => handleSelectedType('all')}>Tất cả</PopupItem>
+            <PopupItem onClick={() => handleSelectedType('doctor')}>Bác sĩ</PopupItem>
+            <PopupItem onClick={() => handleSelectedType('hospital')}>Phòng khám</PopupItem>
+        </>
+    );
+    // Chuyển dữ liệu data thành mảng rõ ràng
+    const doctorData = doctors.data || [];
+    const hospitalData = hospitals.data || [];
+    // useMemo cho dữ liệu hiển thị
+    const combinedData = useMemo(() => {
+        if (selectedType === 'all') {
+            const merged = [...doctorData, ...hospitalData];
+            return merged.slice(
+                (pagination.current - 1) * pagination.pageSize,
+                pagination.current * pagination.pageSize
+            );
+        } else if (selectedType === 'doctor') {
+            return doctorData;
+        } else if (selectedType === 'hospital') {
+            return hospitalData;
         }
-    }, [doctors]);
+        return [];
+    }, [selectedType, doctorData, hospitalData, pagination]);
+
+    // ✅ Cập nhật lại tổng số dữ liệu (total)
+    useEffect(() => {
+        if (selectedType === 'all') {
+            const mergedLength = doctorData.length + hospitalData.length;
+            setPagination(prev => {
+                const newCurrent = Math.min(prev.current, Math.ceil(mergedLength / prev.pageSize)) || 1;
+                if (prev.total === mergedLength && prev.current === newCurrent) return prev;
+                return { ...prev, total: mergedLength, current: newCurrent };
+            });
+        } else if (selectedType === 'doctor') {
+            const total = doctors.total || doctorData.length;
+            setPagination(prev => {
+                const newCurrent = Math.min(prev.current, Math.ceil(total / prev.pageSize)) || 1;
+                if (prev.total === total && prev.current === newCurrent) return prev;
+                return { ...prev, total, current: newCurrent };
+            });
+        } else if (selectedType === 'hospital') {
+            const total = hospitals.total || hospitalData.length;
+            setPagination(prev => {
+                const newCurrent = Math.min(prev.current, Math.ceil(total / prev.pageSize)) || 1;
+                if (prev.total === total && prev.current === newCurrent) return prev;
+                return { ...prev, total, current: newCurrent };
+            });
+        }
+    }, [selectedType, doctorData, hospitalData]);
+
+    // Đồng bộ keyword vào URL
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        if (inputValue) params.set('keyword', inputValue);
+        else params.delete('keyword');
+        navigate({ search: params.toString() }, { replace: true });
+    }, [inputValue, navigate]);
+    // Đồng bộ URL khi người dùng thay đổi loại tìm kiếm
+    // Đồng bộ type vào URL
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        if (selectedType) params.set('type', selectedType);
+        else params.delete('type');
+        navigate({ search: params.toString() }, { replace: true });
+    }, [selectedType, navigate]);
+    // ✅ Reset current = 1 khi thay đổi bộ lọc
+    useEffect(() => {
+        setPagination(prev => ({
+            ...prev,
+            current: 1,
+        }));
+    }, [selectedType, debouncedSearchQuery, selectedSpecialty]);
     const handleSearchSpecialty = () => {
         const params = new URLSearchParams(location.search);
-        if (selectedSpecialty) {
-            params.set('specialty', selectedSpecialty);
-        } else {
-            params.delete('specialty');
-        }
+        if (selectedSpecialty) params.set('specialty', selectedSpecialty);
+        else params.delete('specialty');
         navigate({ search: params.toString() }, { replace: true });
         setIsModalOpen(false);
     };
@@ -91,7 +163,25 @@ const SearchPage = () => {
         const params = new URLSearchParams(location.search);
         params.delete('specialty');
         navigate({ search: params.toString() }, { replace: true });
-        setSelectedSpecialty(null); // Reset selected specialty
+        setSelectedSpecialty(null);
+    };
+    const handleSelectedType = (type) => {
+        setSelectedType(type);
+        const params = new URLSearchParams(location.search);
+        params.set('type', type); // Cập nhật type
+        navigate({ search: params.toString() }, { replace: true });
+    }
+    const convertTypeToText = (type) => {
+        switch (type) {
+            case 'doctor':
+                return 'Bác sĩ';
+            case 'hospital':
+                return 'Phòng khám';
+            case 'all':
+                return 'Tất cả';
+            default:
+                return '';
+        }
     }
     return (
         <DefaultLayout>
@@ -108,6 +198,23 @@ const SearchPage = () => {
 
                         {/* Bộ lọc */}
                         <FilterWrapper>
+                            <Popover
+                                content={content}
+                                open={isOpen}
+                                onOpenChange={(open) => setIsOpen(open)}
+                                title="Chọn loại tìm kiếm"
+                                placement='bottomRight'
+                                getPopupContainer={(trigger) => trigger.parentNode}
+                            >
+
+
+                                <ButtonComponent
+                                    type="default"
+                                    icon={<EnvironmentFilled />}
+                                >
+                                    Nơi khám: {convertTypeToText(selectedType)} <DownOutlined />
+                                </ButtonComponent>
+                            </Popover>
                             <ButtonComponent
                                 type="default"
                                 icon={<MedicineBoxOutlined />}
@@ -129,26 +236,90 @@ const SearchPage = () => {
 
                     {/* Kết quả */}
                     <ResultBox>
+                        {/* Tiêu đề */}
                         {debouncedSearchQuery || specialty ? (
                             <ResultHeader level={4}>
-                                Tìm thấy {`"${doctors?.total}"`} kết quả
+                                Tìm thấy {selectedType === 'doctor'
+                                    ? `${doctors?.total || 0} bác sĩ`
+                                    : selectedType === 'hospital'
+                                        ? `${hospitals?.total || 0} phòng khám`
+                                        : `${(doctors?.data?.length || 0) + (hospitals?.data?.length || 0)} kết quả`}
                             </ResultHeader>
                         ) : (
-                            <ResultHeader level={4}>Tất cả bác sĩ</ResultHeader>
+                            <ResultHeader level={4}>
+                                {selectedType === 'doctor'
+                                    ? 'Tất cả bác sĩ'
+                                    : selectedType === 'hospital'
+                                        ? 'Tất cả phòng khám'
+                                        : 'Tất cả kết quả'}
+                            </ResultHeader>
                         )}
 
-                        {/* Danh sách bác sĩ */}
                         <DoctorList>
-                            {isLoading ? (
-                                <Paragraph>Đang tải...</Paragraph>
-                            ) : isError ? (
-                                <Paragraph>Lỗi khi tải dữ liệu.</Paragraph>
-                            ) : doctors?.data?.length > 0 && doctors ? (
-                                doctors.data.map((doctor) => (
-                                    <CardDoctor key={doctor._id} doctor={doctor} />
-                                ))
-                            ) : (
-                                <Paragraph>Không tìm thấy kết quả nào.</Paragraph>
+                            {/* --- Loại bác sĩ --- */}
+                            {selectedType === 'doctor' && (
+                                <>
+                                    {isLoading ? (
+                                        <LoadingComponent isLoading={isLoading}>
+                                            <Paragraph>Đang tải dữ liệu bác sĩ...</Paragraph>
+                                        </LoadingComponent>
+                                    ) : doctors.data?.length > 0 ? (
+                                        doctors.data.map((doctor) => (
+                                            <CardDoctor
+                                                key={doctor._id}
+                                                doctor={doctor}
+                                                isHospital={false}
+                                                isLoading={isLoading}
+                                            />
+                                        ))
+                                    ) : (
+                                        <Paragraph>Không có bác sĩ nào phù hợp với tìm kiếm của bạn.</Paragraph>
+                                    )}
+                                </>
+                            )}
+
+                            {/* --- Loại phòng khám --- */}
+                            {selectedType === 'hospital' && (
+                                <>
+                                    {isLoadingHospital ? (
+                                        <LoadingComponent isLoading={isLoadingHospital}>
+                                            <Paragraph>Đang tải dữ liệu phòng khám...</Paragraph>
+                                        </LoadingComponent>
+                                    ) : hospitals.data?.length > 0 ? (
+                                        hospitals.data.map((hospital) => (
+                                            <CardDoctor
+                                                key={hospital._id}
+                                                doctor={hospital}
+                                                isHospital={true}
+                                                isLoading={isLoadingHospital}
+                                            />
+                                        ))
+                                    ) : (
+                                        <Paragraph>Không có phòng khám nào phù hợp với tìm kiếm của bạn.</Paragraph>
+                                    )}
+                                </>
+                            )}
+
+                            {/* --- Loại "all" --- */}
+                            {selectedType === 'all' && (
+                                <>
+                                    {(isLoading || isLoadingHospital) ? (
+                                        <LoadingComponent isLoading>
+                                            <Paragraph>Đang tải dữ liệu...</Paragraph>
+                                        </LoadingComponent>
+                                    ) : combinedData.length > 0 ? (
+                                        combinedData.map((item) => (
+                                            <CardDoctor
+                                                key={item._id}
+                                                doctor={item}
+                                                isLoading={false}
+                                                isHospital={item.type} // nếu cần phân biệt
+                                            />
+                                        ))
+                                    ) : (
+                                        <Paragraph>Không có kết quả nào phù hợp với tìm kiếm của bạn.</Paragraph>
+                                    )}
+                                </>
                             )}
                         </DoctorList>
                     </ResultBox>
@@ -156,19 +327,20 @@ const SearchPage = () => {
                     {/* Phân trang */}
                     <PaginationWrapper justify="center">
                         <Pagination
-                            defaultCurrent={1}
                             current={pagination.current}
-                            total={pagination.total}
                             pageSize={pagination.pageSize}
+                            total={pagination.total}
                             onChange={(page, pageSize) => {
-                                setPagination({
+                                setPagination(prev => ({
+                                    ...prev,
                                     current: page,
                                     pageSize: pageSize,
-                                });
+                                }));
                             }}
-                            showSizeChanger
+                            showSizeChanger={false}
                         />
                     </PaginationWrapper>
+
                 </Container>
             </Wrapper>
             <ModalComponent

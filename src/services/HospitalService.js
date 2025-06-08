@@ -58,3 +58,15 @@ export const deleteManyHospitals = async (ids) => {
         throw error;
     }
 };
+export const searchHospital = async (keyword, specialty, page, limit) => {
+    try {
+        
+        const response = await axiosInstance.get(
+            `/hospitals/search-hospital?keyword=${keyword}&specialty=${specialty}&page=${page}&limit=${limit}`,
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error searching hospital:", error);
+        throw error;
+    }
+}
