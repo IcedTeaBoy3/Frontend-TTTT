@@ -1,12 +1,10 @@
 
-import { Space, Table, Input, Button, Form, Flex, Popconfirm } from "antd";
+import { Space, Table, Input, Button, Form, Flex, Popconfirm, Select, Radio } from "antd";
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
 import {
     EditOutlined,
     DeleteOutlined,
     SearchOutlined,
-    ExportOutlined,
-    ImportOutlined,
 } from "@ant-design/icons";
 import { useState, useRef } from "react";
 import LoadingComponent from "../../components/LoadingComponent/LoadingComponent";
@@ -17,6 +15,8 @@ import ActionButtonGroup from "../../components/ActionButtonGroup/ActionButtonGr
 import { saveAs } from "file-saver";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
+const { Option } = Select;
+import ethnicGroups from "../../data/ethnicGroups"; // Giả sử bạn đã có file ethnicGroups.js chứa dữ liệu dân tộc
 const Patient = () => {
     const [isOpenDrawer, setIsOpenDrawer] = useState(false);
     const [isModalOpenDelete, setIsModalOpenDelete] = useState(false);
@@ -86,6 +86,8 @@ const Patient = () => {
                 phone: user.phone,
                 address: user.address,
                 role: user.role,
+                dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split("T")[0] : null,
+                gender: user.gender
             });
         }
     };
@@ -97,7 +99,8 @@ const Patient = () => {
                 email: values.email,
                 phone: values.phone,
                 address: values.address,
-                role: values.role,
+                dateOfBirth: values.dateOfBirth,
+                gender: values.gender,
             },
         );
     };
@@ -214,7 +217,39 @@ const Patient = () => {
             dataIndex: "address",
             key: "address",
             ...getColumnSearchProps("address"),
+            render: (text) => {
+                // Giới hạn độ dài hiển thị
+                const maxLength = 20; // Độ dài tối đa
+                return text?.length > maxLength
+                    ? `${text.slice(0, maxLength)}...`
+                    : text;
+            }
 
+        },
+        {
+            title: "Ngày sinh",
+            dataIndex: "dateOfBirth",
+            key: "dateOfBirth",
+            render: (date) => {
+                return date ? new Date(date).toLocaleDateString("vi-VN") : "Chưa cập nhật";
+            },
+        },
+        {
+            title: "Giới tính",
+            dataIndex: 'gender',
+            key: "dateOfBirth",
+            render: (gender) => {
+                switch (gender) {
+                    case "male":
+                        return "Nam";
+                    case "female":
+                        return "Nữ";
+                    case "other":
+                        return "Khác";
+                    default:
+                        return "Chưa cập nhật";
+                }
+            }
 
         },
         {
@@ -251,6 +286,8 @@ const Patient = () => {
             email: item.email,
             phone: item.phone,
             address: item.address,
+            dateOfBirth: item.dateOfBirth,
+            gender: item.gender,
         };
     });
     const handleOkDeleteMany = () => {
@@ -482,27 +519,41 @@ const Patient = () => {
                             <Input.TextArea name="address" rows={4} />
                         </Form.Item>
 
-
-
-                        {/* <Form.Item
-                        label="Avatar"
-                        name="avatar"
+                        <Form.Item
+                            label="Ngày sinh"
+                            name="dateOfBirth"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "Vui lòng chọn ngày sinh!",
+                                },
+                            ]}
                         >
-                        <div>
-                        
-                            <WarpperUploadFile onChange={handleOnchangeAvatarDetail} maxCount={1}>
-                            <Button>Select file</Button>
-                            </WarpperUploadFile>
-                            { stateUserDetail?.avatar && 
-                            <img 
-                                src={stateUserDetail?.avatar} 
-                                alt="avatar" 
-                                style={{width:'60px',height:'60px',borderRadius:'50%',marginLeft:'10px'}}
+                            <Input
+                                type="date"
+                                name="dateOfBirth"
+                                style={{ width: "100%" }}
                             />
-                            }
-                        </div>
-                        
-                        </Form.Item> */}
+
+                        </Form.Item>
+                        <Form.Item
+                            label="Giới tính"
+                            name="gender"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "Vui lòng chọn giới tính!",
+                                },
+                            ]}
+                        >
+                            <Radio.Group name="gender">
+                                <Radio value="male">Nam</Radio>
+                                <Radio value="female">Nữ</Radio>
+                                <Radio value="other">Khác</Radio>
+                            </Radio.Group>
+                        </Form.Item>
+
+
 
                         <Form.Item
                             label={null}

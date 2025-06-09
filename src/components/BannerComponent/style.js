@@ -28,7 +28,7 @@ export const BannerImage = styled.div`
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: url(${(props) => props.image});
+    background-image: url(${(props) => props.$image});
     background-size: contain;
     background-repeat: no-repeat;
     background-position: right;

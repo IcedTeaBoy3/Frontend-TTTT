@@ -39,7 +39,7 @@ const HomePage = () => {
     };
     const queryGetAllHospitals = useQuery({
         queryKey: ["getAllHospitals"],
-        queryFn: () => HospitalService.getAllHospitals(1, 10),
+        queryFn: () => HospitalService.getAllHospitals('hospital', 1, 10),
         retry: 3,
         retryDelay: 1000,
         keepPreviousData: true,
@@ -93,13 +93,13 @@ const HomePage = () => {
                             Phiếu khám kèm số thứ tự và thời gian của bạn được xác nhận.
                         </Text>
                         <LoadingComponent isLoading={isLoadingDoctor}>
-                            <SlideComponent>
+                            <SlideComponent length={doctors?.data.length}>
                                 {doctors?.data.map((item) => (
                                     <CardComponent
                                         key={item._id}
                                         avatar={item.image}
                                         name={item.user?.name}
-                                        specialty={item.specialty?.name}
+                                        specialty={item.specialties[0]?.name}
                                         hospital={item.hospital?.name}
                                         onClick={() => handleNavigate(`/detail-doctor/${item._id}`)}
                                     />
@@ -108,17 +108,21 @@ const HomePage = () => {
                         </LoadingComponent>
                     </Section>
 
-                    {/* Bác sĩ theo phòng khám */}
+                    {/* Bác sĩ theo Bệnh viện */}
                     <Section>
                         <Flex justify="space-between" align="center">
-                            <Title level={3} style={{ fontWeight: 'bold' }}>Phòng khám</Title>
-                            <ButtonComponent type="primary" hoverable="true">
+                            <Title level={3} style={{ fontWeight: 'bold' }}>Đặt khám bệnh viện</Title>
+                            <ButtonComponent
+                                type="primary"
+                                hoverable="true"
+                                onClick={() => handleNavigate('/search?type=hospital')}
+                            >
                                 Xem tất cả <RightOutlined />
                             </ButtonComponent>
                         </Flex>
-                        <Text type="secondary">Nhiều loại phòng khám khác nhau</Text>
+                        <Text type="secondary">Nhiều loại bệnh viện khác nhau</Text>
                         <LoadingComponent isLoading={isLoadingHospital}>
-                            <SlideComponent>
+                            <SlideComponent length={hospitals?.data.length}>
                                 {hospitals?.data.map((item) => (
                                     <HospitalCard
                                         hoverable="true"

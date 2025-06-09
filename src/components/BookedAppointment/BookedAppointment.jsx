@@ -85,12 +85,12 @@ const BookedAppointment = ({ userId }) => {
             <Divider />
             {isLoading && <p>Loading...</p>}
             {isError && Message.error(error.message)}
-            {appointments && appointments?.data.length === 0 && <Paragraph style={{ textAlign: 'left', width: '100%' }}>Bạn chưa có lịch hẹn nào.</Paragraph>}
+            {appointments && appointments?.data?.length === 0 && <Paragraph style={{ textAlign: 'left', width: '100%' }}>Bạn chưa có lịch hẹn nào.</Paragraph>}
             <Row gutter={[28, 16]}>
                 <Col span={8} >
                     <Row gutter={[16, 16]} justify="space-between" align="center">
 
-                        {appointments && appointments?.data.map((appointment) => {
+                        {appointments && appointments?.data?.map((appointment) => {
                             const isSelected = selectedAppointmentId === appointment._id;
                             return (
                                 <Col span={24} key={appointment._id}>
@@ -103,20 +103,20 @@ const BookedAppointment = ({ userId }) => {
                                         <Row gutter={[16, 8]}>
                                             <Col span={24}>
                                                 <Title level={5} style={{ marginBottom: 4 }}>
-                                                    Bác sĩ: {appointment.doctor.user.name}
+                                                    Bác sĩ: {appointment.doctor?.user?.name}
                                                 </Title>
                                             </Col>
 
                                             <Col span={24}>
                                                 <Paragraph style={{ marginBottom: 0 }}>
                                                     <strong>Ngày khám:</strong>{' '}
-                                                    {new Date(appointment.schedule.workDate).toLocaleDateString()} - {appointment.timeSlot}
+                                                    {new Date(appointment?.schedule?.workDate).toLocaleDateString()} - {appointment.timeSlot}
                                                 </Paragraph>
                                             </Col>
 
                                             <Col span={24}>
                                                 <Paragraph style={{ marginBottom: 0 }}>
-                                                    <strong>Bệnh nhân:</strong> {appointment.patient.name}
+                                                    <strong>Bệnh nhân:</strong> {appointment?.patient.name}
                                                 </Paragraph>
                                             </Col>
 
@@ -175,13 +175,13 @@ const BookedAppointment = ({ userId }) => {
                                     <Card>
                                         <Title level={5}>Thông tin đặt khám</Title>
                                         <Paragraph>
-                                            <strong>Ngày khám:</strong> <Text underline style={{ color: '#52c41a', fontWeight: 'bold' }}>{new Date(appointmentDetails.schedule.workDate).toLocaleDateString()}</Text>
+                                            <strong>Ngày khám:</strong> <Text underline style={{ color: '#52c41a', fontWeight: 'bold' }}>{new Date(appointmentDetails?.schedule?.workDate).toLocaleDateString()}</Text>
                                         </Paragraph>
                                         <Paragraph>
                                             <strong>Giờ khám:</strong> <Text underline style={{ color: '#52c41a', fontWeight: 'bold' }}>{appointmentDetails.timeSlot}</Text>
                                         </Paragraph>
                                         <Paragraph>
-                                            <strong>Chuyên khoa:</strong> {appointmentDetails.doctor.specialty.name}
+                                            <strong>Chuyên khoa:</strong> {appointmentDetails.doctor?.specialty?.name}
                                         </Paragraph>
                                         <Title level={5}>Thông tin bệnh nhân</Title>
                                         <Paragraph>

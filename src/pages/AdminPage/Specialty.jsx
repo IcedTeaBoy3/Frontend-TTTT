@@ -463,7 +463,7 @@ const Specialty = () => {
                             getValueFromEvent={(e) =>
                                 Array.isArray(e) ? e : e && e.fileList
                             }
-
+                            extra="Chọn ảnh chuyên khoa (jpg, jpeg, png, gif) tối đa 1 file"
                         >
 
 

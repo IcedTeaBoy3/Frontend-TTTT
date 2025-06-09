@@ -1,10 +1,11 @@
 
 import { WrapperSliderStyle } from './style'
-const SlideComponent = ({ children }) => {
+const SlideComponent = ({ length, children }) => {
+    const isSingle = length === 1;
     const settings = {
-        dots: true,
-        arrows: true,
-        infinite: true,
+        dots: !isSingle,
+        arrows: !isSingle,
+        infinite: !isSingle,
         speed: 500,
         slidesToShow: 4,
         slidesToScroll: 1,

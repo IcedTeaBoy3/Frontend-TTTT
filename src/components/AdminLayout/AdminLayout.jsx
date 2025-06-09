@@ -97,7 +97,7 @@ const AdminLayout = () => {
         {
             key: "/admin/hospitals",
             icon: <MedicineBoxOutlined />,
-            label: "Quản lý bệnh viện",
+            label: "Quản lý bệnh viện và phòng khám",
         },
         {
             key: "/admin/appointments",
@@ -141,7 +141,7 @@ const AdminLayout = () => {
                 </PopupItem>
                 {user?.role === "admin" && (
                     <PopupItem
-                        $isSelected={location.pathname === "/admin"}
+                        $isSelected={location.pathname.includes("admin")}
                         onClick={() => navigate("/admin")}
                     >
                         <SettingFilled
@@ -150,12 +150,6 @@ const AdminLayout = () => {
                         Quản lý hệ thống
                     </PopupItem>
                 )}
-                <PopupItem onClick={() => navigate("/order")}>
-                    <InfoCircleFilled
-                        style={{ fontSize: "15px", marginRight: "8px" }}
-                    />
-                    Đơn hàng của tôi
-                </PopupItem>
                 <PopupItem onClick={handleLogoutUser}>
                     <LogoutOutlined
                         style={{ fontSize: "15px", marginRight: "8px" }}

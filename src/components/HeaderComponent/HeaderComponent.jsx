@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
-import { Row, Col, Image, Popover, Drawer, Menu, Dropdown, Anchor } from "antd";
-import { useNavigate } from "react-router-dom";
+import { Row, Col, Image, Popover, Drawer, Menu, Dropdown, Anchor, Button } from "antd";
+import { replace, useNavigate } from "react-router-dom";
 import {
     HeaderContainer,
     LogoSection,
@@ -64,7 +64,7 @@ const HeaderComponent = () => {
                 label: (
                     <PopupItem
                         onClick={() => navigate("/admin")}
-                        $isSelected={location.pathname === "/admin"}
+                        $isSelected={location.pathname.includes("/admin")}
                     >
                         <SettingFilled style={{ fontSize: 15, marginRight: 8 }} />
                         Quản lý hệ thống
@@ -74,12 +74,14 @@ const HeaderComponent = () => {
             {
                 key: "3",
                 label: (
-                    <PopupItem onClick={() => navigate("/profile", {
-                        state: { tab: "appointments" },
-                    })}>
+                    <PopupItem
+                        $isSelected={location.state?.tab === "appointments"}
+                        onClick={() => navigate("/profile", {
+                            state: { tab: "appointments" },
+                        })}>
                         <InfoCircleFilled style={{ fontSize: 15, marginRight: 8 }} />
                         Lịch sử đặt khám
-                    </PopupItem>
+                    </PopupItem >
                 ),
             },
             {
@@ -103,20 +105,40 @@ const HeaderComponent = () => {
             ))}
         </>
     ), [menuItems])
-    const anchorItems = [
-        {
-            key: 'section1',
-            href: '#doctors-section',
-            title: (
-                <ButtonComponent
-                    type="default"
-
-                >
-                    Đặt khám bác sĩ
-                </ButtonComponent>
-            )
-        },
-    ];
+    const contentBooked = (
+        <Menu
+            items={[
+                {
+                    key: "1",
+                    label: (
+                        <p
+                            onClick={() => {
+                                navigate("/search?type=doctor", {
+                                    replace: true,
+                                });
+                            }}
+                        >
+                            Đặt khám bác sĩ
+                        </p>
+                    ),
+                },
+                {
+                    key: "2",
+                    label: (
+                        <p
+                            onClick={() => {
+                                navigate("/search?type=hospital", {
+                                    replace: true,
+                                });
+                            }}
+                        >
+                            Đặt khám bệnh viện
+                        </p>
+                    ),
+                },
+            ]}
+        />
+    );
     return (
         <HeaderContainer>
             <Row justify="space-between">
@@ -134,7 +156,18 @@ const HeaderComponent = () => {
                 {/* Desktop Menu */}
                 <Col xs={0} md={12}>
                     <NavButtons>
-                        <Anchor items={anchorItems} />
+                        <Popover
+                            content={contentBooked}
+                            placement="bottomLeft"
+                            getPopupContainer={(trigger) => trigger.parentNode}
+                        >
+                            <ButtonComponent
+                                type="default"
+
+                            >
+                                Đặt khám <CaretDownOutlined />
+                            </ButtonComponent>
+                        </Popover>
 
                         {user?.access_token ? (
                             <Popover

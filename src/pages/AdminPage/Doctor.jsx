@@ -1,9 +1,11 @@
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
-import { Form, Input, Select, Table, Space } from "antd";
+import { Form, Input, Select, Table, Space, Button, Tag, Upload, Divider } from "antd";
 import {
     DeleteOutlined,
     EditOutlined,
-    SearchOutlined
+    SearchOutlined,
+    PlusOutlined,
+    UploadOutlined
 } from "@ant-design/icons";
 import ModalComponent from "../../components/ModalComponent/ModalComponent";
 import LoadingComponent from "../../components/LoadingComponent/LoadingComponent";
@@ -17,6 +19,10 @@ const Doctor = () => {
     const [isModalOpenCreate, setIsModalOpenCreate] = useState(false);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [isModalOpenDelete, setIsModalOpenDelete] = useState(false);
+    const [openModalCreateClinic, setOpenModalCreateClinic] = useState(false);
+    const [clinicForm] = Form.useForm();
+
+    const [selectedClinic, setSelectedClinic] = useState(null);
     const [isModalOpenDeleteMany, setIsModalOpenDeleteMany] = useState(false);
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
     const [rowSelected, setRowSelected] = useState(null);
@@ -40,7 +46,10 @@ const Doctor = () => {
         type: "checkbox",
     };
     const { queryGetAllSpecialties } = useSpecialtyData({});
-    const { queryGetAllHospitals } = useHospitalData({});
+    const { queryGetAllHospitals, mutationCreateHospital } = useHospitalData({
+        setIsModalOpenCreate: setOpenModalCreateClinic,
+        type: "clinic",
+    });
 
     const {
         queryGetAllDoctors,
@@ -59,6 +68,7 @@ const Doctor = () => {
     const { data: specialties, isLoading: isLoadingSpecialty } = queryGetAllSpecialties;
     const { data: hospitals, isLoading: isLoadingHospital } = queryGetAllHospitals;
     const { data: doctors, isLoading: isLoadingDoctor } = queryGetAllDoctors;
+    const { data: hospital, isPending: isPendingCreate } = mutationCreateHospital;
     const { isPending: isPendingAdd } = mutationCreateDoctor;
     const { isPending: isPendingUpdate } = mutationUpdateDoctor;
     const { isPending: isPendingDelete } = mutationDeleteDoctor;
@@ -69,7 +79,7 @@ const Doctor = () => {
                 name: values.name,
                 email: values.email,
                 password: values.password,
-                specialtyId: values.specialtyId,
+                specialties: JSON.stringify(values.specialties),
                 hospitalId: values.hospitalId,
                 qualification: values.qualification,
                 position: values.position,
@@ -91,7 +101,7 @@ const Doctor = () => {
             formUpdate.setFieldsValue({
                 name: doctor.user?.name,
                 email: doctor.user?.email,
-                specialtyId: doctor.specialty?._id,
+                specialties: doctor.specialties.map((item) => item._id),
                 hospitalId: doctor.hospital?._id,
                 qualification: doctor.qualification,
                 position: doctor.position,
@@ -206,10 +216,29 @@ const Doctor = () => {
         },
         {
             title: "Tên chuyên khoa",
-            dataIndex: "specialty",
-            key: "specialty",
-            ...getColumnSearchProps("specialty"),
-            sorter: (a, b) => a.specialty?.length - b.specialty?.length,
+            dataIndex: "specialties",
+            key: "specialties",
+            sorter: (a, b) => a.specialties?.length - b.specialties?.length,
+
+            render: (specialties) => {
+                return <span>
+                    {specialties?.length > 0
+                        ? specialties.map((specialty) => (
+                            <Tag key={specialty._id} color="green">
+                                {specialty.name}
+                            </Tag>
+                        ))
+                        : "Chưa có chuyên khoa"}
+                </span>
+            },
+            filters: specialties?.data?.map((item) => ({
+                text: item.name,
+                value: item._id,
+            })),
+            onFilter: (value, record) =>
+                record.specialties?.some((item) => item._id === value),
+            filterSearch: true,
+            filterMode: "tree",
         },
         {
             title: "Chức vụ",
@@ -264,7 +293,7 @@ const Doctor = () => {
         index: index + 1,
         name: item.user?.name,
         hospital: item.hospital?.name,
-        specialty: item.specialty?.name,
+        specialties: item.specialties,
         position: item.position,
         qualification: item.qualification,
         experience: item.experience,
@@ -276,7 +305,7 @@ const Doctor = () => {
             id: rowSelected,
             name: values.name,
             email: values.email,
-            specialtyId: values.specialtyId,
+            specialties: JSON.stringify(values.specialties),
             hospitalId: values.hospitalId,
             qualification: values.qualification,
             position: values.position,
@@ -296,6 +325,34 @@ const Doctor = () => {
     const handleCancelDeleteMany = () => {
         setIsModalOpenDeleteMany(false);
     };
+    const handleAddClinic = () => {
+        clinicForm.validateFields().then((values) => {
+
+            const imageFile = values.image?.[0]?.originFileObj;
+            if (!imageFile) {
+                console.error("No image file selected");
+                return;
+            }
+            const formData = new FormData();
+            formData.append("name", values.name);
+            formData.append("address", values.address);
+            formData.append("phone", values.phone);
+            formData.append("description", values.description);
+            formData.append("image", imageFile);
+            formData.append("type", "clinic"); // Thêm trường type với giá trị "clinic"
+
+            // Xử lý thêm phòng khám ở đây
+            mutationCreateHospital.mutate(formData, {
+                onSuccess: () => {
+                    clinicForm.resetFields();
+                }
+            })
+        }).catch((error) => {
+            console.error("Validation failed:", error);
+            // Handle validation errors if needed
+        });
+    }
+
     const handleChooseFile = (type) => {
 
     }
@@ -406,7 +463,7 @@ const Doctor = () => {
                         </Form.Item>
                         <Form.Item
                             label="Chuyên khoa"
-                            name="specialtyId"
+                            name="specialties"
                             rules={[
                                 {
                                     required: true,
@@ -417,7 +474,8 @@ const Doctor = () => {
 
 
                             <Select
-                                name="specialtyId"
+
+                                mode="multiple"
                                 showSearch
                                 placeholder="Chọn chuyên khoa"
                                 optionFilterProp="children"
@@ -427,8 +485,8 @@ const Doctor = () => {
                                         .includes(input.toLowerCase())
                                 }
                             >
-                                {specialties &&
-                                    specialties?.data?.map((item) => (
+                                {specialties && specialties.data.length > 0 &&
+                                    specialties.data.map((item) => (
                                         <Select.Option
                                             key={item._id}
                                             value={item._id}
@@ -443,12 +501,6 @@ const Doctor = () => {
                         <Form.Item
                             label="Bệnh viện"
                             name="hospitalId"
-                            rules={[
-                                {
-                                    required: true,
-                                    message: "Vui lòng chọn bệnh viện!",
-                                },
-                            ]}
                         >
                             <Select
                                 name="hospitalId"
@@ -563,7 +615,7 @@ const Doctor = () => {
                                 },
                             ]}
                         >
-                            <Input name="name" />
+                            <Input name="name" placeholder="Tên bác sĩ" />
                         </Form.Item>
                         <Form.Item
                             label="Email"
@@ -579,7 +631,7 @@ const Doctor = () => {
                                 },
                             ]}
                         >
-                            <Input name="email" autoComplete="username" />
+                            <Input name="email" autoComplete="username" placeholder="email đăng nhập" />
                         </Form.Item>
                         <Form.Item
                             label="Mật khẩu"
@@ -605,7 +657,7 @@ const Doctor = () => {
                                 },
                             ]}
                         >
-                            <Input.Password name="password" autoComplete="new-password" />
+                            <Input.Password name="password" autoComplete="new-password" placeholder="Mật khẩu" />
                         </Form.Item>
                         <Form.Item
                             label="Nhập lại mật khẩu"
@@ -630,13 +682,13 @@ const Doctor = () => {
                                 }),
                             ]}
                         >
-                            <Input.Password name="confirmPassword" autoComplete="new-password" />
+                            <Input.Password name="confirmPassword" autoComplete="new-password" placeholder="Nhập lại mật khẩu" />
                         </Form.Item>
 
                         <LoadingComponent isLoading={isLoadingSpecialty}>
                             <Form.Item
                                 label="Chọn chuyên khoa"
-                                name="specialtyId"
+                                name="specialties"
                                 rules={[
                                     {
                                         required: true,
@@ -647,7 +699,8 @@ const Doctor = () => {
 
 
                                 <Select
-                                    name="specialtyId"
+                                    mode="multiple"
+                                    name="specialties"
                                     showSearch
                                     placeholder="Chọn chuyên khoa"
                                     optionFilterProp="children"
@@ -671,36 +724,35 @@ const Doctor = () => {
                         </LoadingComponent>
                         <LoadingComponent isLoading={isLoadingHospital}>
                             <Form.Item
-                                label="Chọn bệnh viện"
+                                label="Phòng khám"
                                 name="hospitalId"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: "Vui lòng chọn bệnh viện!",
-                                    },
-                                ]}
+                                rules={[{ required: true, message: "Vui lòng chọn phòng khám!" }]}
                             >
                                 <Select
-                                    name="hospitalId"
-                                    showSearch
-                                    placeholder="Chọn bệnh viện"
-                                    optionFilterProp="children"
-                                    filterOption={(input, option) =>
-                                        option.children
-                                            .toLowerCase()
-                                            .includes(input.toLowerCase())
-                                    }
-                                >
-
-                                    {hospitals &&
-                                        hospitals?.data?.map((item) => (
-                                            <Select.Option
-                                                key={item._id}
-                                                value={item._id}
+                                    placeholder="Chọn phòng khám"
+                                    onChange={(value) => setSelectedClinic(value)}
+                                    popupRender={(menu) => (
+                                        <>
+                                            {menu}
+                                            <Divider style={{ margin: '8px 0' }} />
+                                            <Button
+                                                type="link"
+                                                icon={<PlusOutlined />}
+                                                onMouseDown={(e) => {
+                                                    e.preventDefault(); // Ngăn dropdown đóng
+                                                    setOpenModalCreateClinic(true); // Mở modal thêm phòng khám
+                                                }}
                                             >
-                                                {item.name}
-                                            </Select.Option>
-                                        ))}
+                                                Thêm mới phòng khám
+                                            </Button>
+                                        </>
+                                    )}
+                                >
+                                    {hospitals && hospitals.data.map(hospital => (
+                                        <Select.Option key={hospital._id} value={hospital._id}>
+                                            {hospital.name}
+                                        </Select.Option>
+                                    ))}
                                 </Select>
                             </Form.Item>
                         </LoadingComponent>
@@ -745,6 +797,93 @@ const Doctor = () => {
                     </Form>
                 </ModalComponent>
             </LoadingComponent>
+            <ModalComponent
+                title="Thêm phòng khám"
+                open={openModalCreateClinic}
+                onOk={handleAddClinic}
+                onCancel={() => setOpenModalCreateClinic(false)}
+                width={600}
+                style={{ borderRadius: 0 }}
+            >
+                <Form
+                    form={clinicForm}
+                    labelCol={{ span: 6 }}
+                    wrapperCol={{ span: 18 }}
+                    style={{ maxWidth: 600, padding: "20px" }}
+                    initialValues={{ remember: true }}
+                    autoComplete="off"
+                >
+                    <Form.Item
+                        name="name"
+                        label="Tên phòng khám"
+                        rules={[{
+                            required: true,
+                            message: "Vui lòng nhập tên phòng khám!"
+                        }]}
+                    >
+                        <Input type="text" placeholder="Tên phòng khám" />
+                    </Form.Item>
+                    <Form.Item
+                        name="address"
+                        label="Địa chỉ"
+                        rules={[{
+                            required: true,
+                            message: "Vui lòng nhập địa chỉ phòng khám!"
+                        }]}
+                    >
+                        <Input type="text" placeholder="Địa chỉ phòng khám" />
+                    </Form.Item>
+                    <Form.Item
+                        name="phone"
+                        label="Số điện thoại"
+                        rules={[{
+                            required: true,
+                            message: "Vui lòng nhập số điện thoại phòng khám!"
+                        }]}
+                    >
+                        <Input type="text" placeholder="SĐT" />
+                    </Form.Item>
+                    <Form.Item
+                        name="description"
+                        label="Mô tả"
+                        rules={[{
+                            required: true,
+                            message: "Vui lòng nhập mô tả phòng khám!"
+                        }]}
+                    >
+                        <Input.TextArea placeholder="Mô tả" rows={4} maxLength={400} />
+                    </Form.Item>
+                    <Form.Item
+                        label="Ảnh"
+                        name="image"
+                        valuePropName="fileList"
+                        getValueFromEvent={(e) =>
+                            Array.isArray(e) ? e : e && e.fileList
+                        }
+                        rules={[{
+                            required: true,
+                            message: "Vui lòng chọn ảnh phòng khám!"
+                        }]}
+                        extra="Chọn ảnh phòng khám (jpg, jpeg, png, gif) tối đa 1 file"
+                    >
+
+
+                        <Upload
+                            name="file"
+                            beforeUpload={() => false}
+                            maxCount={1}
+                            accept=".jpg, .jpeg, .png, .gif"
+
+                        >
+                            <ButtonComponent icon={<UploadOutlined />}>
+                                Chọn file
+                            </ButtonComponent>
+                        </Upload>
+
+
+                    </Form.Item>
+                </Form>
+            </ModalComponent>
             <ModalComponent
                 title="Xoá bác sĩ"
                 open={isModalOpenDelete}

@@ -81,13 +81,14 @@ const SearchPage = () => {
         <>
             <PopupItem onClick={() => handleSelectedType('all')}>Tất cả</PopupItem>
             <PopupItem onClick={() => handleSelectedType('doctor')}>Bác sĩ</PopupItem>
-            <PopupItem onClick={() => handleSelectedType('hospital')}>Phòng khám</PopupItem>
+            <PopupItem onClick={() => handleSelectedType('hospital')}>Bệnh viện</PopupItem>
         </>
     );
     // Chuyển dữ liệu data thành mảng rõ ràng
     const doctorData = doctors.data || [];
     const hospitalData = hospitals.data || [];
     // useMemo cho dữ liệu hiển thị
+
     const combinedData = useMemo(() => {
         if (selectedType === 'all') {
             const merged = [...doctorData, ...hospitalData];
@@ -242,7 +243,7 @@ const SearchPage = () => {
                                 Tìm thấy {selectedType === 'doctor'
                                     ? `${doctors?.total || 0} bác sĩ`
                                     : selectedType === 'hospital'
-                                        ? `${hospitals?.total || 0} phòng khám`
+                                        ? `${hospitals?.total || 0} Bệnh viện`
                                         : `${(doctors?.data?.length || 0) + (hospitals?.data?.length || 0)} kết quả`}
                             </ResultHeader>
                         ) : (
@@ -250,7 +251,7 @@ const SearchPage = () => {
                                 {selectedType === 'doctor'
                                     ? 'Tất cả bác sĩ'
                                     : selectedType === 'hospital'
-                                        ? 'Tất cả phòng khám'
+                                        ? 'Tất cả Bệnh viện'
                                         : 'Tất cả kết quả'}
                             </ResultHeader>
                         )}
@@ -278,12 +279,12 @@ const SearchPage = () => {
                                 </>
                             )}
 
-                            {/* --- Loại phòng khám --- */}
+                            {/* --- Loại Bệnh viện --- */}
                             {selectedType === 'hospital' && (
                                 <>
                                     {isLoadingHospital ? (
                                         <LoadingComponent isLoading={isLoadingHospital}>
-                                            <Paragraph>Đang tải dữ liệu phòng khám...</Paragraph>
+                                            <Paragraph>Đang tải dữ liệu Bệnh viện...</Paragraph>
                                         </LoadingComponent>
                                     ) : hospitals.data?.length > 0 ? (
                                         hospitals.data.map((hospital) => (
@@ -295,7 +296,7 @@ const SearchPage = () => {
                                             />
                                         ))
                                     ) : (
-                                        <Paragraph>Không có phòng khám nào phù hợp với tìm kiếm của bạn.</Paragraph>
+                                        <Paragraph>Không có Bệnh viện nào phù hợp với tìm kiếm của bạn.</Paragraph>
                                     )}
                                 </>
                             )}
@@ -313,7 +314,7 @@ const SearchPage = () => {
                                                 key={item._id}
                                                 doctor={item}
                                                 isLoading={false}
-                                                isHospital={item.type} // nếu cần phân biệt
+                                                isHospital={item.type === 'hospital'} // nếu cần phân biệt
                                             />
                                         ))
                                     ) : (

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import DefaultLayout from '../../components/DefaultLayout/DefaultLayout';
 import { Avatar } from 'antd';
-import { Typography, Divider } from 'antd';
+import { Typography, Divider, Tag } from 'antd';
 import ButtonComponent from '../../components/ButtonComponent/ButtonComponent';
 import * as DoctorService from '../../services/DoctorService';
 import * as WorkingScheduleService from '../../services/WorkingScheduleService';
@@ -111,6 +111,7 @@ const DetailDoctorPage = () => {
     const handleBookingDoctor = () => {
         navigate("/booking")
     }
+    console.log("doctor", doctor);
     return (
         <DefaultLayout>
             <Container>
@@ -119,15 +120,15 @@ const DetailDoctorPage = () => {
                         <Avatar size={170} src={doctor?.data?.user?.avatar} />
                         <InfoSection>
                             <Title level={3}>
-                                {doctor?.data?.qualification} Bác sĩ {doctor?.data?.user?.name}
+                                {doctor?.data?.qualification} Bác sĩ {doctor?.data?.user?.name || "Chưa cập nhật"}
                             </Title>
                             <div>
                                 <Title level={4} style={{ fontSize: 18, color: "#1890ff" }}>
-                                    <CheckCircleOutlined /> Bác sĩ {doctor?.data?.experience}
+                                    <CheckCircleOutlined /> Bác sĩ <span>{doctor?.data?.experience}</span>
                                 </Title>
                                 <Text type="secondary">Chuyên khoa:</Text>{" "}
                                 <Text strong style={{ fontSize: "18px", color: "#1890ff" }}>
-                                    {doctor?.data?.specialty?.name}
+                                    {doctor?.data?.specialties?.map((item) => <Tag color='blue'>{item.name}</Tag>)}
                                 </Text>
                             </div>
 

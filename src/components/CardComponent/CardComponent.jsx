@@ -1,13 +1,12 @@
-import React from 'react'
-import { Card, Avatar } from 'antd';
-import { EditOutlined, EllipsisOutlined, SettingOutlined, UserOutlined, RightOutlined, ArrowRightOutlined } from '@ant-design/icons';
+import { Card, Avatar, Tag } from 'antd';
+import { RightOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 const { Meta } = Card;
-import { WarpperCardStyle, WarpperCardBottom } from './style'
+import { WarpperCardStyle } from './style'
 const CardComponent = ({ avatar, name, specialty, hospital, onClick }) => {
     const [isHovered, setIsHovered] = useState(false);
     const description = <>
-        <p style={{ margin: 0 }}>{specialty}</p>
+        <p style={{ margin: 0 }}><Tag color='blue' style={{ marginRight: '0px' }}>{specialty}</Tag></p>
         <p style={{ margin: 0 }}>{hospital}</p>
     </>
     return (

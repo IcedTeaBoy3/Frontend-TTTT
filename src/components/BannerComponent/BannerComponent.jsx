@@ -18,7 +18,7 @@ const BannerComponent = () => {
     return (
         <BannerContainer>
             <BannerImage
-                image={bannerImage}
+                $image={bannerImage}
             />
             <Title
                 level={2}

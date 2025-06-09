@@ -9,17 +9,22 @@ const CardDoctor = ({ doctor, isHospital }) => {
     const navigate = useNavigate()
     return (
         <CardDoctorContainer
-            onClick={() => navigate(`/detail-doctor/${doctor?._id}`)}
-
+            onClick={() => {
+                if (isHospital) {
+                    navigate(`/hospitals/${doctor?._id}`)
+                } else {
+                    navigate(`/doctors/${doctor?._id}`)
+                }
+            }}
         >
             <Space direction="horizontal" style={{ gap: 16 }}>
                 <Avatar size={100} icon={<UserOutlined />} />
                 <Space direction="vertical">
-                    <Text style={{ fontSize: '20px' }} strong>{isHospital ? 'Phòng khám' : 'Bác sĩ'} {doctor?.user?.name || doctor?.name}</Text>
+                    <Text style={{ fontSize: '20px' }} strong>{isHospital ? 'Bệnh viện' : 'Bác sĩ'} {doctor?.user?.name || doctor?.name}</Text>
                     {doctor?.specialties?.length > 0 ? (
                         <Space direction="horizontal" style={{ gap: 8 }}>
                             {doctor?.specialties?.map((item) => (
-                                <Tag key={item._id} color="blue">
+                                <Tag color="blue">
                                     {item.name}
                                 </Tag>
                             ))}
