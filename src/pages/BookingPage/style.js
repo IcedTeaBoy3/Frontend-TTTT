@@ -41,7 +41,7 @@ export const WrapperDoctorInfo = styled.div`
     padding: 12px 0;
     border-bottom: 1px solid #e8e8e8;
     border-top: 1px solid #e8e8e8;
-
+    
     @media (max-width: 576px) {
         flex-direction: column;
         align-items: flex-start;

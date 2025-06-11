@@ -2,7 +2,7 @@
 import DefaultLayout from '../../components/DefaultLayout/DefaultLayout'
 import { Steps, Typography, Avatar, Flex, Divider, Input, Card } from 'antd'
 import { useSelector } from 'react-redux'
-import { UserOutlined, SolutionOutlined, LoadingOutlined, SmileOutlined, FieldTimeOutlined } from '@ant-design/icons'
+import { UserOutlined, SolutionOutlined, LoadingOutlined, SmileOutlined, FieldTimeOutlined, UsergroupAddOutlined } from '@ant-design/icons'
 import { addMinutesToTime } from '../../utils/timeUtils'
 import { formatDateToDDMMYYYY } from '../../utils/dateUtils'
 import ButtonComponent from '../../components/ButtonComponent/ButtonComponent'
@@ -16,18 +16,27 @@ import { useDispatch } from 'react-redux'
 import { updateAppointment, setAppointment } from '../../redux/Slice/appointmentSlice'
 import { updateUser } from '../../redux/Slice/authSlice'
 import TimeSlot from '../../components/TimeSlot/TimeSlot'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import ModalUpdateUser from '../../components/ModalUpdateUser/ModalUpdateUser'
 import * as Message from '../../components/Message/Message';
 import * as UserService from '../../services/UserService';
+import * as HospitalService from '../../services/HospitalService'
 import dayjs from 'dayjs'
 import LoadingComponent from '../../components/LoadingComponent/LoadingComponent'
+import CardSpecialty from '../../components/CardSpecialty/CardSpecialty'
 import { convertGender } from '../../utils/convertGender'
 import { BookingPageContainer, LeftContent, RightContent, WrapperDoctorInfo, WrapperAppointmentInfo } from './style'
 
 const { Title, Text } = Typography;
 const BookingPage = () => {
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    const type = queryParams.get('type'); // sẽ là "hospital"
+
+    const isHospital = type === 'hospital';
+    const hospitalId = queryParams.get('hospitalId'); // nếu là bệnh viện thì sẽ có hospitalId
     const doctor = useSelector((state) => state.appointment.doctor);
+    const hospital = useSelector((state) => state.appointment.hospital);
     const patient = useSelector((state) => state.auth.user);
     const appointment = useSelector((state) => state.appointment);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -36,16 +45,21 @@ const BookingPage = () => {
     const navigate = useNavigate();
     const [timeSlots, setTimeSlots] = useState([]);
     const [availableSlots, setAvailableSlots] = useState([]);
-    const [activeKey, setActiveKey] = useState(appointment?.selectedTime ? ['2'] : ['1']);
+    const [activeKey, setActiveKey] = useState(!doctor ? ['0'] : !appointment?.specialty ? ['1'] : !appointment?.selectedTime ? ['2'] : ['3']);
     const [isLoaded, setIsLoaded] = useState(false); // Đánh dấu dã load xong dữ liệu
-    const [currentStep, setCurrentStep] = useState(appointment?.selectedTime ? 1 : 0);
+    const [currentStep, setCurrentStep] = useState(!doctor ? 0 : !appointment?.specialty ? 1 : !appointment?.selectedTime ? 2 : 3);
     const onChange = key => {
         setActiveKey(key);
     };
+    const queryGetAllDoctorsHospital = useQuery({
+        queryKey: ["getAllDoctorsHospital", hospitalId],
+        queryFn: () => HospitalService.getAllDoctorsHospital(hospitalId),
+        enabled: isHospital && !!hospitalId,
+    })
     const queryGetWorkingScheduleByDoctor = useQuery({
         queryKey: ["getWorkingScheduleByDoctor", doctor?._id],
         queryFn: () => WorkingScheduleService.getWorkingScheduleByDoctor(doctor?._id),
-        enabled: !!doctor?._id,
+        enabled: !!doctor?._id
     })
     const mutationUpdateUpdateProfile = useMutation({
         mutationFn: (data) => {
@@ -56,8 +70,8 @@ const BookingPage = () => {
             if (res?.status === "success") {
                 Message.success(res?.message);
                 setIsModalOpen(false);
-                setCurrentStep(2);
-                setActiveKey(['3']);
+                setCurrentStep(isHospital ? 1 : 2); // Nếu là bệnh viện thì chuyển về bước chọn chuyên khoa, nếu không thì chuyển về bước chọn bác sĩ
+                setActiveKey(isHospital ? ['1'] : ['2']);
                 const { _id, createdAt, updatedAt, __v, password, ...updatedData } = res.data;
                 dispatch(updateUser(updatedData));
             } else {
@@ -75,15 +89,15 @@ const BookingPage = () => {
         onSuccess: (res) => {
             if (res?.status === "success") {
                 Message.success(res?.message);
-                setCurrentStep(3);
+                setCurrentStep(isHospital ? 4 : 3);
                 dispatch(updateAppointment({
                     stt: res?.data?.stt,
                 }))
-                navigate('/booking-success');
+                navigate('/booking-success?type=' + (isHospital ? 'hospital' : 'doctor'));
             } else if (res?.status === "error") {
-                setCurrentStep(0);
                 setAvailableSlots(res?.availableSlots || []);
-                setActiveKey(['1']);
+                setCurrentStep(isHospital ? 2 : 1);
+                setActiveKey(isHospital ? ['2'] : ['1']);
                 Message.error(res?.message);
             }
             setIsLoaded(true); // Đánh dấu đã load xong
@@ -93,6 +107,7 @@ const BookingPage = () => {
             setIsLoaded(true); // cũng đánh dấu xong để tránh disable toàn bộ
         }
     })
+    const { data: doctors, isLoading: isLoadingDoctor } = queryGetAllDoctorsHospital
     const { data: workingSchedules, isLoading: isLoadingWorkingSchedule } = queryGetWorkingScheduleByDoctor
     const { isPending: isPendingCreate } = mutationCreateAppointment
     const { isPending: isPendingUpdateProfile } = mutationUpdateUpdateProfile
@@ -110,7 +125,7 @@ const BookingPage = () => {
             dispatch(updateAppointment({ schedule }));
             handleCreateWorkingTime(schedule);
         } else {
-            dispatch(setAppointment({
+            dispatch(updateAppointment({
                 selectedDate: null,
                 selectedTime: null,
                 schedule: null,
@@ -164,7 +179,8 @@ const BookingPage = () => {
         return !canSelectSlot(selectedDate, time, availableSlots);
     };
     const handleSelectedTime = (time) => {
-        setCurrentStep(1); // Cập nhật bước hiện tại
+        setCurrentStep(isHospital ? 3 : 2); // Nếu là bệnh viện thì chuyển về bước chọn giờ khám, nếu không thì chuyển về bước chọn chuyên khoa
+        setActiveKey(isHospital ? ['3'] : ['2']); // Mở tab chọn giờ khám
         // Cập nhật giờ khám đã chọn
         dispatch(updateAppointment({ selectedTime: time }));
     }
@@ -176,21 +192,37 @@ const BookingPage = () => {
         mutationUpdateUpdateProfile.mutate(data);
     }
     const handleBookingSchedule = () => {
+        if (!doctor) {
+            Message.info("Vui lòng chọn bác sĩ trước khi đặt lịch khám");
+            setCurrentStep(isHospital ? 0 : 1);
+            setActiveKey(isHospital ? ['0'] : ['1']);
+            return;
+        }
+        if (!appointment?.specialty) {
+            Message.info("Vui lòng chọn chuyên khoa trước khi đặt lịch khám");
+            setCurrentStep(isHospital ? 1 : 2);
+            setActiveKey(isHospital ? ['1'] : ['2']);
+            return;
+        }
         if (!appointment?.selectedTime) {
             Message.info("Vui lòng chọn giờ khám trước khi đặt lịch");
+            setCurrentStep(isHospital ? 2 : 3);
+            setActiveKey(isHospital ? ['2'] : ['3']);
             return;
         }
 
         const { name, email, phone, dateOfBirth, gender, address, ethnic, idCard, insuranceCode, job } = patient;
         if (!name || !email || !phone || !dateOfBirth || !gender || !address || !idCard) {
             Message.info("Vui lòng cập nhật hồ sơ bệnh nhân trước khi đặt lịch khám");
+            setCurrentStep(isHospital ? 3 : 4); // Nếu là bệnh viện thì chuyển về bước Hồ sơ bệnh nhân, nếu không thì chuyển về bước Lý do khám
+            setActiveKey(isHospital ? ['3'] : ['4']);
             handleEditProfile();
             return;
         }
         if (!reason) {
             Message.info("Vui lòng nhập lý do khám bệnh trước khi đặt lịch");
-            setActiveKey(['3']); // Mở tab nhập lý do khám
-            setCurrentStep(2);
+            setCurrentStep(4);
+            setActiveKey(['4']);
             return;
         }
         dispatch(updateAppointment({
@@ -208,6 +240,14 @@ const BookingPage = () => {
 
     }
     const itemsStep = [
+        isHospital && {
+            title: 'Chọn bác sĩ',
+            icon: <UsergroupAddOutlined />,
+        },
+        {
+            title: 'Chọn chuyên khoa',
+            icon: <UserOutlined />,
+        },
         {
             title: 'Thời gian khám',
             icon: <FieldTimeOutlined />,
@@ -217,17 +257,84 @@ const BookingPage = () => {
             icon: <SolutionOutlined />,
         },
         {
-            title: 'Xác nhận thông tin',
-            icon: <LoadingOutlined />,
-        },
-        {
             title: 'Hoàn tất',
             icon: <SmileOutlined />,
         },
-    ]
+    ].filter(Boolean); // Loại bỏ các mục undefined nếu không phải là bệnh viện
     const items = [
+
+        isHospital && {
+            key: '0',
+            label: 'Chọn bác sĩ',
+            children: (
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    <Text strong>Chọn bác sĩ</Text>
+                    {doctors && doctors?.data?.length > 0 ? (
+                        <div
+                            style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: 12,
+                                padding: 16,
+                            }}
+                        >
+                            {doctors.data.map((doc) => (
+                                <Flex
+                                    key={doc._id}
+                                    justify="space-between"
+                                    align="center"
+                                    style={{
+                                        padding: "12px 0",
+                                        borderBottom: "1px solid #f0f0f0",
+                                        cursor: "pointer",
+                                    }}
+                                    onClick={() => {
+                                        dispatch(updateAppointment({ doctor: doc }));
+                                        setCurrentStep(isHospital ? 1 : 2);
+                                        setActiveKey(isHospital ? ['1'] : ['2']);
+                                    }}
+                                >
+                                    <Flex align="center" gap={12}>
+                                        <Avatar size={40} src={doc.image || null} icon={<UserOutlined />} />
+                                        <Text strong>{doc.user?.name}</Text>
+                                    </Flex>
+                                    <Text type="secondary">{doc.hospital?.name}</Text>
+                                </Flex>
+                            ))}
+                        </div>
+                    ) : (
+                        <Text type="secondary">Chưa có bác sĩ nào cho phòng khám</Text>
+                    )}
+                </div>
+            )
+        },
         {
             key: '1',
+            label: 'Chọn chuyên khoa',
+            children: (
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    <Text strong>Chọn chuyên khoa</Text>
+                    {doctor?.specialties && doctor?.specialties.length > 0 ? (
+                        doctor.specialties.map((specialty) => (
+                            <CardSpecialty
+                                key={specialty._id}
+                                specialty={specialty}
+                                isSelected={appointment.specialty?._id === specialty._id}
+                                onClick={() => {
+                                    dispatch(updateAppointment({ specialty }));
+                                    setCurrentStep(2);
+                                    setActiveKey(['2']);
+                                }}
+                            />
+                        ))
+                    ) : (
+                        <Text type="secondary">Bác sĩ này không có chuyên khoa nào</Text>
+                    )}
+                </div>
+            )
+        },
+        {
+            key: '2',
             label: 'Ngày và giờ khám',
             children: (
                 <div
@@ -267,7 +374,7 @@ const BookingPage = () => {
             ),
         },
         {
-            key: '2',
+            key: '3',
             label: 'Hồ sơ bệnh nhân',
             children: (
                 <div
@@ -309,8 +416,8 @@ const BookingPage = () => {
             )
         },
         {
-            key: '3',
-            label: 'Thông tin bổ sung (không bắt buộc)',
+            key: '4',
+            label: 'Lý do khám bệnh ( tiền sử bệnh, triệu chứng,...)',
             children: (
                 <>
                     <Text strong>Ghi chú</Text>
@@ -333,7 +440,11 @@ const BookingPage = () => {
                 </>
             )
         }
-    ];
+    ].filter(Boolean);
+    const truncateText = (text, maxLength = 15) => {
+        if (!text) return '';
+        return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
+    };
     return (
         <DefaultLayout>
             <BookingPageContainer>
@@ -367,17 +478,61 @@ const BookingPage = () => {
                         <Title level={4} style={{ marginBottom: 20 }}>Thông tin đặt khám</Title>
 
                         {/* Doctor info */}
+
                         <WrapperDoctorInfo
                         >
-                            <Avatar size={56} icon={<UserOutlined />} />
+
+                            <Avatar size={56} icon={<UserOutlined />} src={isHospital ? `${import.meta.env.VITE_APP_BACKEND_URL}${hospital?.image}` : `${import.meta.env.VITE_APP_BACKEND_URL}${doctor?.user?.avatar}`} />
                             <div style={{ display: "flex", flexDirection: "column" }}>
-                                <Text strong style={{ fontSize: "18px" }}>Bác sĩ {doctor?.user?.name}</Text>
-                                <Text type="secondary">{doctor?.hospital?.address}</Text>
+                                <Text strong style={{ fontSize: "18px" }}>
+                                    {isHospital
+                                        ? `Phòng khám ${truncateText(hospital?.name)}`
+                                        : `Bác sĩ ${truncateText(doctor?.user?.name)}`}
+                                </Text>
+                                <Text type="secondary">{isHospital ? hospital.address : doctor?.hospital?.address}</Text>
                             </div>
                         </WrapperDoctorInfo>
 
+
                         {/* Appointment info */}
                         <WrapperAppointmentInfo>
+                            {isHospital && (
+                                <Flex justify="space-between" align="center">
+                                    <Text strong style={{ fontSize: "16px" }}>👨‍⚕️ Bác sĩ </Text>
+                                    {doctor ? (
+                                        <Text strong style={{ fontSize: "16px", color: "#1677ff" }}>
+                                            {doctor?.user?.name || "--"}
+                                        </Text>
+                                    ) : (
+                                        <ButtonComponent
+                                            type="primary"
+                                            size="small"
+                                            onClick={() => {
+                                                if (!doctor) {
+                                                    Message.info("Vui lòng chọn bác sĩ trước");
+                                                    return;
+                                                }
+                                                setCurrentStep(0);
+                                                setActiveKey(['0']);
+                                            }}
+                                        >
+                                            Chọn bác sĩ
+                                        </ButtonComponent>
+                                    )}
+                                </Flex>
+                            )}
+                            {/* Chuyên khoa */}
+
+                            <Flex justify="space-between" align="center">
+                                <Text style={{ fontSize: "16px" }}>🩺 Chuyên khoa</Text>
+                                <Text strong style={{ fontSize: "16px", color: "#1677ff" }}>
+                                    {appointment?.specialty?.name || "--"}
+                                </Text>
+                            </Flex>
+
+
+                            {/* Hospital info */}
+
                             <Flex justify="space-between" align="center">
                                 <Text style={{ fontSize: "16px" }}>🗓️ Ngày khám</Text>
                                 <Text strong style={{ fontSize: "16px", color: "#1677ff" }}>

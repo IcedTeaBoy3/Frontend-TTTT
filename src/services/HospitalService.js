@@ -70,3 +70,25 @@ export const searchHospital = async (keyword, specialty, page, limit) => {
         throw error;
     }
 }
+export const getHospital = async (id) => {
+    try {
+        const response = await axiosInstance.get(
+            `/hospitals/get-hospital/${id}`,
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching hospital data:", error);
+        throw error;
+    }
+}
+export const getAllDoctorsHospital = async (id) => {
+    try {
+        const response = await axiosInstance.get(
+            `/hospitals/get-all-doctors-hospital/${id}`,
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching all doctors in hospital:", error);
+        throw error;
+    }
+}

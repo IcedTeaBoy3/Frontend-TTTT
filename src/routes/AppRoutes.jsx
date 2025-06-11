@@ -13,6 +13,7 @@ import ProtectedRoute from "../components/ProtectedRoute/ProtectedRoute";
 import SearchPage from "../pages/SearchPage/SearchPage";
 import ForgotPassword from "../pages/ForgotPassword/ForgotPassword";
 import ResetPassword from "../pages/ResetPassword/ResetPassword";
+import DetailHospitalPage from "../pages/DetailHospitalPage/DetailHospitalPage";
 // Các trang con trong admin
 import Dashboard from "../pages/AdminPage/Dashboard";
 import Appointment from "../pages/AdminPage/Appointment";
@@ -29,6 +30,7 @@ const AppRoutes = () => {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/authentication" element={<AuthenticationPage />} />
                 <Route path="/detail-doctor/:id" element={<DetailDoctorPage />} />
+                <Route path="/detail-hospital/:id" element={<DetailHospitalPage />} />
                 <Route path="/unauthorized" element={<UnauthorizedPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/search" element={<SearchPage />} />

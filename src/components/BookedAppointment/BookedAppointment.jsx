@@ -181,7 +181,12 @@ const BookedAppointment = ({ userId }) => {
                                             <strong>Giờ khám:</strong> <Text underline style={{ color: '#52c41a', fontWeight: 'bold' }}>{appointmentDetails.timeSlot}</Text>
                                         </Paragraph>
                                         <Paragraph>
-                                            <strong>Chuyên khoa:</strong> {appointmentDetails.doctor?.specialty?.name}
+                                            <strong>Chuyên khoa:</strong>{" "}
+                                            {appointmentDetails.doctor?.specialties.map((spec) => (
+                                                <Tag key={spec._id} color="blue" style={{ marginRight: '4px' }}>
+                                                    {spec.name}
+                                                </Tag>
+                                            ))}
                                         </Paragraph>
                                         <Title level={5}>Thông tin bệnh nhân</Title>
                                         <Paragraph>

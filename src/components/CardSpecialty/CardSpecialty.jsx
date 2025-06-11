@@ -1,4 +1,4 @@
-import { Flex, Image, Typography } from 'antd'
+import { Flex, Image, Typography, Space } from 'antd'
 import { StyledCard } from './style';
 const { Text } = Typography;
 const CardSpecialty = ({ specialty, isSelected, onClick, ...rests }) => {
@@ -10,19 +10,28 @@ const CardSpecialty = ({ specialty, isSelected, onClick, ...rests }) => {
         >
 
             <Flex
-                direction="column"
+
                 justify="start"
-                gap={10}
                 align="center"
+                gap={20}
             >
                 <Image
-                    width={30}
-                    height={30}
+                    width={50}
+                    height={50}
                     src={`${import.meta.env.VITE_APP_BACKEND_URL}${specialty?.image}`}
                     alt="Chuyên khoa"
-
                 />
-                <Text strong>{specialty?.name}</Text>
+                <Space direction="vertical">
+
+                    <Text strong style={{ textAlign: 'center' }}>{specialty?.name}</Text>
+
+                    <Text
+                        type="secondary"
+
+                    >
+                        {specialty?.description}
+                    </Text>
+                </Space>
             </Flex>
         </StyledCard >
 

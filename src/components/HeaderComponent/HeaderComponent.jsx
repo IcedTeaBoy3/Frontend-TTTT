@@ -132,7 +132,7 @@ const HeaderComponent = () => {
                                 });
                             }}
                         >
-                            Đặt khám bệnh viện
+                            Đặt khám phòng khám
                         </p>
                     ),
                 },

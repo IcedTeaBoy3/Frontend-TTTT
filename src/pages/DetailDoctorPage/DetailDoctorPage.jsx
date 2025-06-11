@@ -109,9 +109,8 @@ const DetailDoctorPage = () => {
         navigate("/booking");
     }
     const handleBookingDoctor = () => {
-        navigate("/booking")
+        navigate("/booking?type=doctor");
     }
-    console.log("doctor", doctor);
     return (
         <DefaultLayout>
             <Container>
@@ -128,7 +127,14 @@ const DetailDoctorPage = () => {
                                 </Title>
                                 <Text type="secondary">Chuyên khoa:</Text>{" "}
                                 <Text strong style={{ fontSize: "18px", color: "#1890ff" }}>
-                                    {doctor?.data?.specialties?.map((item) => <Tag color='blue'>{item.name}</Tag>)}
+                                    {doctor?.data?.specialties?.map((item) =>
+                                        <Tag
+                                            key={item._id}
+                                            color='blue'
+                                            onClick={() => navigate(`/search?specialty=${item._id}`)}
+                                            style={{ cursor: "pointer", marginBottom: "5px" }}
+                                        >{item.name}
+                                        </Tag>)}
                                 </Text>
                             </div>
 
@@ -140,7 +146,7 @@ const DetailDoctorPage = () => {
                             </div>
 
                             <div>
-                                <Text type="secondary">Nơi công tác:</Text>{" "}
+                                <Text type="secondary">Địa chỉ phòng khám:</Text>{" "}
                                 <Text strong style={{ fontSize: "18px" }}>
                                     {doctor?.data?.hospital?.name}
                                 </Text>
@@ -176,11 +182,15 @@ const DetailDoctorPage = () => {
 
                     <div>
                         <Title level={4}>Giới thiệu</Title>
-                        <Text style={{ fontSize: '16px' }}>{doctor?.data?.description || 'Chưa có giới thiệu'}</Text>
+                        <Text style={{ fontSize: '16px' }}>{doctor?.data?.description ? doctor?.data?.description : (
+                            <Text type="secondary">Chưa có giới thiệu</Text>
+                        )}</Text>
                     </div>
 
                     <div>
-                        <Title level={4}>Địa chỉ : {doctor?.data?.hospital?.address || 'Chưa có địa chỉ'}</Title>
+                        <Title level={4}>Địa chỉ : {doctor?.data?.hospital?.address ? doctor?.data?.hospital?.address : (
+                            <Text type="secondary">Chưa có địa chỉ</Text>
+                        )}</Title>
                         <StyledIframe
                             loading="lazy"
                             allowFullScreen
@@ -193,7 +203,7 @@ const DetailDoctorPage = () => {
                     <StickyFooter>
                         <Hotline>
                             <Text strong>Hỗ trợ đặt khám qua hotline:</Text>
-                            <Text strong style={{ fontSize: 18, color: "#1890ff" }}>1900 8888</Text>
+                            <Text strong style={{ fontSize: 18, color: "#1890ff" }}>{doctor?.data?.hospital?.phone}</Text>
                         </Hotline>
                         <BookingButton
                             type="primary"

@@ -3,24 +3,16 @@ import { UserOutlined } from "@ant-design/icons"
 import { Typography } from "antd"
 import ButtonComponent from "../ButtonComponent/ButtonComponent"
 import { CardDoctorContainer } from "./style"
-import { useNavigate } from "react-router-dom"
 const { Text, Paragraph } = Typography
-const CardDoctor = ({ doctor, isHospital }) => {
-    const navigate = useNavigate()
+const CardDoctor = ({ doctor, isClinic, onClick }) => {
     return (
         <CardDoctorContainer
-            onClick={() => {
-                if (isHospital) {
-                    navigate(`/hospitals/${doctor?._id}`)
-                } else {
-                    navigate(`/doctors/${doctor?._id}`)
-                }
-            }}
+            onClick={onClick}
         >
             <Space direction="horizontal" style={{ gap: 16 }}>
                 <Avatar size={100} icon={<UserOutlined />} />
                 <Space direction="vertical">
-                    <Text style={{ fontSize: '20px' }} strong>{isHospital ? 'Bệnh viện' : 'Bác sĩ'} {doctor?.user?.name || doctor?.name}</Text>
+                    <Text style={{ fontSize: '20px' }} strong>{isClinic ? 'Phòng khám' : 'Bác sĩ'} {doctor?.user?.name || doctor?.name}</Text>
                     {doctor?.specialties?.length > 0 ? (
                         <Space direction="horizontal" style={{ gap: 8 }}>
                             {doctor?.specialties?.map((item) => (

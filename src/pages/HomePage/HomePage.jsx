@@ -16,7 +16,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import CardComponent from "../../components/CardComponent/CardComponent";
 import { SpecialtyCard, SpecialtyImage, HospitalCard, HospitalImage } from "./style";
 import { Wrapper, CenteredTitleWrapper, Section } from "./style";
-const { Text, Title } = Typography;
+const { Text, Title, Paragraph } = Typography;
 const HomePage = () => {
     const [limit, setLimit] = useState(6)
     const navigate = useNavigate();
@@ -39,7 +39,7 @@ const HomePage = () => {
     };
     const queryGetAllHospitals = useQuery({
         queryKey: ["getAllHospitals"],
-        queryFn: () => HospitalService.getAllHospitals('hospital', 1, 10),
+        queryFn: () => HospitalService.getAllHospitals('clinic', 1, 10),
         retry: 3,
         retryDelay: 1000,
         keepPreviousData: true,
@@ -89,9 +89,9 @@ const HomePage = () => {
                                 Xem tất cả <RightOutlined />
                             </ButtonComponent>
                         </Flex>
-                        <Text type="secondary">
+                        <Paragraph type="secondary">
                             Phiếu khám kèm số thứ tự và thời gian của bạn được xác nhận.
-                        </Text>
+                        </Paragraph>
                         <LoadingComponent isLoading={isLoadingDoctor}>
                             <SlideComponent length={doctors?.data.length}>
                                 {doctors?.data.map((item) => (
@@ -108,19 +108,19 @@ const HomePage = () => {
                         </LoadingComponent>
                     </Section>
 
-                    {/* Bác sĩ theo Bệnh viện */}
+                    {/* Bác sĩ theo phòng khám */}
                     <Section>
                         <Flex justify="space-between" align="center">
-                            <Title level={3} style={{ fontWeight: 'bold' }}>Đặt khám bệnh viện</Title>
+                            <Title level={3} style={{ fontWeight: 'bold' }}>Đặt khám phòng khám</Title>
                             <ButtonComponent
                                 type="primary"
                                 hoverable="true"
-                                onClick={() => handleNavigate('/search?type=hospital')}
+                                onClick={() => handleNavigate('/search?type=clinic')}
                             >
                                 Xem tất cả <RightOutlined />
                             </ButtonComponent>
                         </Flex>
-                        <Text type="secondary">Nhiều loại bệnh viện khác nhau</Text>
+                        <Paragraph type="secondary">Nhiều phòng khám khác nhau với nhiều bác sĩ kinh nghiệm</Paragraph>
                         <LoadingComponent isLoading={isLoadingHospital}>
                             <SlideComponent length={hospitals?.data.length}>
                                 {hospitals?.data.map((item) => (
@@ -129,10 +129,11 @@ const HomePage = () => {
                                         key={item._id}
                                         cover={
                                             <HospitalImage
-                                                src={`${import.meta.env.VITE_APP_BACKEND_URL}${item.image}`}
+                                                src={`${import.meta.env.VITE_APP_BACKEND_URL}${item.thumbnail}`}
                                                 alt={item.name}
                                             />
                                         }
+                                        onClick={() => handleNavigate(`/detail-hospital/${item._id}`)}
                                     >
                                         <Card.Meta title={item.name} description={item.address} />
                                     </HospitalCard>
