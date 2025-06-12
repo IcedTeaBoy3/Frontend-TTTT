@@ -255,6 +255,7 @@ const Doctor = () => {
             title: "Kinh nghiệm",
             dataIndex: "experience",
             key: "experience",
+            render: (text) => text?.length > 60 ? text.substring(0, 50) + "..." : text,
         },
         {
             title: "Mô tả",

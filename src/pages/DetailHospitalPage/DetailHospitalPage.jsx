@@ -52,7 +52,6 @@ const DetailHospitalPage = () => {
             children: <ServiceHospital
                 hospitalId={hospital?.data?._id}
                 doctors={hospital?.data?.doctors}
-                specialties={hospital?.data?.specialties}
             />,
         },
     ];

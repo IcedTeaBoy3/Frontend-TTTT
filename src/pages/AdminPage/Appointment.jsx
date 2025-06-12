@@ -11,6 +11,7 @@ import { useAppointmentData } from "../../hooks/useAppointmentData";
 import { useDoctorData } from "../../hooks/useDoctorData";
 import { useWorkingScheduleData } from "../../hooks/useWorkingScheduleData";
 import { usePatientData } from "../../hooks/usePatientData";
+import { useSpecialtyData } from "../../hooks/useSpecialtyData";
 import dayjs from "dayjs";
 const { Option } = Select;
 const Appointment = () => {
@@ -51,6 +52,7 @@ const Appointment = () => {
         setRowSelected,
     });
 
+    const { queryGetAllSpecialties } = useSpecialtyData({});
     const { queryGetAllDoctors } = useDoctorData({});
     const { useGetWorkingScheduleByDoctor } = useWorkingScheduleData({});
     const { queryGetAllPatients } = usePatientData({});
@@ -59,6 +61,7 @@ const Appointment = () => {
     const { data: doctors, isLoading: isLoadingDoctor } = queryGetAllDoctors;
     const { data: workingSchedules, isLoading: isLoadingWorkingSchedule } = useGetWorkingScheduleByDoctor(formUpdate.getFieldValue("nameDoctor"));
     const { data: patients, isLoading: isLoadingPatient } = queryGetAllPatients;
+    const { data: specialties, isLoading: isLoadingSpecialty } = queryGetAllSpecialties;
     const { isPending: isPendingDelete } = mutationDeleteAppointment;
     const { isPending: isPendingUpdate } = mutationUpdateAppointment;
     const { isPending: isPendingDeleteMany } = mutationDeleteManyAppointments;
@@ -177,6 +180,14 @@ const Appointment = () => {
             }
         },
         {
+            title: "Chuyên khoa",
+            dataIndex: "specialty",
+            key: "specialty",
+            render: (text) => {
+                return text || "Chưa có thông tin";
+            }
+        },
+        {
             title: "Ngày khám",
             dataIndex: "workDate",
             key: "workDate",
@@ -220,6 +231,11 @@ const Appointment = () => {
             title: "Lý do khám",
             dataIndex: "reason",
             key: "reason",
+            render: (text) => text.length > 50 ? (
+                <span title={text}>{text.slice(0, 50)}...</span>
+            ) : (
+                text || "Chưa có thông tin"
+            ),
         },
         {
             title: "Trạng thái",
@@ -315,6 +331,7 @@ const Appointment = () => {
         index: index + 1,
         doctorName: item.doctor?.user?.name,
         patientName: item.patient?.name,
+        specialty: item.specialty?.name,
         workDate: item.schedule?.workDate,
         timeSlot: item.timeSlot,
         reason: item.reason,
@@ -328,6 +345,7 @@ const Appointment = () => {
             formUpdate.setFieldsValue({
                 nameDoctor: appointment.doctor?._id,
                 namePatient: appointment.patient?._id,
+                specialty: appointment.specialty?._id,
                 workDate: appointment.schedule?._id,
                 timeSlot: `${appointment.timeSlot} - ${addMinutesToTime(appointment.timeSlot, 30)}`,
                 reason: appointment.reason,
@@ -338,11 +356,12 @@ const Appointment = () => {
     }
     const handleOnUpdateAppointment = () => {
         formUpdate.validateFields().then((values) => {
-            const { nameDoctor, namePatient, workDate, timeSlot, reason } = values;
+            const { nameDoctor, namePatient, specialty, workDate, timeSlot, reason } = values;
             const appointmentData = {
                 id: rowSelected,
                 doctorId: nameDoctor,
                 patientId: namePatient,
+                specialtyId: specialty,
                 scheduleId: workDate,
                 timeSlot: timeSlot,
                 reason: reason,
@@ -502,6 +521,27 @@ const Appointment = () => {
                                 ))}
                             </Select>
                         </Form.Item>
+                        <Form.Item
+                            label="Chuyên khoa"
+                            name="specialty"
+                            rules={[{ required: true, message: "Vui lòng chọn chuyên khoa!" }]}
+                        >
+                            <Select
+                                showSearch
+                                placeholder="Chọn chuyên khoa"
+                                optionFilterProp="children"
+                                filterOption={(input, option) =>
+                                    (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+                                }
+                            >
+                                {specialties && specialties?.data?.map((specialty) => (
+                                    <Option key={specialty._id} value={specialty._id} label={specialty.name}>
+                                        {specialty.name}
+                                    </Option>
+                                ))}
+                            </Select>
+                        </Form.Item>
+
                         <Form.Item
                             label="Ngày khám"
                             name="workDate"

@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Row, Col, Typography, Image, Space } from 'antd';
-import ButtonComponent from '../ButtonComponent/ButtonComponent';
+import defaultImage from '../../assets/default_image.png';
 import { StyledIframe } from './style';
 const { Title, Text } = Typography;
 const HospitalInfor = ({ hospital }) => {
@@ -18,7 +18,16 @@ const HospitalInfor = ({ hospital }) => {
                             src={`${import.meta.env.VITE_APP_BACKEND_URL}${hospital?.data?.images?.[0]}`}
                             alt={hospital?.data?.name}
                             style={{ width: '100%', maxHeight: '400px', height: 'auto', borderRadius: '8px' }}
-                            fallback="data:image/png;base64,..."
+                            fallback={defaultImage}
+                            preview={{
+                                mask: 'Xem ảnh',
+                                icons: {
+                                    rotateRight: <span style={{ fontSize: '16px' }}>⟳</span>,
+                                    rotateLeft: <span style={{ fontSize: '16px' }}>⟲</span>,
+                                    zoomIn: <span style={{ fontSize: '16px' }}>🔍</span>,
+                                    zoomOut: <span style={{ fontSize: '16px' }}>🔎</span>,
+                                },
+                            }}
                         />
                     </Col>
 
@@ -29,7 +38,7 @@ const HospitalInfor = ({ hospital }) => {
                                 >
                                     <Image
                                         src={`${import.meta.env.VITE_APP_BACKEND_URL}${image}`}
-                                        fallback="data:image/png;base64,..."
+                                        fallback={defaultImage}
                                         alt={`Hospital image ${index + 1}`}
                                         style={{
                                             width: '100%',

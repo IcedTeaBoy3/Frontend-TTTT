@@ -5,7 +5,6 @@ import AppointmentStats from "../../components/AppointmentStats/AppointmentStats
 import { useDebounce } from '../../hooks/useDebounce';
 import DoctorStats from "../../components/DoctorStats/DoctorStats";
 import PatientStats from "../../components/PatientStats/PatientStats";
-import dayjs from 'dayjs';
 const { RangePicker } = DatePicker;
 
 const Dashboard = () => {

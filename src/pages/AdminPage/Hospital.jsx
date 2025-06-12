@@ -58,11 +58,8 @@ const Hospital = () => {
         type: '',
     });
     const { queryGetAllDoctors } = useDoctorData({});
-    const { queryGetAllSpecialties } = useSpecialtyData({});
-
 
     const { data: doctors, isLoading: isLoadingDoctor } = queryGetAllDoctors;
-    const { data: specialties, isLoading: isLoadingSpecialty } = queryGetAllSpecialties;
     const { data: hospitals, isLoading } = queryGetAllHospitals;
     const { isPending: isPendingAdd } = mutationCreateHospital;
     const { isPending: isPendingUpdate } = mutationUpdateHospital;
@@ -86,16 +83,11 @@ const Hospital = () => {
                         formData.append('images', file.originFileObj);
                     });
                 }
-                console.log("values", values.images);
-
-
-
                 formData.append("name", values.name);
                 formData.append("description", values.description);
                 formData.append("address", values.address);
                 formData.append("phone", values.phone);
-                formData.append("doctors", JSON.stringify(values.doctors || []));
-                formData.append("specialties", JSON.stringify(values.specialties || []));
+                formData.append("doctors", JSON.stringify(values.doctors || []));;
                 formData.append("type", values.type);
                 mutationCreateHospital.mutate(formData);
                 setIsModalOpenCreate(false);
@@ -112,7 +104,6 @@ const Hospital = () => {
                 name: hospital.name,
                 type: hospital.type,
                 doctors: hospital.doctors?.map((doctor) => doctor._id) || [],
-                specialties: hospital.specialties?.map((specialty) => specialty._id) || [],
                 description: hospital.description,
                 address: hospital.address,
                 phone: hospital.phone,
@@ -149,9 +140,7 @@ const Hospital = () => {
         formData.append("address", values.address);
         formData.append("phone", values.phone);
         formData.append("doctors", JSON.stringify(values.doctors || []));
-        formData.append("specialties", JSON.stringify(values.specialties || []));
         formData.append("type", values.type);
-
         mutationUpdateHospital.mutate({ id: rowSelected, formData });
     };
     const handleCloseAddSpecialty = () => {
@@ -288,30 +277,6 @@ const Hospital = () => {
             filterMode: "tree",
         },
         {
-            title: "Chuyên khoa",
-            dataIndex: "specialties",
-            key: "specialties",
-            render: (_, record) => (
-                <span>
-                    {record.specialties?.length > 0
-                        ? record.specialties.map((specialty) => (
-                            <Tag key={specialty._id} color="green">
-                                {specialty.name}
-                            </Tag>
-                        ))
-                        : "Chưa có chuyên khoa"}
-                </span>
-            ),
-            filters: specialties?.data?.map((item) => ({
-                text: item.name,
-                value: item._id,
-            })),
-            onFilter: (value, record) =>
-                record.specialties?.some((item) => item._id === value),
-            filterSearch: true,
-            filterMode: "tree",
-        },
-        {
             title: "Địa chỉ",
             dataIndex: "address",
             key: "address",
@@ -380,7 +345,6 @@ const Hospital = () => {
         phone: item.phone,
         description: item.description,
         doctors: item.doctors,
-        specialties: item.specialties,
         type: item.type
     }));
     const beforeUpload = (file, fileList) => {
@@ -460,7 +424,7 @@ const Hospital = () => {
             </LoadingComponent>
             <LoadingComponent isLoading={isPendingAdd}>
                 <ModalComponent
-                    title={formCreate.getFieldValue('type') === 'hospital' ? "Thêm bệnh viện" : "Thêm phòng khám"}
+                    title={selectedType === 'hospital' ? "Thêm bệnh viện" : "Thêm phòng khám"}
                     open={isModalOpenCreate}
                     onOk={handleAddHospital}
                     onCancel={handleCloseAddSpecialty}
@@ -501,7 +465,6 @@ const Hospital = () => {
                             <Radio.Group
                                 onChange={(e) => {
                                     setSelectedType(e.target.value);
-                                    formCreate.setFieldsValue({ type: e.target.value });
                                 }}
                             >
                                 <Radio value="hospital" >Bệnh viện</Radio>
@@ -509,7 +472,7 @@ const Hospital = () => {
                             </Radio.Group>
                         </Form.Item>
 
-                        {formCreate.getFieldValue('type') === 'hospital' && (
+                        {selectedType === 'hospital' && (
                             <>
                                 <LoadingComponent isLoading={isLoadingDoctor}>
                                     <Form.Item
@@ -540,34 +503,7 @@ const Hospital = () => {
                                     </Form.Item>
                                 </LoadingComponent>
 
-                                <LoadingComponent isLoading={isLoadingSpecialty}>
-                                    <Form.Item
-                                        label="Chọn chuyên khoa"
-                                        name="specialties"
-                                        rules={[
-                                            {
-                                                required: true,
-                                                message: "Vui lòng chọn ít nhất một chuyên khoa!",
-                                            },
-                                        ]}
-                                    >
 
-                                        <Select
-                                            mode="multiple"
-                                            placeholder="Chọn chuyên khoa"
-                                            optionFilterProp="children"
-                                            filterOption={(input, option) =>
-                                                option.children.toLowerCase().includes(input.toLowerCase())
-                                            }
-                                        >
-                                            {specialties && specialties.data?.length && specialties.data.map((specialty) => (
-                                                <Select.Option key={specialty._id} value={specialty._id}>
-                                                    {specialty.name}
-                                                </Select.Option>
-                                            ))}
-                                        </Select>
-                                    </Form.Item>
-                                </LoadingComponent>
                             </>
                         )}
 
@@ -745,35 +681,7 @@ const Hospital = () => {
                                         </Select>
                                     </Form.Item>
                                 </LoadingComponent>
-                                <LoadingComponent isLoading={isLoadingSpecialty}>
 
-                                    <Form.Item
-                                        label="Chọn chuyên khoa"
-                                        name="specialties"
-                                        rules={[
-                                            {
-                                                required: true,
-                                                message: "Vui lòng chọn ít nhất một chuyên khoa!",
-                                            },
-                                        ]}
-                                    >
-
-                                        <Select
-                                            mode="multiple"
-                                            placeholder="Chọn chuyên khoa"
-                                            optionFilterProp="children"
-                                            filterOption={(input, option) =>
-                                                option.children.toLowerCase().includes(input.toLowerCase())
-                                            }
-                                        >
-                                            {specialties && specialties.data?.length && specialties.data.map((specialty) => (
-                                                <Select.Option key={specialty._id} value={specialty._id}>
-                                                    {specialty.name}
-                                                </Select.Option>
-                                            ))}
-                                        </Select>
-                                    </Form.Item>
-                                </LoadingComponent>
                             </>
                         )}
 

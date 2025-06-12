@@ -26,6 +26,7 @@ import LoadingComponent from '../../components/LoadingComponent/LoadingComponent
 import CardSpecialty from '../../components/CardSpecialty/CardSpecialty'
 import { convertGender } from '../../utils/convertGender'
 import { BookingPageContainer, LeftContent, RightContent, WrapperDoctorInfo, WrapperAppointmentInfo } from './style'
+import CardDoctor from '../../components/CardDoctor/CardDoctor'
 
 const { Title, Text } = Typography;
 const BookingPage = () => {
@@ -100,6 +101,8 @@ const BookingPage = () => {
                     selectedTime: null,
 
                 }));
+                setCurrentStep(isHospital ? 2 : 1); // Nếu là bệnh viện thì chuyển về bước chọn ngày khám, nếu không thì chuyển về bước chọn giờ khám
+                setActiveKey(['2']);
                 Message.error(res?.message);
             }
             setIsLoaded(true); // Đánh dấu đã load xong
@@ -182,7 +185,7 @@ const BookingPage = () => {
     };
     const handleSelectedTime = (time) => {
         setCurrentStep(isHospital ? 3 : 2); // Nếu là bệnh viện thì chuyển về bước chọn giờ khám, nếu không thì chuyển về bước chọn chuyên khoa
-        setActiveKey(isHospital ? ['3'] : ['2']); // Mở tab chọn giờ khám
+        setActiveKey(['3']); // Mở tab chọn giờ khám
         // Cập nhật giờ khám đã chọn
         dispatch(updateAppointment({ selectedTime: time }));
     }
@@ -235,6 +238,7 @@ const BookingPage = () => {
         mutationCreateAppointment.mutate({
             patientId: patient.id,
             doctorId: doctor._id,
+            specialtyId: appointment.specialty?._id,
             scheduleId: appointment.schedule._id,
             timeSlot: appointment.selectedTime,
             reason: reason,
@@ -272,38 +276,21 @@ const BookingPage = () => {
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                     <Text strong>Chọn bác sĩ</Text>
                     {doctors && doctors?.data?.length > 0 ? (
-                        <div
-                            style={{
-                                display: "flex",
-                                flexDirection: "column",
-                                gap: 12,
-                                padding: 16,
-                            }}
-                        >
-                            {doctors.data.map((doc) => (
-                                <Flex
-                                    key={doc._id}
-                                    justify="space-between"
-                                    align="center"
-                                    style={{
-                                        padding: "12px 0",
-                                        borderBottom: "1px solid #f0f0f0",
-                                        cursor: "pointer",
-                                    }}
+                        (
+                            doctors.data.map((doctor) => (
+                                <CardDoctor
+                                    key={doctor._id}
+                                    doctor={doctor}
+                                    isSelected={appointment.doctor?._id === doctor._id}
                                     onClick={() => {
-                                        dispatch(updateAppointment({ doctor: doc }));
-                                        setCurrentStep(isHospital ? 1 : 2);
-                                        setActiveKey(isHospital ? ['1'] : ['2']);
+                                        dispatch(updateAppointment({ doctor }));
+                                        setCurrentStep(isHospital ? 1 : 0); // Nếu là bệnh viện thì chuyển về bước chọn chuyên khoa, nếu không thì chuyển về bước chọn giờ khám
+                                        setActiveKey(['1']);// Mở tab chọn chuyên khoa
                                     }}
                                 >
-                                    <Flex align="center" gap={12}>
-                                        <Avatar size={40} src={doc.image || null} icon={<UserOutlined />} />
-                                        <Text strong>{doc.user?.name}</Text>
-                                    </Flex>
-                                    <Text type="secondary">{doc.hospital?.name}</Text>
-                                </Flex>
-                            ))}
-                        </div>
+                                </CardDoctor>
+                            ))
+                        )
                     ) : (
                         <Text type="secondary">Chưa có bác sĩ nào cho phòng khám</Text>
                     )}
@@ -324,8 +311,8 @@ const BookingPage = () => {
                                 isSelected={appointment.specialty?._id === specialty._id}
                                 onClick={() => {
                                     dispatch(updateAppointment({ specialty }));
-                                    setCurrentStep(isHospital ? 1 : 2); // Nếu là bệnh viện thì chuyển về bước chọn ngày khám, nếu không thì chuyển về bước chọn giờ khám
-                                    setActiveKey(isHospital ? ['1'] : ['2']);
+                                    setCurrentStep(isHospital ? 2 : 1); // Nếu là bệnh viện thì chuyển về bước chọn ngày khám, nếu không thì chuyển về bước chọn giờ khám
+                                    setActiveKey(['2']);
                                 }}
                             />
                         ))

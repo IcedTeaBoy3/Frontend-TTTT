@@ -34,23 +34,8 @@ const BookingSuccess = () => {
             },
         })
     }
-    const infoStyle = {
-        fontSize: 16,
-    };
 
-    const highlightStyle = {
-        ...infoStyle,
-        color: "rgb(82, 196, 26)",
-        fontWeight: "bold",
-    };
-    const titleStyle = {
-        margin: 0,
-        color: 'white',
-    }
-    const headStyle = {
-        backgroundColor: 'rgb(25 117 220 / 0.7)',
-        borderRadius: '8px',
-    }
+
     return (
         <DefaultLayout>
 
@@ -113,19 +98,7 @@ const BookingSuccess = () => {
                             <Col xs={24} sm={12}>
                                 <InfoText strong>Chuyên khoa:</InfoText>
                                 <Paragraph type="secondary">
-                                    {
-                                        isHospital ? hospital?.specialties.map((spec, index) => (
-                                            <span key={spec.id}>
-                                                {spec.name}
-                                                {index < hospital.specialties.length - 1 ? ', ' : ''}
-                                            </span>
-                                        )) : doctor?.specialties.map((spec, index) => (
-                                            <span key={spec.id}>
-                                                {spec.name}
-                                                {index < doctor.specialties.length - 1 ? ', ' : ''}
-                                            </span>
-                                        ))
-                                    }
+                                    {appointment.specialty?.name || "--"}
                                 </Paragraph>
                             </Col>
                             <Col xs={24} sm={12}>
