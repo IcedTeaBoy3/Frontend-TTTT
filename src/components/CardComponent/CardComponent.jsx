@@ -2,7 +2,7 @@ import { Card, Avatar, Tag } from 'antd';
 import { RightOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 const { Meta } = Card;
-import { WarpperCardStyle } from './style'
+import { WarpperCardStyle, TwoLineDescription } from './style'
 const CardComponent = ({ avatar, name, specialty, hospital, onClick }) => {
     const [isHovered, setIsHovered] = useState(false);
     const description = <>
@@ -38,7 +38,10 @@ const CardComponent = ({ avatar, name, specialty, hospital, onClick }) => {
                 style={{ margin: '0 auto', display: 'block', marginBottom: '16px' }}
             />
 
-            <Meta title={<span style={{ color: isHovered ? '#1890ff' : '#000', textDecoration: isHovered ? 'underline' : 'none' }}>{name}</span>} description={description} />
+            <Meta
+                title={<span style={{ color: isHovered ? '#1890ff' : '#000', textDecoration: isHovered ? 'underline' : 'none' }}>{name}</span>}
+                description={<TwoLineDescription>{description}</TwoLineDescription>}
+            />
         </WarpperCardStyle>
     )
 }

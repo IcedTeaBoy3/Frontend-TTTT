@@ -96,8 +96,10 @@ const BookingPage = () => {
                 navigate('/booking-success?type=' + (isHospital ? 'hospital' : 'doctor'));
             } else if (res?.status === "error") {
                 setAvailableSlots(res?.availableSlots || []);
-                setCurrentStep(isHospital ? 2 : 1);
-                setActiveKey(isHospital ? ['2'] : ['1']);
+                dispatch(updateAppointment({
+                    selectedTime: null,
+
+                }));
                 Message.error(res?.message);
             }
             setIsLoaded(true); // Đánh dấu đã load xong
@@ -322,8 +324,8 @@ const BookingPage = () => {
                                 isSelected={appointment.specialty?._id === specialty._id}
                                 onClick={() => {
                                     dispatch(updateAppointment({ specialty }));
-                                    setCurrentStep(2);
-                                    setActiveKey(['2']);
+                                    setCurrentStep(isHospital ? 1 : 2); // Nếu là bệnh viện thì chuyển về bước chọn ngày khám, nếu không thì chuyển về bước chọn giờ khám
+                                    setActiveKey(isHospital ? ['1'] : ['2']);
                                 }}
                             />
                         ))
@@ -482,14 +484,14 @@ const BookingPage = () => {
                         <WrapperDoctorInfo
                         >
 
-                            <Avatar size={56} icon={<UserOutlined />} src={isHospital ? `${import.meta.env.VITE_APP_BACKEND_URL}${hospital?.image}` : `${import.meta.env.VITE_APP_BACKEND_URL}${doctor?.user?.avatar}`} />
+                            <Avatar size={56} icon={<UserOutlined />} src={isHospital ? `${import.meta.env.VITE_APP_BACKEND_URL}${hospital?.thumbnail}` : `${import.meta.env.VITE_APP_BACKEND_URL}${doctor?.user?.avatar}`} />
                             <div style={{ display: "flex", flexDirection: "column" }}>
                                 <Text strong style={{ fontSize: "18px" }}>
                                     {isHospital
                                         ? `Phòng khám ${truncateText(hospital?.name)}`
                                         : `Bác sĩ ${truncateText(doctor?.user?.name)}`}
                                 </Text>
-                                <Text type="secondary">{isHospital ? hospital.address : doctor?.hospital?.address}</Text>
+                                <Text type="secondary">{isHospital ? truncateText(hospital.address) : truncateText(doctor?.hospital?.address)}</Text>
                             </div>
                         </WrapperDoctorInfo>
 

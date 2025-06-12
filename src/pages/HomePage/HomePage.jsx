@@ -14,7 +14,7 @@ import LoadingComponent from "../../components/LoadingComponent/LoadingComponent
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import CardComponent from "../../components/CardComponent/CardComponent";
-import { SpecialtyCard, SpecialtyImage, HospitalCard, HospitalImage } from "./style";
+import { SpecialtyCard, SpecialtyImage, HospitalCard, HospitalImage, TwoLineDescription } from "./style";
 import { Wrapper, CenteredTitleWrapper, Section } from "./style";
 const { Text, Title, Paragraph } = Typography;
 const HomePage = () => {
@@ -39,7 +39,7 @@ const HomePage = () => {
     };
     const queryGetAllHospitals = useQuery({
         queryKey: ["getAllHospitals"],
-        queryFn: () => HospitalService.getAllHospitals('clinic', 1, 10),
+        queryFn: () => HospitalService.getAllHospitals('hospital', 1, 10),
         retry: 3,
         retryDelay: 1000,
         keepPreviousData: true,
@@ -115,7 +115,7 @@ const HomePage = () => {
                             <ButtonComponent
                                 type="primary"
                                 hoverable="true"
-                                onClick={() => handleNavigate('/search?type=clinic')}
+                                onClick={() => handleNavigate('/search?type=hospital')}
                             >
                                 Xem tất cả <RightOutlined />
                             </ButtonComponent>
@@ -135,7 +135,10 @@ const HomePage = () => {
                                         }
                                         onClick={() => handleNavigate(`/detail-hospital/${item._id}`)}
                                     >
-                                        <Card.Meta title={item.name} description={item.address} />
+                                        <Card.Meta
+                                            title={item.name}
+                                            description={<TwoLineDescription>{item.address}</TwoLineDescription>}
+                                        />
                                     </HospitalCard>
                                 ))}
                             </SlideComponent>

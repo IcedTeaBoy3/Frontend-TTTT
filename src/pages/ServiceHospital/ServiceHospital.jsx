@@ -26,8 +26,8 @@ const ServiceHospital = ({ doctors, hospitalId }) => {
         return acc
     }, [])
     return (
-        <Space direction="vertical">
-            <Title level={4}>Danh sách bác sĩ</Title>
+        <div style={{ margin: '16px 0px' }}>
+            <Title level={4} style={{ marginBottom: '16px' }}>Danh sách bác sĩ</Title>
             {doctors && doctors.length > 0 ? (
                 doctors.map((doctor) => (
                     <CardDoctor
@@ -40,20 +40,20 @@ const ServiceHospital = ({ doctors, hospitalId }) => {
             ) : (
                 <Text>Chưa có bác sĩ nào</Text >
             )}
-            <Title level={4}>Danh sách chuyên khoa</Title>
+            <Title level={4} style={{ margin: '16px 0px' }}>Danh sách chuyên khoa</Title>
             {specialties && specialties.length > 0 ? (
                 specialties.map((specialty) => (
                     <CardSpecialty
                         key={specialty._id}
                         specialty={specialty}
                         isSelected={false}
-                    // onClick={() => navigate(`/specialty/${specialty._id}`)}
+                        onClick={() => navigate(`/search?specialty=${specialty._id}`)}
                     />
                 ))
             ) : (
                 <Text>Chưa có chuyên khoa nào</Text>
             )}
-        </Space>
+        </div>
     )
 }
 

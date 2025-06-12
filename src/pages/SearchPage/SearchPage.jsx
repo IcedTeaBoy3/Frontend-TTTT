@@ -68,7 +68,7 @@ const SearchPage = () => {
     const { data: hospitals = {}, isLoading: isLoadingHospital } = useQuery({
         queryKey: ['searchHospitals', debouncedSearchQuery, specialty, selectedType === 'all' ? 'all' : pagination.current],
         queryFn: () => HospitalService.searchHospital(debouncedSearchQuery, specialty, selectedType === 'all' ? 1 : pagination.current, hospitalPageSize),
-        enabled: selectedType === 'all' || selectedType === 'clinic',
+        enabled: selectedType === 'all' || selectedType === 'hospital',
         keepPreviousData: true,
     });
 
@@ -81,7 +81,7 @@ const SearchPage = () => {
         <>
             <PopupItem onClick={() => handleSelectedType('all')}>Tất cả</PopupItem>
             <PopupItem onClick={() => handleSelectedType('doctor')}>Bác sĩ</PopupItem>
-            <PopupItem onClick={() => handleSelectedType('clinic')}>Phòng khám</PopupItem>
+            <PopupItem onClick={() => handleSelectedType('hospital')}>Phòng khám</PopupItem>
         </>
     );
     // Chuyển dữ liệu data thành mảng rõ ràng
@@ -98,7 +98,7 @@ const SearchPage = () => {
             );
         } else if (selectedType === 'doctor') {
             return doctorData;
-        } else if (selectedType === 'clinic') {
+        } else if (selectedType === 'hospital') {
             return hospitalData;
         }
         return [];
@@ -120,7 +120,7 @@ const SearchPage = () => {
                 if (prev.total === total && prev.current === newCurrent) return prev;
                 return { ...prev, total, current: newCurrent };
             });
-        } else if (selectedType === 'clinic') {
+        } else if (selectedType === 'hospital') {
             const total = hospitals.total || hospitalData.length;
             setPagination(prev => {
                 const newCurrent = Math.min(prev.current, Math.ceil(total / prev.pageSize)) || 1;
@@ -176,7 +176,7 @@ const SearchPage = () => {
         switch (type) {
             case 'doctor':
                 return 'Bác sĩ';
-            case 'clinic':
+            case 'hospital':
                 return 'Phòng khám';
             case 'all':
                 return 'Tất cả';
@@ -242,7 +242,7 @@ const SearchPage = () => {
                             <ResultHeader level={4}>
                                 Tìm thấy {selectedType === 'doctor'
                                     ? `${doctors?.total || 0} bác sĩ`
-                                    : selectedType === 'clinic'
+                                    : selectedType === 'hospital'
                                         ? `${hospitals?.total || 0} phòng khám`
                                         : `${(doctors?.data?.length || 0) + (hospitals?.data?.length || 0)} kết quả`}
                             </ResultHeader>
@@ -250,7 +250,7 @@ const SearchPage = () => {
                             <ResultHeader level={4}>
                                 {selectedType === 'doctor'
                                     ? 'Tất cả bác sĩ'
-                                    : selectedType === 'clinic'
+                                    : selectedType === 'hospital'
                                         ? 'Tất cả phòng khám'
                                         : 'Tất cả kết quả'}
                             </ResultHeader>
@@ -280,7 +280,7 @@ const SearchPage = () => {
                             )}
 
                             {/* --- Loại Phòng khám --- */}
-                            {selectedType === 'clinic' && (
+                            {selectedType === 'hospital' && (
                                 <>
                                     {isLoadingHospital ? (
                                         <LoadingComponent isLoading={isLoadingHospital}>
@@ -313,9 +313,9 @@ const SearchPage = () => {
                                             <CardDoctor
                                                 key={item._id}
                                                 doctor={item}
-                                                isClinic={item.type === 'clinic'} // nếu cần phân biệt
+                                                isClinic={item.type === 'hospital'} // nếu cần phân biệt
                                                 onClick={() => {
-                                                    if (item.type === 'clinic') {
+                                                    if (item.type === 'hospital') {
                                                         navigate(`/detail-hospital/${item._id}`);
                                                     } else {
                                                         navigate(`/detail-doctor/${item._id}`);

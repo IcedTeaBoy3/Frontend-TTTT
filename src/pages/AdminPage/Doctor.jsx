@@ -328,8 +328,8 @@ const Doctor = () => {
     const handleAddClinic = () => {
         clinicForm.validateFields().then((values) => {
 
-            const imageFile = values.image?.[0]?.originFileObj;
-            if (!imageFile) {
+            const thumbnailFile = values.thumbnail?.[0]?.originFileObj;
+            if (!thumbnailFile) {
                 console.error("No image file selected");
                 return;
             }
@@ -338,9 +338,8 @@ const Doctor = () => {
             formData.append("address", values.address);
             formData.append("phone", values.phone);
             formData.append("description", values.description);
-            formData.append("image", imageFile);
-            formData.append("type", "clinic"); // Thêm trường type với giá trị "clinic"
-
+            formData.append("thumbnail", thumbnailFile);
+            formData.append("type", "clinic");
             // Xử lý thêm phòng khám ở đây
             mutationCreateHospital.mutate(formData, {
                 onSuccess: () => {
@@ -855,7 +854,7 @@ const Doctor = () => {
                     </Form.Item>
                     <Form.Item
                         label="Ảnh"
-                        name="image"
+                        name="thumbnail"
                         valuePropName="fileList"
                         getValueFromEvent={(e) =>
                             Array.isArray(e) ? e : e && e.fileList

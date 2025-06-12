@@ -10,6 +10,7 @@ import {
     EditOutlined,
     SearchOutlined
 } from "@ant-design/icons";
+import * as Message from "../../components/Message/Message";
 import { DeleteOutlined } from "@ant-design/icons";
 import { useState, useRef } from "react";
 import { useHospitalData } from "../../hooks/useHospitalData";
@@ -24,6 +25,7 @@ const Hospital = () => {
     const [rowSelected, setRowSelected] = useState(null);
     const [formUpdate] = Form.useForm();
     const [formCreate] = Form.useForm();
+    const [selectedType, setSelectedType] = useState("hospital"); // "hospital" hoặc "clinic"
     const fileInputRef = useRef(null);
     const [fileType, setFileType] = useState(null); // "csv" hoặc "excel"
     const [pagination, setPagination] = useState({
@@ -137,7 +139,6 @@ const Hospital = () => {
         if (values.thumbnail && values.thumbnail.length > 0) {
             formData.append('thumbnail', values.thumbnail[0].originFileObj);
         }
-        console.log("values", values.images);
         if (values.images && values.images.length > 0) {
             values.images.forEach((file) => {
                 formData.append('images', file.originFileObj);
@@ -382,6 +383,28 @@ const Hospital = () => {
         specialties: item.specialties,
         type: item.type
     }));
+    const beforeUpload = (file, fileList) => {
+        const isImage = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'].includes(file.type);
+        if (!isImage) {
+            Message.error(`${file.name} không phải là định dạng ảnh hợp lệ.`);
+            return Upload.LIST_IGNORE;
+        }
+
+        const isLt2M = file.size / 1024 / 1024 < 2;
+        if (!isLt2M) {
+            Message.error(`${file.name} vượt quá 2MB.`);
+            return Upload.LIST_IGNORE;
+        }
+
+        // Số ảnh hiện tại trong form (cộng với file mới)
+        const currentImages = formUpdate.getFieldValue('images') || [];
+        if (currentImages.length + fileList.length > 5 + currentImages.length) {
+            Message.error('Tối đa 5 ảnh chi tiết!');
+            return Upload.LIST_IGNORE;
+        }
+
+        return true;
+    };
     const handleExportCSV = () => { }
     const handleExportExcel = () => { }
     const handleChooseFile = (type) => { }
@@ -476,70 +499,77 @@ const Hospital = () => {
                             ]}
                         >
                             <Radio.Group
+                                onChange={(e) => {
+                                    setSelectedType(e.target.value);
+                                    formCreate.setFieldsValue({ type: e.target.value });
+                                }}
                             >
                                 <Radio value="hospital" >Bệnh viện</Radio>
                                 <Radio value="clinic">Phòng khám</Radio>
                             </Radio.Group>
                         </Form.Item>
 
+                        {formCreate.getFieldValue('type') === 'hospital' && (
+                            <>
+                                <LoadingComponent isLoading={isLoadingDoctor}>
+                                    <Form.Item
+                                        label="Chọn bác sĩ"
+                                        name="doctors"
+                                        rules={[
+                                            {
+                                                required: true,
+                                                message: "Vui lòng chọn ít nhất một bác sĩ!",
+                                            },
+                                        ]}
+                                    >
 
-                        <LoadingComponent isLoading={isLoadingDoctor}>
-                            <Form.Item
-                                label="Chọn bác sĩ"
-                                name="doctors"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: "Vui lòng chọn ít nhất một bác sĩ!",
-                                    },
-                                ]}
-                            >
+                                        <Select
+                                            mode="multiple"
+                                            placeholder="Chọn bác sĩ"
+                                            optionFilterProp="children"
+                                            filterOption={(input, option) =>
+                                                option.children.toLowerCase().includes(input.toLowerCase())
+                                            }
+                                        >
+                                            {doctors && doctors.data?.length && doctors.data.map((doctor) => (
+                                                <Select.Option key={doctor._id} value={doctor._id}>
+                                                    {doctor.user.name}
+                                                </Select.Option>
+                                            ))}
+                                        </Select>
+                                    </Form.Item>
+                                </LoadingComponent>
 
-                                <Select
-                                    mode="multiple"
-                                    placeholder="Chọn bác sĩ"
-                                    optionFilterProp="children"
-                                    filterOption={(input, option) =>
-                                        option.children.toLowerCase().includes(input.toLowerCase())
-                                    }
-                                >
-                                    {doctors && doctors.data?.length && doctors.data.map((doctor) => (
-                                        <Select.Option key={doctor._id} value={doctor._id}>
-                                            {doctor.user.name}
-                                        </Select.Option>
-                                    ))}
-                                </Select>
-                            </Form.Item>
-                        </LoadingComponent>
+                                <LoadingComponent isLoading={isLoadingSpecialty}>
+                                    <Form.Item
+                                        label="Chọn chuyên khoa"
+                                        name="specialties"
+                                        rules={[
+                                            {
+                                                required: true,
+                                                message: "Vui lòng chọn ít nhất một chuyên khoa!",
+                                            },
+                                        ]}
+                                    >
 
-                        <LoadingComponent isLoading={isLoadingSpecialty}>
-                            <Form.Item
-                                label="Chọn chuyên khoa"
-                                name="specialties"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: "Vui lòng chọn ít nhất một chuyên khoa!",
-                                    },
-                                ]}
-                            >
-
-                                <Select
-                                    mode="multiple"
-                                    placeholder="Chọn chuyên khoa"
-                                    optionFilterProp="children"
-                                    filterOption={(input, option) =>
-                                        option.children.toLowerCase().includes(input.toLowerCase())
-                                    }
-                                >
-                                    {specialties && specialties.data?.length && specialties.data.map((specialty) => (
-                                        <Select.Option key={specialty._id} value={specialty._id}>
-                                            {specialty.name}
-                                        </Select.Option>
-                                    ))}
-                                </Select>
-                            </Form.Item>
-                        </LoadingComponent>
+                                        <Select
+                                            mode="multiple"
+                                            placeholder="Chọn chuyên khoa"
+                                            optionFilterProp="children"
+                                            filterOption={(input, option) =>
+                                                option.children.toLowerCase().includes(input.toLowerCase())
+                                            }
+                                        >
+                                            {specialties && specialties.data?.length && specialties.data.map((specialty) => (
+                                                <Select.Option key={specialty._id} value={specialty._id}>
+                                                    {specialty.name}
+                                                </Select.Option>
+                                            ))}
+                                        </Select>
+                                    </Form.Item>
+                                </LoadingComponent>
+                            </>
+                        )}
 
 
 
@@ -619,7 +649,7 @@ const Hospital = () => {
                             <Upload
                                 name="file"
                                 multiple
-                                beforeUpload={() => false}
+                                beforeUpload={false}
                                 maxCount={5}
                                 accept=".jpg, .jpeg, .png, .gif"
                             >
@@ -673,64 +703,79 @@ const Hospital = () => {
                             ]}
                         >
                             <Radio.Group
+                                onChange={(e) => {
+                                    setSelectedType(e.target.value);
+                                    formUpdate.setFieldsValue({ type: e.target.value });
+                                }}
                             >
                                 <Radio value="hospital">Bệnh viện</Radio>
                                 <Radio value="clinic">Phòng khám</Radio>
                             </Radio.Group>
                         </Form.Item>
 
+                        {formUpdate.getFieldValue('type') === 'hospital' && (
+                            <>
 
-                        <Form.Item
-                            label="Chọn bác sĩ"
-                            name="doctors"
-                            rules={[
-                                {
-                                    required: true,
-                                    message: "Vui lòng chọn ít nhất một bác sĩ!",
-                                },
-                            ]}
-                        >
-                            <Select
-                                mode="multiple"
-                                placeholder="Chọn bác sĩ"
-                                optionFilterProp="children"
-                                filterOption={(input, option) =>
-                                    option.children.toLowerCase().includes(input.toLowerCase())
-                                }
-                            >
-                                {doctors && doctors.data?.length && doctors.data.map((doctor) => (
-                                    <Select.Option key={doctor._id} value={doctor._id}>
-                                        {doctor.user.name}
-                                    </Select.Option>
-                                ))}
-                            </Select>
-                        </Form.Item>
-                        <Form.Item
-                            label="Chọn chuyên khoa"
-                            name="specialties"
-                            rules={[
-                                {
-                                    required: true,
-                                    message: "Vui lòng chọn ít nhất một chuyên khoa!",
-                                },
-                            ]}
-                        >
+                                <LoadingComponent isLoading={isLoadingDoctor}>
 
-                            <Select
-                                mode="multiple"
-                                placeholder="Chọn chuyên khoa"
-                                optionFilterProp="children"
-                                filterOption={(input, option) =>
-                                    option.children.toLowerCase().includes(input.toLowerCase())
-                                }
-                            >
-                                {specialties && specialties.data?.length && specialties.data.map((specialty) => (
-                                    <Select.Option key={specialty._id} value={specialty._id}>
-                                        {specialty.name}
-                                    </Select.Option>
-                                ))}
-                            </Select>
-                        </Form.Item>
+                                    <Form.Item
+                                        label="Chọn bác sĩ"
+                                        name="doctors"
+                                        rules={[
+                                            {
+                                                required: true,
+                                                message: "Vui lòng chọn ít nhất một bác sĩ!",
+                                            },
+                                        ]}
+
+                                    >
+                                        <Select
+                                            mode="multiple"
+                                            placeholder="Chọn bác sĩ"
+                                            optionFilterProp="children"
+                                            filterOption={(input, option) =>
+                                                option.children.toLowerCase().includes(input.toLowerCase())
+                                            }
+                                        >
+                                            {doctors && doctors.data?.length && doctors.data.map((doctor) => (
+                                                <Select.Option key={doctor._id} value={doctor._id}>
+                                                    {doctor.user.name}
+                                                </Select.Option>
+                                            ))}
+                                        </Select>
+                                    </Form.Item>
+                                </LoadingComponent>
+                                <LoadingComponent isLoading={isLoadingSpecialty}>
+
+                                    <Form.Item
+                                        label="Chọn chuyên khoa"
+                                        name="specialties"
+                                        rules={[
+                                            {
+                                                required: true,
+                                                message: "Vui lòng chọn ít nhất một chuyên khoa!",
+                                            },
+                                        ]}
+                                    >
+
+                                        <Select
+                                            mode="multiple"
+                                            placeholder="Chọn chuyên khoa"
+                                            optionFilterProp="children"
+                                            filterOption={(input, option) =>
+                                                option.children.toLowerCase().includes(input.toLowerCase())
+                                            }
+                                        >
+                                            {specialties && specialties.data?.length && specialties.data.map((specialty) => (
+                                                <Select.Option key={specialty._id} value={specialty._id}>
+                                                    {specialty.name}
+                                                </Select.Option>
+                                            ))}
+                                        </Select>
+                                    </Form.Item>
+                                </LoadingComponent>
+                            </>
+                        )}
 
                         <Form.Item
                             label="Mô tả"
@@ -811,8 +856,8 @@ const Hospital = () => {
                             <Upload
                                 name="file"
                                 multiple
-                                beforeUpload={() => false}
-                                maxCount={5}
+                                beforeUpload={beforeUpload}
+
                                 accept=".jpg, .jpeg, .png, .gif"
                             >
                                 <ButtonComponent icon={<UploadOutlined />}>

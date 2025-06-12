@@ -10,7 +10,7 @@ const CardDoctor = ({ doctor, isClinic, onClick }) => {
             onClick={onClick}
         >
             <Space direction="horizontal" style={{ gap: 16 }}>
-                <Avatar size={100} icon={<UserOutlined />} />
+                <Avatar size={100} icon={<UserOutlined />} src={isClinic ? `${import.meta.env.VITE_APP_BACKEND_URL}${doctor?.thumbnail}` : `${import.meta.env.VITE_APP_BACKEND_URL}${doctor?.image}`} />
                 <Space direction="vertical">
                     <Text style={{ fontSize: '20px' }} strong>{isClinic ? 'Phòng khám' : 'Bác sĩ'} {doctor?.user?.name || doctor?.name}</Text>
                     {doctor?.specialties?.length > 0 ? (

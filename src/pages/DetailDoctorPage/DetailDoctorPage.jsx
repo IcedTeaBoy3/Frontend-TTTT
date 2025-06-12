@@ -188,7 +188,7 @@ const DetailDoctorPage = () => {
                     </div>
 
                     <div>
-                        <Title level={4}>Địa chỉ : {doctor?.data?.hospital?.address ? doctor?.data?.hospital?.address : (
+                        <Title level={4} style={{ marginBottom: '16px' }}>Địa chỉ : {doctor?.data?.hospital?.address ? doctor?.data?.hospital?.address : (
                             <Text type="secondary">Chưa có địa chỉ</Text>
                         )}</Title>
                         <StyledIframe

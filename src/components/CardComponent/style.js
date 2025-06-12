@@ -17,3 +17,10 @@ export const WarpperCardBottom = styled.div`
     align-items: center;
     padding: 0 8px;
 `
+export const TwoLineDescription = styled.div`
+  display: -webkit-box;
+  -webkit-line-clamp: 2;       // số dòng muốn hiển thị
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;

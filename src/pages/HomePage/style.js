@@ -24,7 +24,13 @@ export const Section = styled.div`
 export const HospitalCard = styled(Card)`
     text-align: center;
 `;
-
+export const TwoLineDescription = styled.div`
+  display: -webkit-box;
+  -webkit-line-clamp: 2;       // số dòng muốn hiển thị
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
 export const SpecialtyCard = styled(Card)`
     width: 100%;
     text-align: center;

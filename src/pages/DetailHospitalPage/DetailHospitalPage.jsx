@@ -55,13 +55,7 @@ const DetailHospitalPage = () => {
                 specialties={hospital?.data?.specialties}
             />,
         },
-        {
-            key: '3',
-            label: 'Đánh giá',
-            children: 'Content of Tab Pane 3',
-        },
     ];
-    console.log(hospital);
     return (
         <DefaultLayout>
             <LoadingComponent isLoading={isLoadingHospital}>
