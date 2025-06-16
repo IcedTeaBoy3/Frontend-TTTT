@@ -5,7 +5,7 @@ export const BannerContainer = styled.div`
     position: relative;
     width: 100%;
     height: 450px;
-    padding: 40px 20px;
+    padding: 85px;
     display: flex;
     flex-direction: column;
     align-items: center;

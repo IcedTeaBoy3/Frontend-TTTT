@@ -146,7 +146,7 @@ const HeaderComponent = () => {
                     <LogoSection onClick={() => navigate("/")}>
                         <Image
                             width={55}
-                            src="http://localhost:4000/mylogo.webp"
+                            src={`${import.meta.env.VITE_APP_FRONTEND_URL}` + "/mylogo.webp"}
                             preview={false}
                             style={{ cursor: "pointer", borderRadius: "50%" }}
                         />
