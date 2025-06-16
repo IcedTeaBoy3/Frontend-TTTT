@@ -25,7 +25,6 @@ const Hospital = () => {
     const [rowSelected, setRowSelected] = useState(null);
     const [formUpdate] = Form.useForm();
     const [formCreate] = Form.useForm();
-    const [selectedType, setSelectedType] = useState("hospital"); // "hospital" hoặc "clinic"
     const fileInputRef = useRef(null);
     const [fileType, setFileType] = useState(null); // "csv" hoặc "excel"
     const [pagination, setPagination] = useState({
@@ -35,6 +34,8 @@ const Hospital = () => {
     const [searchText, setSearchText] = useState("");
     const [searchedColumn, setSearchedColumn] = useState("");
     const searchInput = useRef(null);
+    const typeValue = Form.useWatch('type', formCreate); // hoặc formUpdate
+    const typeValueUpdate = Form.useWatch('type', formUpdate);
     const rowSelection = {
         selectedRowKeys,
         onChange: (selectedKeys, selectedRows) => {
@@ -424,7 +425,7 @@ const Hospital = () => {
             </LoadingComponent>
             <LoadingComponent isLoading={isPendingAdd}>
                 <ModalComponent
-                    title={selectedType === 'hospital' ? "Thêm bệnh viện" : "Thêm phòng khám"}
+                    title={typeValue === 'hospital' ? "Thêm bệnh viện" : "Thêm phòng khám"}
                     open={isModalOpenCreate}
                     onOk={handleAddHospital}
                     onCancel={handleCloseAddSpecialty}
@@ -464,7 +465,7 @@ const Hospital = () => {
                         >
                             <Radio.Group
                                 onChange={(e) => {
-                                    setSelectedType(e.target.value);
+                                    formCreate.setFieldsValue({ type: e.target.value });
                                 }}
                             >
                                 <Radio value="hospital" >Bệnh viện</Radio>
@@ -472,7 +473,7 @@ const Hospital = () => {
                             </Radio.Group>
                         </Form.Item>
 
-                        {selectedType === 'hospital' && (
+                        {typeValue === 'hospital' && (
                             <>
                                 <LoadingComponent isLoading={isLoadingDoctor}>
                                     <Form.Item
@@ -598,7 +599,7 @@ const Hospital = () => {
                 </ModalComponent>
             </LoadingComponent >
             <DrawerComponent
-                title={formUpdate.getFieldValue('type') === 'hospital' ? "Cập nhật bệnh viện" : "Cập nhật phòng khám"}
+                title={typeValueUpdate === 'hospital' ? "Cập nhật bệnh viện" : "Cập nhật phòng khám"}
                 placement="right"
                 isOpen={isDrawerOpen}
                 onClose={() => setIsDrawerOpen(false)}
@@ -611,13 +612,12 @@ const Hospital = () => {
                         labelCol={{ span: 6 }}
                         wrapperCol={{ span: 18 }}
                         style={{ maxWidth: 600, padding: "20px" }}
-                        initialValues={{ type: "hospital" }}
                         onFinish={handleOnUpdateHospital}
                         autoComplete="off"
                         form={formUpdate}
                     >
                         <Form.Item
-                            label={"Tên"}
+                            label="Tên"
                             name="name"
                             rules={[
                                 {
@@ -640,7 +640,6 @@ const Hospital = () => {
                         >
                             <Radio.Group
                                 onChange={(e) => {
-                                    setSelectedType(e.target.value);
                                     formUpdate.setFieldsValue({ type: e.target.value });
                                 }}
                             >
@@ -649,7 +648,7 @@ const Hospital = () => {
                             </Radio.Group>
                         </Form.Item>
 
-                        {formUpdate.getFieldValue('type') === 'hospital' && (
+                        {typeValueUpdate === 'hospital' && (
                             <>
 
                                 <LoadingComponent isLoading={isLoadingDoctor}>

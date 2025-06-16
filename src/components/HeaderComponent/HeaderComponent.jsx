@@ -165,7 +165,7 @@ const HeaderComponent = () => {
                                 type="default"
 
                             >
-                                Đặt khám <CaretDownOutlined />
+                                Đặt khám
                             </ButtonComponent>
                         </Popover>
 
@@ -223,14 +223,21 @@ const HeaderComponent = () => {
                 open={isDrawerOpen}
                 forceRender
             >
-
-                <ButtonComponent
-                    type="default"
-                    icon={<CustomerServiceOutlined />}
-                    style={{ width: "100%", marginBottom: 10 }}
+                <Popover
+                    content={contentBooked}
+                    placement="bottomLeft"
+                    getPopupContainer={(trigger) => trigger.parentNode}
                 >
-                    Đặt khám
-                </ButtonComponent>
+
+
+                    <ButtonComponent
+                        type="default"
+                        icon={<CustomerServiceOutlined />}
+                        style={{ width: "100%", marginBottom: 10 }}
+                    >
+                        Đặt khám
+                    </ButtonComponent>
+                </Popover>
                 {user?.access_token ? (
                     <Dropdown
                         menu={dropdownMenu}

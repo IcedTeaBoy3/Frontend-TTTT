@@ -169,19 +169,28 @@ const BookingPage = () => {
         return slots;
     }
 
-    function canSelectSlot(selectedDate, time, availableSlots, now = dayjs()) {
-        if (!selectedDate || !time) return false;
-        const selectedDay = dayjs(selectedDate).startOf('day');
-        const fullSelectedTime = dayjs(`${selectedDay.format('YYYY-MM-DD')} ${time}`, 'YYYY-MM-DD HH:mm');
-        const isToday = selectedDay.isSame(now, 'day');
-        const isTooClose = fullSelectedTime.diff(now, 'minute') < 60;
+    // function canSelectSlot(selectedDate, time, availableSlots, now = dayjs()) {
+    //     if (!selectedDate || !time) return false;
+    //     const selectedDay = dayjs(selectedDate).startOf('day');
+    //     const fullSelectedTime = dayjs(`${selectedDay.format('YYYY-MM-DD')} ${time}`, 'YYYY-MM-DD HH:mm');
+    //     const isToday = selectedDay.isSame(now, 'day');
+    //     const isTooClose = fullSelectedTime.diff(now, 'minute') < 60;
 
-        return availableSlots.includes(time) && (!isToday || !isTooClose);
-    }
+    //     return availableSlots.includes(time) && (!isToday || !isTooClose);
+    // }
     const handleCheckTime = (selectedDate, time) => {
-        if (!isLoaded) return false;
-        if (!Array.isArray(availableSlots) || availableSlots.length === 0) return true;
-        return !canSelectSlot(selectedDate, time, availableSlots);
+        if (!selectedDate || !time) return false;
+        const selectedDay = dayjs(selectedDate).utc().local(); // selectedDate đã là local (vì là từ schedule)
+        const now = dayjs();
+
+        // Nếu ngày được chọn KHÔNG PHẢI hôm nay → cho phép (không disable)
+        if (!selectedDay.isSame(now, 'day')) return false;
+
+        // Ghép ngày và giờ lại để kiểm tra khoảng cách thời gian
+        const fullSelectedTime = dayjs(`${selectedDay.format('YYYY-MM-DD')} ${time}`, 'YYYY-MM-DD HH:mm');
+
+        // Nếu khung giờ < 60 phút so với hiện tại → disable
+        return fullSelectedTime.diff(now, 'minute') < 60 * 4;
     };
     const handleSelectedTime = (time) => {
         setCurrentStep(isHospital ? 3 : 2); // Nếu là bệnh viện thì chuyển về bước chọn giờ khám, nếu không thì chuyển về bước chọn chuyên khoa
@@ -234,15 +243,20 @@ const BookingPage = () => {
             reason: reason,
         }))
 
-
-        mutationCreateAppointment.mutate({
+        const appointmentData = {
             patientId: patient.id,
             doctorId: doctor._id,
             specialtyId: appointment.specialty?._id,
             scheduleId: appointment.schedule._id,
             timeSlot: appointment.selectedTime,
             reason: reason,
-        })
+            type: 'doctor', // Đặt type là doctor nếu không phải bệnh viện
+        };
+        if (isHospital) {
+            appointmentData.hospitalId = hospital._id; // Thêm thông tin bệnh viện nếu là bệnh viện
+            appointmentData.type = 'hospital'; // Đặt type là hospital
+        }
+        mutationCreateAppointment.mutate(appointmentData);
 
     }
     const itemsStep = [

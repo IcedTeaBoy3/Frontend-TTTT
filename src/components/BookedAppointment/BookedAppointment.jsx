@@ -12,6 +12,9 @@ const { Title, Text, Paragraph } = Typography
 const BookedAppointment = ({ userId }) => {
     const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
     const [appointmentDetails, setAppointmentDetails] = useState(null);
+    const typeBooked = appointmentDetails?.type || 'default'; // Giả sử type mặc định là 'default'
+    console.log('appointmentDetails', appointmentDetails);
+    // Lấy thông tin người dùng từ Redux store
     const patient = useSelector((state) => state.auth.user);
     const [pagination, setPagination] = useState({
         current: 1,
@@ -168,8 +171,12 @@ const BookedAppointment = ({ userId }) => {
                                     >
                                         <Avatar size={56} icon={<UserOutlined />} />
                                         <div style={{ display: "flex", flexDirection: "column" }}>
-                                            <Text strong style={{ fontSize: "18px" }}>Bác sĩ {appointmentDetails?.doctor?.user?.name}</Text>
-                                            <Text type="secondary">{appointmentDetails?.doctor?.hospital?.address}</Text>
+                                            <Text strong style={{ fontSize: "18px" }}>
+                                                {typeBooked == 'hospital' ? appointmentDetails?.hospital?.name : appointmentDetails?.doctor?.user?.name}
+                                            </Text>
+                                            <Text type="secondary">
+                                                {typeBooked == 'hospital' ? appointmentDetails?.hospital?.address : appointmentDetails?.doctor?.hospital?.address}
+                                            </Text>
                                         </div>
                                     </div>
                                     <Card>
@@ -182,11 +189,11 @@ const BookedAppointment = ({ userId }) => {
                                         </Paragraph>
                                         <Paragraph>
                                             <strong>Chuyên khoa:</strong>{" "}
-                                            {appointmentDetails.doctor?.specialties.map((spec) => (
-                                                <Tag key={spec._id} color="blue" style={{ marginRight: '4px' }}>
-                                                    {spec.name}
-                                                </Tag>
-                                            ))}
+
+                                            <Tag color="blue" style={{ marginRight: '4px' }}>
+                                                {appointmentDetails?.specialty?.name || 'Chưa có chuyên khoa'}
+                                            </Tag>
+
                                         </Paragraph>
                                         <Title level={5}>Thông tin bệnh nhân</Title>
                                         <Paragraph>

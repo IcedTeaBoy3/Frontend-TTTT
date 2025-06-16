@@ -102,7 +102,7 @@ const DetailDoctorPage = () => {
         const fullSelectedTime = dayjs(`${selectedDay.format('YYYY-MM-DD')} ${time}`, 'YYYY-MM-DD HH:mm');
 
         // Nếu khung giờ < 60 phút so với hiện tại → disable
-        return fullSelectedTime.diff(now, 'minute') < 60;
+        return fullSelectedTime.diff(now, 'minute') < 60 * 4;
     };
     const handleSelectedTime = (time) => {
         dispatch(updateAppointment({ selectedTime: time }));

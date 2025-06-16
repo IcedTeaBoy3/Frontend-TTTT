@@ -13,7 +13,7 @@ const CardDoctor = ({ doctor, isClinic, onClick }) => {
                 <Avatar size={100} icon={<UserOutlined />} src={isClinic ? `${import.meta.env.VITE_APP_BACKEND_URL}${doctor?.thumbnail}` : `${import.meta.env.VITE_APP_BACKEND_URL}${doctor?.image}`} />
                 <Space direction="vertical">
                     <Text style={{ fontSize: '20px' }} strong>{isClinic ? 'Phòng khám' : 'Bác sĩ'} {doctor?.user?.name || doctor?.name}</Text>
-                    {doctor?.specialties?.length > 0 ? (
+                    {doctor?.specialties?.length > 0 && (
                         <Space direction="horizontal" style={{ gap: 8 }}>
                             {doctor?.specialties?.map((item) => (
                                 <Tag color="blue">
@@ -21,8 +21,6 @@ const CardDoctor = ({ doctor, isClinic, onClick }) => {
                                 </Tag>
                             ))}
                         </Space>
-                    ) : (
-                        <Tag color="blue">{doctor.specialty?.name}</Tag>
                     )}
                     <Paragraph>{doctor?.hospital?.address || doctor?.address}</Paragraph>
                 </Space>
