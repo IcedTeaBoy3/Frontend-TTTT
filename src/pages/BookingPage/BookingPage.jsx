@@ -9,7 +9,7 @@ import ButtonComponent from '../../components/ButtonComponent/ButtonComponent'
 import WorkingSchedule from '../../components/WorkingSchedule/WorkingSchedule'
 import { Collapse } from "antd";
 import { useState, useEffect } from 'react';
-import * as WorkingScheduleService from '../../services/workingScheduleService'
+import * as WorkingScheduleService from '../../services/WorkingScheduleService'
 import * as AppointmentService from '../../services/AppointmentService'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
