@@ -7,7 +7,7 @@ import dayjs from 'dayjs';
 const WorkingSchedule = ({ workingSchedules, isLoading, selectedDate, handleCreateWorkingTime }) => {
     return (
         <LoadingComponent isLoading={isLoading}>
-            <div style={{ display: "flex", gap: 12, overflowY: "auto", paddingBottom: 8, flexWrap: "wrap", maxHeight: '100' }}>
+            <div style={{ display: "flex", gap: 12, overflowY: "auto", paddingBottom: 8, flexWrap: "wrap", maxHeight: 150 }}>
                 {workingSchedules?.data?.map((schedule) => {
                     const dateObj = new Date(schedule.workDate);;
                     return (

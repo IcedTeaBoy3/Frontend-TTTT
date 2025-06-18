@@ -1,4 +1,4 @@
-import { Form, Select, DatePicker, TimePicker, Table, Space, Input } from "antd";
+import { Form, Select, DatePicker, TimePicker, Table, Space, Input, Image, Flex } from "antd";
 import { DeleteOutlined, EditOutlined, SearchOutlined } from "@ant-design/icons";
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
 import ModalComponent from '../../components/ModalComponent/ModalComponent';
@@ -7,6 +7,7 @@ import DrawerComponent from "../../components/DrawerComponent/DrawerComponent";
 import ActionButtonGroup from "../../components/ActionButtonGroup/ActionButtonGroup";
 import { useWorkingScheduleData } from "../../hooks/useWorkingScheduleData";
 import { useDoctorData } from "../../hooks/useDoctorData";
+import defaultAvatar from "../../assets/avatar-default-icon.png"
 import dayjs from 'dayjs';
 import { useState, useRef } from "react";
 const WorkingSchedule = () => {
@@ -161,14 +162,18 @@ const WorkingSchedule = () => {
             key: "name",
             ...getColumnSearchProps("name"),
             render: (_, record) => (
-                <div style={{ display: "flex", alignItems: "center" }}>
-                    <img
+                <Flex gap={8} alignItems="center">
+
+                    <Image
                         src={record.doctor?.image}
+                        width={30}
+                        height={30}
+                        style={{ borderRadius: "50%" }}
+                        fallback={defaultAvatar}
                         alt={record.doctor?.user?.name}
-                        style={{ width: 30, height: 30, borderRadius: "50%", marginRight: 10 }}
                     />
-                    {record.doctor?.user?.name}
-                </div>
+                    <span>{record.doctor?.user?.name}</span>
+                </Flex>
             ),
         },
         {

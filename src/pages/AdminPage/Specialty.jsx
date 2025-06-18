@@ -14,6 +14,7 @@ import { Form, Input, Upload, Table, Space, Image } from "antd";
 import { useSpecialtyData } from "../../hooks/useSpecialtyData";
 import ActionButtonGroup from "../../components/ActionButtonGroup/ActionButtonGroup";
 import { saveAs } from "file-saver";
+import defaultImage from "../../assets/default_image.png";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 const Specialty = () => {
@@ -219,6 +220,7 @@ const Specialty = () => {
                     width={50}
                     height={50}
                     style={{ borderRadius: "8px", objectFit: "cover" }}
+                    fallback={defaultImage}
                 />
             ),
         };
@@ -263,7 +265,6 @@ const Specialty = () => {
     const handleOnUpdateSpecialty = (values) => {
         const formData = new FormData();
         const fileObj = values.image?.[0]?.originFileObj;
-        console.log(fileObj);
         if (fileObj instanceof File) {
             formData.append("image", fileObj);
         }
@@ -292,7 +293,7 @@ const Specialty = () => {
     };
 
     const handleExportExcel = () => {
-        // Xuất file Excel
+        // // Xuất file Excel
         const dataExport = specialties?.data.map((item) => ({
             "Tên chuyên khoa": item.name,
             "Mô tả": item.description,
@@ -300,10 +301,11 @@ const Specialty = () => {
         }))
         const worksheet = XLSX.utils.json_to_sheet(dataExport);
         const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Specialties");
         const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
         const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
         saveAs(blob, "specialties.xlsx");
+
     }
     const handleExportCSV = () => {
         // Xuất file CSV
@@ -323,36 +325,33 @@ const Specialty = () => {
         const isExcel = fileType === "excel";
         const reader = new FileReader();
 
+        const normalizeImagePath = (path = "") => {
+            const index = path.indexOf("/uploads/");
+            return index !== -1 ? path.slice(index) : path;
+        };
+
         reader.onload = async (evt) => {
             const data = evt.target.result;
             let jsonData = [];
             const workbook = XLSX.read(data, { type: isExcel ? "binary" : "string" });
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
             jsonData = XLSX.utils.sheet_to_json(sheet);
-            if (isExcel) {
-                // Xử lý dữ liệu Excel
-                const specialties = jsonData.map((item) => ({
-                    name: item["Tên chuyên khoa"],
-                    description: item["Mô tả"],
-                    image: item["Hình ảnh"],
-                }));
-                mutationInsertManySpecialties.mutate({ specialties });
-            } else {
-                // Xử lý dữ liệu CSV
-                const parsedData = Papa.parse(data, { header: true }).data;
-                const specialties = parsedData.map((item) => ({
-                    name: item["Tên chuyên khoa"],
-                    description: item["Mô tả"],
-                    image: item["Hình ảnh"],
-                }));
-                mutationInsertManySpecialties.mutate({ specialties });
-            }
+
+            const specialties = jsonData.map((item) => ({
+                name: item["Tên chuyên khoa"],
+                description: item["Mô tả"],
+                image: normalizeImagePath(item["Hình ảnh"]),
+            }));
+
+            mutationInsertManySpecialties.mutate({ specialties });
         };
+
         if (isExcel) reader.readAsBinaryString(file);
         else reader.readAsText(file);
 
         e.target.value = ""; // reset input
-    }
+    };
+
     const handleChooseFile = (type) => {
         setFileType(type);
         setTimeout(() => {
@@ -414,6 +413,8 @@ const Specialty = () => {
                     onOk={handleAddSpecialty}
                     onCancel={handleCloseAddSpecialty}
                     width={600}
+                    cancelText="Huỷ"
+                    okText="Thêm"
                     style={{ borderRadius: 0 }}
                 >
                     <Form
@@ -423,6 +424,7 @@ const Specialty = () => {
                         style={{ maxWidth: 600, padding: "20px" }}
                         initialValues={{ remember: true }}
                         autoComplete="off"
+
                         form={formCreate}
                     >
                         <Form.Item

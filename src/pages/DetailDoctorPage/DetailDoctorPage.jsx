@@ -7,7 +7,7 @@ import { Typography, Divider, Tag } from 'antd';
 import ButtonComponent from '../../components/ButtonComponent/ButtonComponent';
 import * as DoctorService from '../../services/DoctorService';
 import * as WorkingScheduleService from '../../services/WorkingScheduleService';
-import { CheckCircleOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, UserOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -116,7 +116,11 @@ const DetailDoctorPage = () => {
             <Container>
                 <ContentBox>
                     <DoctorInfo>
-                        <Avatar size={170} src={doctor?.data?.user?.avatar} />
+                        <Avatar
+                            size={170}
+                            src={`${import.meta.env.VITE_APP_BACKEND_URL}${doctor?.data?.user?.avatar}`}
+                            icon={<UserOutlined />}
+                        />
                         <InfoSection>
                             <Title level={3}>
                                 {doctor?.data?.qualification} Bác sĩ {doctor?.data?.user?.name || "Chưa cập nhật"}
@@ -148,7 +152,7 @@ const DetailDoctorPage = () => {
                             <div>
                                 <Text type="secondary">Địa chỉ phòng khám:</Text>{" "}
                                 <Text strong style={{ fontSize: "18px" }}>
-                                    {doctor?.data?.hospital?.name}
+                                    {doctor?.data?.hospital?.address || "Chưa cập nhật"}
                                 </Text>
                             </div>
                         </InfoSection>

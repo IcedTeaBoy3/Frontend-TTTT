@@ -15,7 +15,10 @@ import { DeleteOutlined } from "@ant-design/icons";
 import { useState, useRef } from "react";
 import { useHospitalData } from "../../hooks/useHospitalData";
 import { useDoctorData } from "../../hooks/useDoctorData";
-import { useSpecialtyData } from "../../hooks/useSpecialtyData";
+import { saveAs } from "file-saver";
+import defaultImage from "../../assets/default_image.png";
+import Papa from "papaparse";
+import * as XLSX from "xlsx";
 const Hospital = () => {
     const [isModalOpenCreate, setIsModalOpenCreate] = useState(false);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -245,12 +248,30 @@ const Hospital = () => {
             key: "index",
             sorter: (a, b) => a.index - b.index,
         },
+
         {
             title: "Tên",
             dataIndex: "name",
             key: "name",
             ...getColumnSearchProps("name"),
             sorter: (a, b) => a.name.length - b.name.length,
+        },
+        {
+            title: "Loại",
+            dataIndex: "type",
+            key: "type",
+            render: (text) => (
+                <Tag color={text === "hospital" ? "blue" : "green"}>
+                    {text === "hospital" ? "Bệnh viện" : "Phòng khám"}
+                </Tag>
+            ),
+            filters: [
+                { text: "Bệnh viện", value: "hospital" },
+                { text: "Phòng khám", value: "clinic" },
+            ],
+            onFilter: (value, record) => record.type === value,
+            filterSearch: true,
+            filterMode: "tree",
         },
         {
             title: "Ảnh",
@@ -278,32 +299,23 @@ const Hospital = () => {
             filterMode: "tree",
         },
         {
+            title: "Mô tả",
+            dataIndex: "description",
+            key: "description",
+            render: (text) => text.length > 60 ? text.substring(0, 50) + "..." : text,
+        },
+        {
             title: "Địa chỉ",
             dataIndex: "address",
             key: "address",
+            render: (text) => text.length > 60 ? text.substring(0, 50) + "..." : text,
         },
         {
             title: "Số điện thoại",
             dataIndex: "phone",
             key: "phone",
         },
-        {
-            title: "Loại",
-            dataIndex: "type",
-            key: "type",
-            render: (text) => (
-                <Tag color={text === "hospital" ? "blue" : "green"}>
-                    {text === "hospital" ? "Bệnh viện" : "Phòng khám"}
-                </Tag>
-            ),
-            filters: [
-                { text: "Bệnh viện", value: "hospital" },
-                { text: "Phòng khám", value: "clinic" },
-            ],
-            onFilter: (value, record) => record.type === value,
-            filterSearch: true,
-            filterMode: "tree",
-        },
+
         {
             title: "Thao tác",
             key: "action",
@@ -340,6 +352,7 @@ const Hospital = () => {
                 width={50}
                 height={50}
                 style={{ borderRadius: "8px", objectFit: "cover" }}
+                fallback={defaultImage} // fallback image if not found
             />
         ),
         address: item.address,
@@ -370,10 +383,122 @@ const Hospital = () => {
 
         return true;
     };
-    const handleExportCSV = () => { }
-    const handleExportExcel = () => { }
-    const handleChooseFile = (type) => { }
-    const handleFileChange = (e) => { }
+    const handleExportExcel = () => {
+        // Xuất file Excel
+        const dataExport = hospitals?.data.map((item) => ({
+            "Tên": item.name,
+            "Địa chỉ": item.address,
+            "Số điện thoại": item.phone,
+            "Loại": item.type === 'hospital' ? 'Bệnh viện' : 'Phòng khám',
+            "Mô tả": item.description,
+            "Bác sĩ": item.doctors.map((doctor) => doctor.user.name).join(", "),
+            "Ảnh đại diện": `${import.meta.env.VITE_APP_BACKEND_URL}${item.thumbnail}`,
+            "Ảnh chi tiết": item.images.map((image) => `${import.meta.env.VITE_APP_BACKEND_URL}${image}`).join(", ")
+        }))
+        const worksheet = XLSX.utils.json_to_sheet(dataExport);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Hospitals");
+        const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+        const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+        saveAs(blob, "hospitals.xlsx");
+    }
+    const getDoctorIdsFromNames = (doctorNamesString, allDoctors) => {
+        const names = doctorNamesString?.split(",").map(n => n.trim()) || [];
+        return names.map(name => {
+            const doctor = allDoctors.find(doc => doc.name === name);
+            return doctor ? doctor._id : null;
+        }).filter(id => id !== null); // Loại bỏ tên không tìm thấy
+    };
+    const handleExportCSV = () => {
+        // Xuất file CSV
+        const dataExport = hospitals?.data.map((item) => ({
+            "Tên": item.name,
+            "Địa chỉ": item.address,
+            "Số điện thoại": item.phone,
+            "Loại": item.type === 'hospital' ? 'Bệnh viện' : 'Phòng khám',
+            "Mô tả": item.description,
+            "Bác sĩ": item.doctors.map((doctor) => doctor.user.name).join(", "),
+            "Ảnh đại diện": `${import.meta.env.VITE_APP_BACKEND_URL}${item.thumbnail}`,
+            "Ảnh chi tiết": item.images.map((image) => `${import.meta.env.VITE_APP_BACKEND_URL}${image}`).join(", ")
+        }))
+        const csv = Papa.unparse(dataExport);
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        saveAs(blob, "hospitals.csv");
+
+    }
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const normalizeUploadPath = (url = "") => {
+            const index = url.indexOf("/uploads/");
+            return index !== -1 ? url.slice(index) : url;
+        };
+
+        if (fileType === "csv") {
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: (results) => {
+                    const hospitals = results.data.map((item) => ({
+                        name: item["Tên"],
+                        address: item["Địa chỉ"],
+                        phone: item["Số điện thoại"],
+                        type: item["Loại"] === "Bệnh viện" ? "hospital" : "clinic",
+                        description: item["Mô tả"],
+                        doctors: getDoctorIdsFromNames(item["Bác sĩ"], doctors?.data || []),
+                        thumbnail: normalizeUploadPath(item["Ảnh đại diện"]),
+                        images: item["Ảnh chi tiết"]
+                            ? item["Ảnh chi tiết"].split(",").map(url => normalizeUploadPath(url.trim()))
+                            : [],
+                    }));
+
+                    console.log("✅ Hospitals từ CSV:", hospitals);
+                    Message.success("Đã nhập dữ liệu từ file CSV thành công!");
+                    // mutationInsertManyHospitals.mutate({ hospitals }); // nếu cần gửi lên
+                },
+                error: (error) => {
+                    Message.error(`Lỗi khi đọc file CSV: ${error.message}`);
+                }
+            });
+        } else if (fileType === "excel") {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: "array" });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+                const hospitals = jsonData.map((item) => ({
+                    name: item["Tên"],
+                    address: item["Địa chỉ"],
+                    phone: item["Số điện thoại"],
+                    type: item["Loại"] === "Bệnh viện" ? "hospital" : "clinic",
+                    description: item["Mô tả"],
+                    doctors: getDoctorIdsFromNames(item["Bác sĩ"], doctors?.data || []),
+                    thumbnail: normalizeUploadPath(item["Ảnh đại diện"]),
+                    images: item["Ảnh chi tiết"]
+                        ? item["Ảnh chi tiết"].split(",").map(url => normalizeUploadPath(url.trim()))
+                        : [],
+                }));
+
+                console.log("✅ Hospitals từ Excel:", hospitals);
+                Message.success("Đã nhập dữ liệu từ file Excel thành công!");
+                // mutationInsertManyHospitals.mutate({ hospitals });
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        setFileType(null); // Reset fileType sau khi xử lý
+    };
+
+    const handleChooseFile = (type) => {
+        setFileType(type);
+        setTimeout(() => {
+            fileInputRef.current?.click(); // mở input file ẩn
+        }, 0);
+    }
     return (
         <>
             <ActionButtonGroup

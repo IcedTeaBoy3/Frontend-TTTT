@@ -726,7 +726,6 @@ const Doctor = () => {
                             <Form.Item
                                 label="Phòng khám"
                                 name="hospitalId"
-                                rules={[{ required: true, message: "Vui lòng chọn phòng khám!" }]}
                             >
                                 <Select
                                     placeholder="Chọn phòng khám"

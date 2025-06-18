@@ -71,8 +71,8 @@ const BookingPage = () => {
             if (res?.status === "success") {
                 Message.success(res?.message);
                 setIsModalOpen(false);
-                setCurrentStep(isHospital ? 1 : 2); // Nếu là bệnh viện thì chuyển về bước chọn chuyên khoa, nếu không thì chuyển về bước chọn bác sĩ
-                setActiveKey(isHospital ? ['1'] : ['2']);
+                setCurrentStep(3); // Nếu là bệnh viện thì chuyển về bước chọn chuyên khoa, nếu không thì chuyển về bước chọn bác sĩ
+                setActiveKey(['4']);
                 const { _id, createdAt, updatedAt, __v, password, ...updatedData } = res.data;
                 dispatch(updateUser(updatedData));
             } else {

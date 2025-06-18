@@ -1,6 +1,7 @@
 import { Card, Avatar, Tag } from 'antd';
-import { RightOutlined, ArrowRightOutlined } from '@ant-design/icons';
+import { RightOutlined, ArrowRightOutlined, UserOutlined } from '@ant-design/icons';
 import { useState } from 'react';
+import defaultAvatar from '../../assets/avatar-default-icon.png';
 const { Meta } = Card;
 import { WarpperCardStyle, TwoLineDescription } from './style'
 const CardComponent = ({ avatar, name, specialty, hospital, onClick }) => {
@@ -9,6 +10,7 @@ const CardComponent = ({ avatar, name, specialty, hospital, onClick }) => {
         <p style={{ margin: 0 }}><Tag color='blue' style={{ marginRight: '0px' }}>{specialty}</Tag></p>
         <p style={{ margin: 0 }}>{hospital}</p>
     </>
+    const [imgSrc, setImgSrc] = useState(`${import.meta.env.VITE_APP_BACKEND_URL}${avatar}`);
     return (
         <WarpperCardStyle
             style={{ textAlign: 'center' }}
@@ -34,8 +36,12 @@ const CardComponent = ({ avatar, name, specialty, hospital, onClick }) => {
 
             <Avatar
                 size={100}
-                src={`${import.meta.env.VITE_APP_BACKEND_URL}${avatar}`}
+                src={imgSrc}
                 style={{ margin: '0 auto', display: 'block', marginBottom: '16px' }}
+                onError={() => {
+                    setImgSrc(defaultAvatar); // ảnh mặc định khi lỗi
+                    return false;
+                }}
             />
 
             <Meta
