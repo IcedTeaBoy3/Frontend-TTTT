@@ -10,11 +10,12 @@ export const useSpecialtyData = ({
     setIsModalOpenDelete,
     setSelectedRowKeys,
     setRowSelected,
+    filterStatus = '',
 }) => {
     const [mutationResult, setMutationResult] = useState(null);
     const queryGetAllSpecialties = useQuery({
         queryKey: ["getAllSpecialties"],
-        queryFn: SpecialtyService.getAllSpecialties,
+        queryFn: () => SpecialtyService.getAllSpecialties(filterStatus),
         retry: 1,
     });
 

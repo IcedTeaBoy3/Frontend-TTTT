@@ -556,6 +556,8 @@ const Hospital = () => {
                     onCancel={handleCloseAddSpecialty}
                     width={600}
                     style={{ borderRadius: 0 }}
+                    okText="Thêm"
+                    cancelText="Hủy"
                 >
                     <Form
                         name="formCreate"
@@ -685,13 +687,13 @@ const Hospital = () => {
                             getValueFromEvent={(e) =>
                                 Array.isArray(e) ? e : e?.fileList
                             }
-                            extra="Chỉ hỗ trợ định dạng .jpg, .jpeg, .png, .gif,Kích thước không quá 2MB."
+                            extra="Chỉ hỗ trợ định dạng .jpg, .jpeg, .png, .gif, .webp,Kích thước không quá 2MB."
                         >
                             <Upload
                                 name="file"
                                 beforeUpload={() => false}
                                 maxCount={1}
-                                accept=".jpg, .jpeg, .png, .gif"
+                                accept=".jpg, .jpeg, .png, .gif, .webp"
 
                             >
                                 <ButtonComponent icon={<UploadOutlined />}>
@@ -706,14 +708,14 @@ const Hospital = () => {
                             getValueFromEvent={(e) =>
                                 Array.isArray(e) ? e : e?.fileList
                             }
-                            extra="Chỉ hỗ trợ định dạng .jpg, .jpeg, .png, .gif. Tối đa 5 ảnh. Kích thước mỗi ảnh không quá 2MB."
+                            extra="Chỉ hỗ trợ định dạng .jpg, .jpeg, .png, .gif. .webp Tối đa 5 ảnh. Kích thước mỗi ảnh không quá 2MB."
                         >
                             <Upload
                                 name="file"
                                 multiple
                                 beforeUpload={false}
                                 maxCount={5}
-                                accept=".jpg, .jpeg, .png, .gif"
+                                accept=".jpg, .jpeg, .png, .gif, .webp"
                             >
                                 <ButtonComponent icon={<UploadOutlined />}>
                                     Chọn File

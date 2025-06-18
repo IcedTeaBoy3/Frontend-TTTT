@@ -45,7 +45,9 @@ const Doctor = () => {
         },
         type: "checkbox",
     };
-    const { queryGetAllSpecialties } = useSpecialtyData({});
+    const { queryGetAllSpecialties } = useSpecialtyData({
+        filterStatus: "active",
+    });
     const { queryGetAllHospitals, mutationCreateHospital } = useHospitalData({
         setIsModalOpenCreate: setOpenModalCreateClinic,
         type: "clinic",
@@ -595,6 +597,8 @@ const Doctor = () => {
                     onCancel={handleCloseAddDoctor}
                     width={600}
                     style={{ borderRadius: 0 }}
+                    okText="Lưu"
+                    cancelText="Huỷ"
                 >
                     <Form
                         name="formCreate"

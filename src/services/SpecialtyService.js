@@ -8,9 +8,9 @@ export const createSpecialty = async (data) => {
         throw error.response.data;
     }
 };
-export const getAllSpecialties = async (page, pageSize) => {
+export const getAllSpecialties = async (status, page, pageSize) => {
     try {
-        const response = await axiosInstance.get("/specialties/get-all-specialties?page=" + page + "&limit=" + pageSize);
+        const response = await axiosInstance.get("/specialties/get-all-specialties?page=" + page + "&limit=" + pageSize + "&status=" + status);
         return response.data;
     } catch (error) {
         throw error.response.data;

@@ -10,7 +10,7 @@ import {
     EditOutlined,
     SearchOutlined,
 } from "@ant-design/icons";
-import { Form, Input, Upload, Table, Space, Image } from "antd";
+import { Form, Input, Upload, Table, Space, Image, Tag, Radio } from "antd";
 import { useSpecialtyData } from "../../hooks/useSpecialtyData";
 import ActionButtonGroup from "../../components/ActionButtonGroup/ActionButtonGroup";
 import { saveAs } from "file-saver";
@@ -181,9 +181,37 @@ const Specialty = () => {
             dataIndex: "image",
             key: "image",
         },
+        {
+            title: "Trạng thái",
+            dataIndex: "status",
+            key: "status",
+            render: (text) => (
+                text === "active" ? (
+                    <Tag
+                        color="green"
+                        style={{ borderRadius: "8px", padding: "0 8px" }}
+                    >
+                        Hoạt động
+                    </Tag>
+                ) : (
+                    <Tag
+                        color="red"
+                        style={{ borderRadius: "8px", padding: "0 8px" }}
+                    >
+                        Không hoạt động
+                    </Tag>
+                )
+            ),
+            filters: [
+                { text: "Hoạt động", value: "active" },
+                { text: "Không hoạt động", value: "inactive" },
+            ],
+            onFilter: (value, record) => record.status.startsWith(value),
+            filterMultiple: false,
+        },
 
         {
-            title: "Action",
+            title: "Hành động",
             key: "action",
             render: (_, record) => (
                 <Space size="middle">
@@ -213,6 +241,7 @@ const Specialty = () => {
             index: index + 1,
             name: item.name,
             description: item.description,
+            status: item.status,
             image: (
                 <Image
                     src={`${import.meta.env.VITE_APP_BACKEND_URL}${item.image}`}
@@ -232,32 +261,19 @@ const Specialty = () => {
             const formData = new FormData();
             formData.append("name", values.name);
             formData.append("description", values.description);
-            formData.append("image", fileList?.[0]?.originFileObj); // originFileObj mới là File thực tế
+            formData.append("image", fileList?.[0]?.originFileObj);
+
             mutationCreateSpecialty.mutate(formData);
         });
     };
     const handleOkDelete = () => {
-        mutationDeleteSpecialty.mutate(
-            { id: rowSelected },
-            {
-                onSettled: () => {
-                    queryGetAllSpecialties.refetch();
-                },
-            },
-        );
+        mutationDeleteSpecialty.mutate({ id: rowSelected });
     };
     const handleCancelDelete = () => {
         setIsModalOpenDelete(false);
     };
     const handleOkDeleteMany = () => {
-        mutationDeleteManySpecialties.mutate(
-            { ids: selectedRowKeys },
-            {
-                onSettled: () => {
-                    queryGetAllSpecialties.refetch();
-                },
-            },
-        );
+        mutationDeleteManySpecialties.mutate({ ids: selectedRowKeys });
     }
     const handleCancelDeleteMany = () => {
         setIsModalOpenDeleteMany(false);
@@ -270,6 +286,7 @@ const Specialty = () => {
         }
         formData.append("name", values.name);
         formData.append("description", values.description);
+        formData.append("status", values.status);
         mutationUpdateSpecialty.mutate({ id: rowSelected, formData });
     };
     const handleEditSpecialty = async (id) => {
@@ -285,6 +302,7 @@ const Specialty = () => {
                     url: `${import.meta.env.VITE_APP_BACKEND_URL}${specialty?.image}`,
                 },
             ],
+            status: specialty?.status,
         });
         setIsDrawerOpen(true);
     };
@@ -376,7 +394,7 @@ const Specialty = () => {
             >
 
             </ActionButtonGroup >
-            <LoadingComponent isLoading={isLoading} delay={200}>
+            <LoadingComponent isLoading={isLoading || isPendingInsertMany} delay={200}>
                 <Table
                     rowSelection={rowSelection}
                     rowKey={"key"}
@@ -465,7 +483,7 @@ const Specialty = () => {
                             getValueFromEvent={(e) =>
                                 Array.isArray(e) ? e : e && e.fileList
                             }
-                            extra="Chọn ảnh chuyên khoa (jpg, jpeg, png, gif) tối đa 1 file"
+                            extra="Chọn ảnh chuyên khoa (jpg, jpeg, png, gif, webp) tối đa 1 file"
                         >
 
 
@@ -473,7 +491,7 @@ const Specialty = () => {
                                 name="file"
                                 beforeUpload={() => false}
                                 maxCount={1}
-                                accept=".jpg, .jpeg, .png, .gif"
+                                accept=".jpg, .jpeg, .png, .gif, .webps"
 
                             >
                                 <ButtonComponent icon={<UploadOutlined />}>
@@ -519,7 +537,7 @@ const Specialty = () => {
                 placement="right"
                 isOpen={isDrawerOpen}
                 onClose={() => setIsDrawerOpen(false)}
-                width={window.innerWidth < 768 ? "100%" : 600}
+                width={window.innerWidth < 768 ? "100%" : 700}
                 forceRender
             >
                 <LoadingComponent isLoading={isPendingUpdate}>
@@ -528,7 +546,6 @@ const Specialty = () => {
                         labelCol={{ span: 6 }}
                         wrapperCol={{ span: 18 }}
                         style={{ maxWidth: 600, padding: "20px" }}
-                        initialValues={{ remember: true }}
                         onFinish={handleOnUpdateSpecialty}
                         autoComplete="off"
                         form={formUpdate}
@@ -561,7 +578,6 @@ const Specialty = () => {
                                 placeholder="Nhập mô tả chi tiết tại đây..."
                             />
                         </Form.Item>
-
                         <Form.Item
                             label="Ảnh"
                             name="image"
@@ -583,6 +599,23 @@ const Specialty = () => {
                             </Upload>
 
                         </Form.Item>
+                        <Form.Item
+                            label="Trạng thái"
+                            name="status"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "Vui lòng chọn trạng thái!",
+                                },
+                            ]}
+                        >
+                            <Radio.Group>
+                                <Radio value="active">Hoạt động</Radio>
+                                <Radio value="inactive">Không hoạt động</Radio>
+                            </Radio.Group>
+
+                        </Form.Item>
+
                         <Form.Item
                             label={null}
                             wrapperCol={{ offset: 18, span: 6 }}

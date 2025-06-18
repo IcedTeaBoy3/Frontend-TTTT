@@ -29,7 +29,7 @@ const HomePage = () => {
 
     const queryGetAllSpecialties = useQuery({
         queryKey: ["getAllSpecialties", limit],
-        queryFn: () => SpecialtyService.getAllSpecialties(1, limit),
+        queryFn: () => SpecialtyService.getAllSpecialties('active', 1, limit),
         retry: 3,
         retryDelay: 1000,
         keepPreviousData: true,
@@ -46,7 +46,6 @@ const HomePage = () => {
     })
     const queryGetAllDoctors = useQuery({
         queryKey: ["getAllDoctors"],
-
         queryFn: () => DoctorService.getAllDoctors(1, 10),
         retry: 3,
         retryDelay: 1000,

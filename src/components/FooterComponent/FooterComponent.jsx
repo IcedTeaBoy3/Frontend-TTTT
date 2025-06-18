@@ -2,7 +2,9 @@
 import { Row, Col } from 'antd';
 import { FacebookOutlined, TwitterOutlined, InstagramOutlined, LinkedinOutlined, YoutubeOutlined } from '@ant-design/icons';
 import { FooterWrapper, FooterTitle, FooterText, FooterBottom, SocialLinks, SocialIcon } from './style';
+import { useNavigate } from 'react-router-dom';
 const FooterComponent = () => {
+    const navigate = useNavigate();
     return (
         <div style={{ backgroundColor: 'rgb(249 250 251)', borderTop: '2px solid #1890ff', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
             <FooterWrapper>
@@ -23,9 +25,12 @@ const FooterComponent = () => {
 
                     <Col sm={24} md={12} lg={8} xl={6}>
                         <FooterTitle>Dịch vụ</FooterTitle>
-                        <FooterText>Đặt khám bác sĩ</FooterText>
-                        <FooterText>Đặt khám bệnh viện</FooterText>
-                        <FooterText>Đặt khám phòng khám</FooterText>
+                        <FooterText onClick={() => navigate('/search?type=doctor', {
+                            replace: true
+                        })}>Đặt khám bác sĩ</FooterText>
+                        <FooterText onClick={() => navigate('/search?type=hospital', {
+                            replace: true
+                        })}>Đặt khám phòng khám</FooterText>
                     </Col>
 
                     <Col sm={24} md={12} lg={8} xl={6}>

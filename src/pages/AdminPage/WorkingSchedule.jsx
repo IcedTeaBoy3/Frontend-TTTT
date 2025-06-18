@@ -357,6 +357,8 @@ const WorkingSchedule = () => {
                     onCancel={handleCloseAddWorkingSchedule}
                     width={600}
                     style={{ borderRadius: 0 }}
+                    okText="Thêm"
+                    cancelText="Huỷ"
                 >
                     <Form
                         name="formCreate"

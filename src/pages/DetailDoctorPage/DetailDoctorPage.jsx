@@ -213,7 +213,7 @@ const DetailDoctorPage = () => {
                             type="primary"
                             size="large"
                             onClick={handleBookingDoctor}
-                            disabled={!appointment.doctor || !appointment.schedule}
+                            disabled={!appointment.doctor || !appointment.schedule || !doctor?.data?.hospital}
                         >
                             Đặt lịch khám
                         </BookingButton>
