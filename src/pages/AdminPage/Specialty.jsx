@@ -282,7 +282,16 @@ const Specialty = () => {
         const formData = new FormData();
         const fileObj = values.image?.[0]?.originFileObj;
         if (fileObj instanceof File) {
+            // Nếu có file mới
             formData.append("image", fileObj);
+        } else if (values.image?.[0]?.url) {
+            // Nếu không có file mới, nhưng có URL thì giữ nguyên
+            const imageUrl = values.image[0].url;
+            const imageName = imageUrl.replace(import.meta.env.VITE_APP_BACKEND_URL, ""); // Lấy lại phần tên file
+            formData.append("oldImage", imageName);
+        } else {
+            // Không có ảnh và cũng không dùng ảnh cũ → đã xoá
+            formData.append("isImageDeleted", true);
         }
         formData.append("name", values.name);
         formData.append("description", values.description);
@@ -299,7 +308,7 @@ const Specialty = () => {
                     uid: "-1",
                     name: specialty?.image,
                     status: "done",
-                    url: `${import.meta.env.VITE_APP_BACKEND_URL}${specialty?.image}`,
+                    url: specialty?.image ? `${import.meta.env.VITE_APP_BACKEND_URL}${specialty.image}` : defaultImage,
                 },
             ],
             status: specialty?.status,
@@ -492,7 +501,9 @@ const Specialty = () => {
                                 beforeUpload={() => false}
                                 maxCount={1}
                                 accept=".jpg, .jpeg, .png, .gif, .webps"
-
+                                onRemove={() => formCreate.setFieldsValue({ image: [] })}
+                                fileList={formCreate.getFieldValue("image") || []}
+                                listType="picture"
                             >
                                 <ButtonComponent icon={<UploadOutlined />}>
                                     Chọn file
@@ -585,13 +596,16 @@ const Specialty = () => {
                             getValueFromEvent={(e) =>
                                 Array.isArray(e) ? e : e && e.fileList
                             }
+                            extra="Chọn ảnh chuyên khoa (jpg, jpeg, png, gif, webp) tối đa 1 file"
                         >
                             <Upload
                                 name="file"
                                 beforeUpload={() => false}
                                 maxCount={1}
-                                accept=".jpg, .jpeg, .png, .gif"
-
+                                accept=".jpg, .jpeg, .png, .gif, .webp"
+                                onRemove={() => formUpdate.setFieldsValue({ image: [] })}
+                                fileList={formUpdate.getFieldValue("image") || []}
+                                listType="picture"
                             >
                                 <ButtonComponent icon={<UploadOutlined />}>
                                     Chọn file

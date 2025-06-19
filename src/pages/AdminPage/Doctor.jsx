@@ -109,6 +109,14 @@ const Doctor = () => {
                 position: doctor.position,
                 experience: doctor.experience,
                 description: doctor.description,
+                avatar: [
+                    {
+                        uid: "-1",
+                        name: "avatar.png",
+                        status: "done",
+                        url: `${import.meta.env.VITE_APP_BACKEND_URL}${doctor?.user?.avatar}`,
+                    }
+                ]
             });
         }
         setIsDrawerOpen(true);
@@ -303,18 +311,26 @@ const Doctor = () => {
         description: item.description,
     })) || [];
 
-    const handleOnUpdateDoctor = (values) => {
+    const handleOnUpdateDoctor = async (values) => {
+        const formData = new FormData();
+        const avatarFile = values.avatar?.[0]?.originFileObj;
+        if (avatarFile) {
+            formData.append("avatar", avatarFile);
+        }
+        formData.append("name", values.name);
+        formData.append("email", values.email);
+        formData.append("specialties", JSON.stringify(values.specialties));
+        formData.append("hospitalId", values.hospitalId);
+        formData.append("qualification", values.qualification);
+        formData.append("position", values.position);
+        formData.append("experience", values.experience);
+        formData.append("description", values.description);
         mutationUpdateDoctor.mutate({
             id: rowSelected,
-            name: values.name,
-            email: values.email,
-            specialties: JSON.stringify(values.specialties),
-            hospitalId: values.hospitalId,
-            qualification: values.qualification,
-            position: values.position,
-            experience: values.experience,
-            description: values.description,
+            formData: formData,
         })
+
+
     }
     const handleOkDelete = () => {
         mutationDeleteDoctor.mutate(rowSelected)
@@ -568,6 +584,28 @@ const Doctor = () => {
 
                         </Form.Item>
                         <Form.Item
+                            label="Ảnh đại diện"
+                            name="avatar"
+                            valuePropName="fileList"
+                            getValueFromEvent={(e) => {
+                                if (!e) return [];
+                                return Array.isArray(e) ? e : e.fileList || [];
+                            }}
+                            extra="Chọn ảnh chuyên khoa (jpg, jpeg, png, gif, webp) tối đa 1 file"
+                        >
+                            <Upload
+                                name="file"
+                                beforeUpload={() => false} // chặn upload tự động
+                                maxCount={1}
+                                accept=".jpg,.jpeg,.png,.gif,.webp"
+                                listType="picture"
+                            >
+                                <ButtonComponent icon={<UploadOutlined />}>
+                                    Chọn file
+                                </ButtonComponent>
+                            </Upload>
+                        </Form.Item>
+                        <Form.Item
                             label={null}
                             wrapperCol={{ offset: 18, span: 6 }}
                         >
@@ -605,7 +643,6 @@ const Doctor = () => {
                         labelCol={{ span: 6 }}
                         wrapperCol={{ span: 18 }}
                         style={{ maxWidth: 600, padding: "20px" }}
-                        initialValues={{ remember: true }}
                         autoComplete="off"
                         form={formCreate}
                     >
@@ -813,7 +850,6 @@ const Doctor = () => {
                     labelCol={{ span: 6 }}
                     wrapperCol={{ span: 18 }}
                     style={{ maxWidth: 600, padding: "20px" }}
-                    initialValues={{ remember: true }}
                     autoComplete="off"
                 >
                     <Form.Item

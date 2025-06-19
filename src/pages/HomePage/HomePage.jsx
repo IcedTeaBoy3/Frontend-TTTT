@@ -96,7 +96,7 @@ const HomePage = () => {
                                 {doctors?.data.map((item) => (
                                     <CardComponent
                                         key={item._id}
-                                        avatar={item.image}
+                                        avatar={item.user?.avatar}
                                         name={item.user?.name}
                                         specialty={item.specialties[0]?.name}
                                         hospital={item.hospital?.name}

@@ -53,7 +53,7 @@ export const useDoctorData = ({
 
     const mutationUpdateDoctor = useMutation({
         mutationKey: ["updateDoctor"],
-        mutationFn: ({ id, ...formData }) => DoctorService.updateDoctor(id, formData),
+        mutationFn: ({ id, formData }) => DoctorService.updateDoctor(id, formData),
         onSuccess: (data) => {
             const result = handleMutationResponse(data, {
                 clearSelection: () => setRowSelected(null),
