@@ -15,8 +15,8 @@ import { DeleteOutlined } from "@ant-design/icons";
 import { useState, useRef } from "react";
 import { useHospitalData } from "../../hooks/useHospitalData";
 import { useDoctorData } from "../../hooks/useDoctorData";
-import { saveAs } from "file-saver";
 import defaultImage from "../../assets/default_image.png";
+import { saveAs } from "file-saver";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 const Hospital = () => {
@@ -116,29 +116,61 @@ const Hospital = () => {
                         uid: "-1",
                         name: hospital.thumbnail,
                         status: "done",
-                        url: `${import.meta.env.VITE_APP_BACKEND_URL}${hospital.thumbnail}`,
+                        url: hospital.thumbnail
+                            ? `${import.meta.env.VITE_APP_BACKEND_URL}${hospital.thumbnail}`
+                            : defaultImage,
                     },
                 ],
-                images: hospital.images?.map((image, index) => ({
+                images: hospital.images ? hospital.images.map((image, index) => ({
                     uid: index,
                     name: image,
                     status: "done",
-                    url: `${import.meta.env.VITE_APP_BACKEND_URL}${image}`,
-                })),
+                    url: image
+                        ? `${import.meta.env.VITE_APP_BACKEND_URL}${image}`
+                        : defaultImage,
+                })) : [],
             });
         }
         setIsDrawerOpen(true);
     };
     const handleOnUpdateHospital = (values) => {
         const formData = new FormData();
-        if (values.thumbnail && values.thumbnail.length > 0) {
-            formData.append('thumbnail', values.thumbnail[0].originFileObj);
+        const fileObj = values.thumbnail?.[0]?.originFileObj;
+        if (fileObj instanceof File) {
+            formData.append('thumbnail', fileObj);
+        } else if (values.thumbnail?.[0]?.url) {
+            // Nếu thumbnail là URL, không cần thêm vào formData
+            const thumbnailUrl = values.thumbnail[0].url;
+            const thumbnailName = thumbnailUrl.replace(import.meta.env.VITE_APP_BACKEND_URL, "");
+            formData.append('oldThumbnail', thumbnailName);
+        } else {
+            // Không có ảnh và cũng không dùng ảnh cũ → đã xoá
+            formData.append("isThumbnailDeleted", true);
         }
+
+        // Tách ảnh chi tiết thành ảnh cũ và ảnh mới
+        const oldImages = [];
+        const newImages = [];
         if (values.images && values.images.length > 0) {
             values.images.forEach((file) => {
-                formData.append('images', file.originFileObj);
+                if (file.originFileObj instanceof File) {
+                    newImages.push(file.originFileObj);
+                } else if (file.url) {
+                    const imageName = file.url.replace(import.meta.env.VITE_APP_BACKEND_URL, '');
+                    oldImages.push(imageName);
+                }
             });
         }
+        // Gửi ảnh mới
+        newImages.forEach((file) => {
+            formData.append('images', file); // append nhiều file cùng key 'images'
+        });
+        // Gửi tên ảnh cũ giữ lại
+        formData.append('oldImages', JSON.stringify(oldImages));
+
+
+
+        // Các trường còn lại
         formData.append("name", values.name);
         formData.append("description", values.description);
         formData.append("address", values.address);
@@ -634,10 +666,6 @@ const Hospital = () => {
 
                             </>
                         )}
-
-
-
-
                         <Form.Item
                             label="Mô tả"
                             name="description"
@@ -681,7 +709,7 @@ const Hospital = () => {
                             <Input placeholder="Nhập số điện thoại " />
                         </Form.Item>
                         <Form.Item
-                            label="Ảnh đại diện"
+                            label="Ảnh thumbnail"
                             name="thumbnail"
                             valuePropName="fileList"
                             getValueFromEvent={(e) =>
@@ -694,7 +722,9 @@ const Hospital = () => {
                                 beforeUpload={() => false}
                                 maxCount={1}
                                 accept=".jpg, .jpeg, .png, .gif, .webp"
-
+                                onRemove={() => formCreate.setFieldsValue({ thumbnail: [] })}
+                                fileList={formCreate.getFieldValue("thumbnail") || []}
+                                listType="picture"
                             >
                                 <ButtonComponent icon={<UploadOutlined />}>
                                     Chọn File
@@ -713,9 +743,30 @@ const Hospital = () => {
                             <Upload
                                 name="file"
                                 multiple
-                                beforeUpload={false}
+                                beforeUpload={(file) => {
+                                    const isAllowedType = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type);
+                                    const isLt2M = file.size / 1024 / 1024 < 2;
+                                    if (!isAllowedType) {
+                                        Message.error(`${file.name} không phải là định dạng ảnh hợp lệ!`);
+                                        return Upload.LIST_IGNORE;
+                                    }
+                                    if (!isLt2M) {
+                                        Message.error(`${file.name} vượt quá 2MB!`);
+                                        return Upload.LIST_IGNORE;
+                                    }
+                                    return false; // Không upload tự động
+                                }}
                                 maxCount={5}
                                 accept=".jpg, .jpeg, .png, .gif, .webp"
+                                onChange={({ fileList }) => {
+                                    formCreate.setFieldsValue({ images: fileList });
+                                }}
+                                onRemove={(file) => {
+                                    const newFileList = formCreate.getFieldValue('images')?.filter((item) => item.uid !== file.uid);
+                                    formCreate.setFieldsValue({ images: newFileList });
+                                }}
+                                fileList={formCreate.getFieldValue("images") || []}
+                                listType="picture"
                             >
                                 <ButtonComponent icon={<UploadOutlined />}>
                                     Chọn File
@@ -861,7 +912,7 @@ const Hospital = () => {
                         </Form.Item>
 
                         <Form.Item
-                            label="Ảnh"
+                            label="Ảnh thumbnail"
                             name="thumbnail"
                             valuePropName="fileList"
                             getValueFromEvent={(e) =>
@@ -872,7 +923,13 @@ const Hospital = () => {
                                 name="file"
                                 beforeUpload={() => false}
                                 maxCount={1}
-                                accept=".jpg, .jpeg, .png, .gif"
+                                accept=".jpg,.jpeg,.png,.gif,.webp"
+                                listType="picture"
+                                onRemove={() => formUpdate.setFieldsValue({ thumbnail: [] })}
+                                fileList={formUpdate.getFieldValue("thumbnail") || []}
+                                onChange={({ fileList }) => {
+                                    formUpdate.setFieldsValue({ thumbnail: fileList });
+                                }}
                             >
                                 <ButtonComponent icon={<UploadOutlined />}>
                                     Chọn file
@@ -880,7 +937,7 @@ const Hospital = () => {
                             </Upload>
                         </Form.Item>
                         <Form.Item
-                            label="Ảnh"
+                            label="Ảnh chi tiết"
                             name="images"
                             valuePropName="fileList"
                             getValueFromEvent={(e) =>
@@ -891,8 +948,15 @@ const Hospital = () => {
                                 name="file"
                                 multiple
                                 beforeUpload={beforeUpload}
-
-                                accept=".jpg, .jpeg, .png, .gif"
+                                accept=".jpg, .jpeg, .png, .gif, .webp"
+                                listType="picture"
+                                onChange={({ fileList }) => {
+                                    formUpdate.setFieldsValue({ images: fileList });
+                                }}
+                                onRemove={(file) => {
+                                    const newFileList = formUpdate.getFieldValue('images')?.filter((item) => item.uid !== file.uid);
+                                    formUpdate.setFieldsValue({ images: newFileList });
+                                }}
                             >
                                 <ButtonComponent icon={<UploadOutlined />}>
                                     Chọn file
