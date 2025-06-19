@@ -118,8 +118,8 @@ const BookingPage = () => {
     const { isPending: isPendingUpdateProfile } = mutationUpdateUpdateProfile
 
     const handleCreateWorkingTime = (schedule) => {
-        if (!schedule?.startTime || !schedule?.endTime || !schedule?.workDate) return;
-        const timeSlots = generateTimeSlots(schedule.startTime, schedule.endTime);
+        if (!schedule?.startTime || !schedule?.endTime || !schedule?.workDate || !schedule.workDate) return;
+        const timeSlots = generateTimeSlots(schedule.startTime, schedule.endTime, schedule.shiftDuration);
         setIsLoaded(false); // reset loading
         setTimeSlots(timeSlots);
         dispatch(updateAppointment({ selectedDate: schedule.workDate }));
@@ -547,7 +547,7 @@ const BookingPage = () => {
                                 <Text style={{ fontSize: "16px" }}>🕒 Giờ khám</Text>
                                 {dayjs(appointment?.selectedTime, ['H:mm', 'HH:mm'], true).isValid() ? (
                                     <Text strong style={{ fontSize: "16px", color: "#52c41a" }}>
-                                        {`${appointment?.selectedTime} - ${addMinutesToTime(appointment?.selectedTime, 30)}`}
+                                        {`${appointment?.selectedTime} - ${addMinutesToTime(appointment?.selectedTime, appointment?.schedule?.shiftDuration)}`}
                                     </Text>
                                 ) : (
                                     <Text strong type="danger" style={{ fontSize: "16px" }}>

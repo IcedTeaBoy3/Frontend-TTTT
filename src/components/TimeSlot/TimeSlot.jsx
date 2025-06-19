@@ -25,7 +25,7 @@ const TimeSlot = ({ timeSlots, schedule, selectedDate, selectedTime, handleCheck
                             }
                             onClick={() => handleSelectedTime(time)}
                         >
-                            {`${time}-${addMinutesToTime(time, 30)}`}
+                            {`${time}-${addMinutesToTime(time, schedule?.shiftDuration)}`}
                         </CustomButton>
                     </Col>
                 ))}

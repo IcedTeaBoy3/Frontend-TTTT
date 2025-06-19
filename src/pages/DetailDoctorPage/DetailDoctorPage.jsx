@@ -56,6 +56,15 @@ const DetailDoctorPage = () => {
         }
     }, [workingSchedules]);
     useEffect(() => {
+        if (appointment?.selectedDate && Array.isArray(workingSchedules?.data)) {
+            const schedule = workingSchedules.data.find(item => dayjs(item?.workDate).isSame(dayjs(appointment.selectedDate), 'day'));
+            dispatch(updateAppointment({ schedule }));
+            if (schedule) {
+                handleCreateWorkingTime(schedule);
+            }
+        }
+    }, [appointment.selectedDate]);
+    useEffect(() => {
         if (doctor && doctor?.data) {
             // Cập nhật thông tin bác sĩ vào appointment nếu có
             dispatch(updateAppointment({
@@ -69,24 +78,30 @@ const DetailDoctorPage = () => {
         }
     }, [doctor]);
 
-
     function generateTimeSlots(start, end, duration = 30) {
         const slots = [];
-        let [startHour, startMin] = start.split(':').map(Number);
-        let [endHour, endMin] = end.split(':').map(Number);
+        if (!start || !end) return slots;
+
+        const [startHour, startMin] = start.split(':').map(Number);
+        const [endHour, endMin] = end.split(':').map(Number);
+
         const startTime = startHour * 60 + startMin;
         const endTime = endHour * 60 + endMin;
+
+        if (startTime >= endTime) return slots; // ⛔ Không tạo slot nếu giờ bắt đầu >= giờ kết thúc
 
         for (let time = startTime; time + duration <= endTime; time += duration) {
             const h = Math.floor(time / 60);
             const m = time % 60;
             slots.push(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`);
         }
+
         return slots;
     }
     const handleCreateWorkingTime = (schedule) => {
-        if (!schedule.startTime || !schedule.endTime || !schedule.workDate) return;
-        const timeSlots = generateTimeSlots(schedule.startTime, schedule.endTime);
+        if (!schedule.startTime || !schedule.endTime || !schedule.workDate || !schedule.shiftDuration) return;
+        console.log("handleCreateWorkingTime", schedule);
+        const timeSlots = generateTimeSlots(schedule.startTime, schedule.endTime, schedule.shiftDuration);
         setTimeSlots(timeSlots);
         dispatch(updateAppointment({ selectedDate: schedule.workDate }))
     }
@@ -162,9 +177,10 @@ const DetailDoctorPage = () => {
                     <Title level={4}>Lịch làm việc</Title>
                     {workingSchedules?.data?.length > 0 ? (
                         <WorkingSchedule
-                            selectedDate={appointment.selectedDate}
-                            isLoading={isLoadingWorkingSchedule}
                             workingSchedules={workingSchedules}
+                            isLoading={isLoadingWorkingSchedule}
+                            timeSlots={timeSlots}
+                            selectedDate={appointment.selectedDate}
                             handleCreateWorkingTime={handleCreateWorkingTime}
                         />
                     ) : (
@@ -177,6 +193,7 @@ const DetailDoctorPage = () => {
                             timeSlots={timeSlots}
                             selectedDate={appointment.selectedDate}
                             selectedTime={appointment.selectedTime}
+                            schedule={appointment.schedule}
                             handleCheckTime={handleCheckTime}
                             handleSelectedTime={handleSelectedTime}
                         />

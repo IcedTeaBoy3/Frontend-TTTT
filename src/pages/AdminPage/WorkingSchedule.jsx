@@ -145,6 +145,7 @@ const WorkingSchedule = () => {
                 date: dayjs(workingSchedule.workDate),
                 startTime: dayjs(workingSchedule.startTime, "HH:mm"),
                 endTime: dayjs(workingSchedule.endTime, "HH:mm"),
+                shiftDuration: workingSchedule.shiftDuration
             });
         }
         setIsDrawerOpen(true);
@@ -160,18 +161,15 @@ const WorkingSchedule = () => {
             title: "Tên bác sĩ",
             dataIndex: "name",
             key: "name",
-            ...getColumnSearchProps("name"),
+
+            filters: doctors?.data?.map((doctor) => ({
+                text: doctor.user.name,        // Tên hiển thị trong menu filter
+                value: doctor.user.name,       // Giá trị dùng để so sánh trong filter
+            })),
+            onFilter: (value, record) =>
+                record.doctor?.user?.name === value, // So sánh tên bác sĩ
             render: (_, record) => (
                 <Flex gap={8} alignItems="center">
-
-                    <Image
-                        src={record.doctor?.image}
-                        width={30}
-                        height={30}
-                        style={{ borderRadius: "50%" }}
-                        fallback={defaultAvatar}
-                        alt={record.doctor?.user?.name}
-                    />
                     <span>{record.doctor?.user?.name}</span>
                 </Flex>
             ),
@@ -216,6 +214,17 @@ const WorkingSchedule = () => {
             ),
         },
         {
+            title: "Thời gian ca",
+            dataIndex: "shiftDuration",
+            key: "shiftDuration",
+            render: (_, record) => (
+                <div>
+                    {`${record.shiftDuration || '30'} phút`}
+                </div>
+
+            )
+        },
+        {
             title: "Thao tác",
             key: "action",
             render: (_, record) => (
@@ -246,6 +255,7 @@ const WorkingSchedule = () => {
             index: index + 1,
             doctor: item.doctor,
             workDate: dayjs(item.workDate),
+            shiftDuration: item.shiftDuration,
             startTime: dayjs(item.startTime, "HH:mm").format("HH:mm"),
             endTime: dayjs(item.endTime, "HH:mm").format("HH:mm"),
         }
@@ -257,6 +267,7 @@ const WorkingSchedule = () => {
                 workDate: values.date.toDate(),
                 startTime: values.startTime.format("HH:mm"),
                 endTime: values.endTime.format("HH:mm"),
+                shiftDuration: values.shiftDuration,
             }
             mutationCreateWorkingSchedule.mutate(data);
         }).catch((error) => {
@@ -274,6 +285,7 @@ const WorkingSchedule = () => {
                 workDate: values.date.toDate(),
                 startTime: values.startTime.format("HH:mm"),
                 endTime: values.endTime.format("HH:mm"),
+                shiftDuration: values.shiftDuration,
             }
             mutationUpdateWorkingSchedule.mutate(data);
         }).catch((error) => {
@@ -365,7 +377,12 @@ const WorkingSchedule = () => {
                         labelCol={{ span: 6 }}
                         wrapperCol={{ span: 18 }}
                         style={{ maxWidth: 600, padding: "20px" }}
-                        initialValues={{ remember: true }}
+                        initialValues={{
+                            shiftDuration: 30, // Giá trị mặc định
+                            date: dayjs(), // Ngày hiện tại
+                            startTime: dayjs().startOf('hour').add(1, 'hour'),
+                            endTime: dayjs().startOf('hour').add(3, 'hour'),
+                        }}
                         autoComplete="off"
                         form={formCreate}
                     >
@@ -385,14 +402,9 @@ const WorkingSchedule = () => {
                                 >
                                     {doctors?.data?.map((doctor) => (
                                         <Option key={doctor._id} value={doctor._id} label={doctor?.user?.name}>
-                                            <div style={{ display: "flex", alignItems: "center" }}>
-                                                <img
-                                                    src={doctor.image}
-                                                    alt={doctor?.user?.name}
-                                                    style={{ width: 30, height: 30, borderRadius: "50%", marginRight: 10 }}
-                                                />
+                                            <Flex gap={8} alignItems="center">
                                                 {doctor?.user?.name}
-                                            </div>
+                                            </Flex>
                                         </Option>
                                     ))}
                                 </Select>
@@ -487,6 +499,24 @@ const WorkingSchedule = () => {
                                 }}
                             />
                         </Form.Item>
+                        <Form.Item
+                            label="Thời gian ca"
+                            name="shiftDuration"
+                            rules={[{ required: true, message: "Vui lòng chọn thời gian ca!" }]}
+                        >
+                            <Select
+                                placeholder="Chọn thời gian ca"
+                                style={{ width: '100%' }}
+
+                                options={[
+                                    { value: 15, label: '15 phút' },
+                                    { value: 30, label: '30 phút' },
+                                    { value: 45, label: '45 phút' },
+                                    { value: 60, label: '60 phút' },
+                                ]}
+                            />
+
+                        </Form.Item>
                     </Form>
                 </ModalComponent>
             </LoadingComponent>
@@ -504,7 +534,6 @@ const WorkingSchedule = () => {
                         labelCol={{ span: 6 }}
                         wrapperCol={{ span: 18 }}
                         style={{ maxWidth: 600, padding: "20px" }}
-                        initialValues={{ remember: true }}
                         onFinish={handleOnUpdateWorkingSchedule}
                         autoComplete="off"
                         form={formUpdate}
@@ -524,14 +553,9 @@ const WorkingSchedule = () => {
                             >
                                 {doctors?.data?.map((doctor) => (
                                     <Option key={doctor._id} value={doctor._id} label={doctor?.user?.name}>
-                                        <div style={{ display: "flex", alignItems: "center" }}>
-                                            <img
-                                                src={doctor.image}
-                                                alt={doctor?.user?.name}
-                                                style={{ width: 30, height: 30, borderRadius: "50%", marginRight: 10 }}
-                                            />
+                                        <Flex gap={8} alignItems="center">
                                             {doctor?.user?.name}
-                                        </div>
+                                        </Flex>
                                     </Option>
                                 ))}
                             </Select>
@@ -623,6 +647,24 @@ const WorkingSchedule = () => {
                                     };
                                 }}
                             />
+                        </Form.Item>
+                        <Form.Item
+                            label="Thời gian ca"
+                            name="shiftDuration"
+                            rules={[{ required: true, message: "Vui lòng chọn thời gian ca!" }]}
+                        >
+                            <Select
+                                placeholder="Chọn thời gian ca"
+                                style={{ width: '100%' }}
+
+                                options={[
+                                    { value: 15, label: '15 phút' },
+                                    { value: 30, label: '30 phút' },
+                                    { value: 45, label: '45 phút' },
+                                    { value: 60, label: '60 phút' },
+                                ]}
+                            />
+
                         </Form.Item>
 
 
