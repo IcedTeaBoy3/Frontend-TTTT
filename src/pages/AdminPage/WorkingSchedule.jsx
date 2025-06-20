@@ -1,4 +1,4 @@
-import { Form, Select, DatePicker, TimePicker, Table, Space, Input, Image, Flex } from "antd";
+import { Form, Select, DatePicker, TimePicker, Table, Space, Input, Image, Flex, Radio } from "antd";
 import { DeleteOutlined, EditOutlined, SearchOutlined } from "@ant-design/icons";
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
 import ModalComponent from '../../components/ModalComponent/ModalComponent';
@@ -145,7 +145,8 @@ const WorkingSchedule = () => {
                 date: dayjs(workingSchedule.workDate),
                 startTime: dayjs(workingSchedule.startTime, "HH:mm"),
                 endTime: dayjs(workingSchedule.endTime, "HH:mm"),
-                shiftDuration: workingSchedule.shiftDuration
+                shiftDuration: workingSchedule.shiftDuration,
+                status: workingSchedule.status,
             });
         }
         setIsDrawerOpen(true);
@@ -286,6 +287,7 @@ const WorkingSchedule = () => {
                 startTime: values.startTime.format("HH:mm"),
                 endTime: values.endTime.format("HH:mm"),
                 shiftDuration: values.shiftDuration,
+                status: values.status,
             }
             mutationUpdateWorkingSchedule.mutate(data);
         }).catch((error) => {
@@ -666,7 +668,20 @@ const WorkingSchedule = () => {
                             />
 
                         </Form.Item>
+                        <Form.Item
+                            label="Trạng thái"
+                            name="status"
+                            rules={[{ required: true, message: "Vui lòng chọn trạng thái!" }]}
+                        >
+                            <Radio.Group
+                                style={{ width: '100%' }}
+                                buttonStyle="solid"
 
+                            >
+                                <Radio value="active">Đang hoạt động</Radio>
+                                <Radio value="inactive">Ngừng hoạt động</Radio>
+                            </Radio.Group>
+                        </Form.Item>
 
                         <Form.Item
                             label={null}

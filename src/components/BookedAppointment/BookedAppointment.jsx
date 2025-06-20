@@ -13,7 +13,6 @@ const BookedAppointment = ({ userId }) => {
     const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
     const [appointmentDetails, setAppointmentDetails] = useState(null);
     const typeBooked = appointmentDetails?.type || 'default'; // Giả sử type mặc định là 'default'
-    console.log('appointmentDetails', appointmentDetails);
     // Lấy thông tin người dùng từ Redux store
     const patient = useSelector((state) => state.auth.user);
     const [pagination, setPagination] = useState({

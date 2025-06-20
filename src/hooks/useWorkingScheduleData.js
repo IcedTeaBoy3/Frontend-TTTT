@@ -11,6 +11,7 @@ export const useWorkingScheduleData = ({
     setIsModalOpenDelete,
     setSelectedRowKeys,
     setRowSelected,
+    doctorId,
 }) => {
     const [mutationResult, setMutationResult] = useState(null);
 
@@ -18,12 +19,14 @@ export const useWorkingScheduleData = ({
         queryKey: ["getAllWorkingSchedules"],
         queryFn: WorkingScheduleService.getAllWorkingSchedules,
         retry: 1,
+        enabled: !doctorId, // Chỉ gọi khi doctorId không có giá trị
     });
-    const useGetWorkingScheduleByDoctor = (doctorId) => useQuery({
-        queryKey: ["getWorkingScheduleByDoctor", doctorId],
+    const queryGetAllWorkingSchedulesByDoctor = useQuery({
+        queryKey: ["getAllWorkingSchedulesByDoctor",doctorId],
         queryFn: () => WorkingScheduleService.getWorkingScheduleByDoctor(doctorId),
-        enabled: !!doctorId, // chỉ chạy khi doctorId có giá trị
         retry: 1,
+        enabled: !!doctorId, // Chỉ gọi khi doctorId có giá trị
+        refetchOnWindowFocus: false,
     });
 
     const mutationCreateWorkingSchedule = useMutation({
@@ -32,7 +35,9 @@ export const useWorkingScheduleData = ({
         onSuccess: (data) => {
             const result = handleMutationResponse(data, {
                 closeModal: () => setIsModalOpenCreate(false),
-                refetchQuery: queryGetAllWorkingSchedules.refetch,
+                refetchQuery: doctorId
+                    ? queryGetAllWorkingSchedulesByDoctor.refetch
+                    : queryGetAllWorkingSchedules.refetch,
             });
             setMutationResult(result);
         },
@@ -47,8 +52,10 @@ export const useWorkingScheduleData = ({
         onSuccess: (data) => {
             const result = handleMutationResponse(data, {
                 clearSelection: () => setRowSelected(null),
-                closeModal: () => setIsModalOpenDelete(false),
-                refetchQuery: queryGetAllWorkingSchedules.refetch,
+                closeModal: !doctorId ? () => setIsModalOpenDelete(false) : null,
+                refetchQuery: doctorId
+                    ? queryGetAllWorkingSchedulesByDoctor.refetch
+                    : queryGetAllWorkingSchedules.refetch,
             });
             setMutationResult(result);
         },
@@ -64,7 +71,9 @@ export const useWorkingScheduleData = ({
             const result = handleMutationResponse(data, {
                 clearSelection: () => setRowSelected(null),
                 closeDrawer: () => setIsDrawerOpen(false),
-                refetchQuery: queryGetAllWorkingSchedules.refetch,
+                refetchQuery: doctorId
+                    ? queryGetAllWorkingSchedulesByDoctor.refetch
+                    : queryGetAllWorkingSchedules.refetch,
             });
             setMutationResult(result);
         },
@@ -80,7 +89,9 @@ export const useWorkingScheduleData = ({
             const result = handleMutationResponse(data, {
                 clearSelection: () => setSelectedRowKeys([]),
                 closeModal: () => setIsModalOpenDeleteMany(false),
-                refetchQuery: queryGetAllWorkingSchedules.refetch,
+                refetchQuery: doctorId
+                    ? queryGetAllWorkingSchedulesByDoctor.refetch
+                    : queryGetAllWorkingSchedules.refetch,
             });
             setMutationResult(result);
         },
@@ -103,7 +114,7 @@ export const useWorkingScheduleData = ({
 
     return {
         queryGetAllWorkingSchedules,
-        useGetWorkingScheduleByDoctor,
+        queryGetAllWorkingSchedulesByDoctor,
         mutationCreateWorkingSchedule,
         mutationDeleteWorkingSchedule,
         mutationUpdateWorkingSchedule,

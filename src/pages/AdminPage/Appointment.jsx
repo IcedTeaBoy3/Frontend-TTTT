@@ -32,7 +32,7 @@ const Appointment = () => {
     });
     const rowSelection = {
         selectedRowKeys,
-        onChange: (selectedKeys, selectedRows) => {
+        onChange: (selectedKeys) => {
             setSelectedRowKeys(selectedKeys);
 
         },
@@ -54,14 +54,16 @@ const Appointment = () => {
 
     const { queryGetAllSpecialties } = useSpecialtyData({});
     const { queryGetAllDoctors } = useDoctorData({});
-    const { useGetWorkingScheduleByDoctor } = useWorkingScheduleData({});
+    const { queryGetAllWorkingSchedulesByDoctor } = useWorkingScheduleData({
+        doctorId: formUpdate.getFieldValue("nameDoctor"),
+    })
     const { queryGetAllPatients } = usePatientData({});
 
     const { data: appointments, isLoading: isLoadingAppointment } = queryGetAllAppointments;
     const { data: doctors, isLoading: isLoadingDoctor } = queryGetAllDoctors;
-    const { data: workingSchedules, isLoading: isLoadingWorkingSchedule } = useGetWorkingScheduleByDoctor(formUpdate.getFieldValue("nameDoctor"));
     const { data: patients, isLoading: isLoadingPatient } = queryGetAllPatients;
     const { data: specialties, isLoading: isLoadingSpecialty } = queryGetAllSpecialties;
+    const { data: workingSchedules, isLoading: isLoadingWorkingSchedule } = queryGetAllWorkingSchedulesByDoctor;
     const { isPending: isPendingDelete } = mutationDeleteAppointment;
     const { isPending: isPendingUpdate } = mutationUpdateAppointment;
     const { isPending: isPendingDeleteMany } = mutationDeleteManyAppointments;
@@ -472,109 +474,121 @@ const Appointment = () => {
                         autoComplete="off"
                         form={formUpdate}
                     >
-                        <Form.Item
-                            label="Tên bác sĩ"
-                            name="nameDoctor"
-                            rules={[{ required: true, message: "Vui lòng nhập tên!" }]}
-                        >
-                            <Select
-                                showSearch
-                                placeholder="Chọn bác sĩ"
-                                optionFilterProp="children"
-                                filterOption={(input, option) =>
-                                    (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
-                                }
-                                onChange={(value) => {
-                                    formUpdate.setFieldsValue({
-                                        workDate: "",
-                                        timeSlot: "",
-                                    });
-                                    setTimeSlots([]);
-                                }}
+                        <LoadingComponent isLoading={isLoadingDoctor}>
 
+                            <Form.Item
+                                label="Tên bác sĩ"
+                                name="nameDoctor"
+                                rules={[{ required: true, message: "Vui lòng nhập tên!" }]}
                             >
-                                {doctors && doctors?.data?.map((doctor) => (
-                                    <Option key={doctor._id} value={doctor._id} label={doctor?.user?.name}>
-                                        {doctor?.user?.name}
-                                    </Option>
-                                ))}
-                            </Select>
-                        </Form.Item>
-                        <Form.Item
-                            label="Tên bệnh nhân"
-                            name="namePatient"
-                            rules={[{ required: true, message: "Vui lòng nhập tên!" }]}
-                        >
-                            <Select
-                                showSearch
-                                placeholder="Chọn bệnh nhân"
-                                optionFilterProp="children"
-                                filterOption={(input, option) =>
-                                    (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
-                                }
-                            >
-
-                                {patients && patients?.data?.map((patient) => (
-                                    <Option key={patient._id} value={patient._id} label={patient.name}>
-                                        {patient.name}
-                                    </Option>
-                                ))}
-                            </Select>
-                        </Form.Item>
-                        <Form.Item
-                            label="Chuyên khoa"
-                            name="specialty"
-                            rules={[{ required: true, message: "Vui lòng chọn chuyên khoa!" }]}
-                        >
-                            <Select
-                                showSearch
-                                placeholder="Chọn chuyên khoa"
-                                optionFilterProp="children"
-                                filterOption={(input, option) =>
-                                    (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
-                                }
-                            >
-                                {specialties && specialties?.data?.map((specialty) => (
-                                    <Option key={specialty._id} value={specialty._id} label={specialty.name}>
-                                        {specialty.name}
-                                    </Option>
-                                ))}
-                            </Select>
-                        </Form.Item>
-
-                        <Form.Item
-                            label="Ngày khám"
-                            name="workDate"
-                            rules={[{ required: true, message: "Vui lòng chọn ngày khám!" }]}
-                        >
-                            <Select
-                                showSearch
-                                placeholder="Chọn ngày khám"
-                                optionFilterProp="children"
-                                filterOption={(input, option) =>
-                                    (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
-                                }
-                                onChange={(value) => {
-                                    const selectedSchedule = workingSchedules?.data?.find(schedule => schedule._id === value);
-                                    if (selectedSchedule) {
-                                        const startTime = selectedSchedule.startTime;
-                                        const endTime = selectedSchedule.endTime;
-                                        setTimeSlots(generateTimeSlots(startTime, endTime));
-                                        formUpdate.setFieldsValue({ timeSlot: "" }); // Reset timeSlot when workDate changes
-                                    } else {
-                                        setTimeSlots([]);
+                                <Select
+                                    showSearch
+                                    placeholder="Chọn bác sĩ"
+                                    optionFilterProp="children"
+                                    filterOption={(input, option) =>
+                                        (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
                                     }
-                                }}
-                            >
-                                {workingSchedules && workingSchedules?.data?.length > 0 && (
-                                    workingSchedules.data.map((schedule) => (
-                                        <Option key={schedule._id} value={schedule._id} label={dayjs(schedule?.workDate).format("DD/MM/YYYY")}>
-                                            {dayjs(schedule?.workDate).format("DD/MM/YYYY")}
+                                    onChange={(value) => {
+                                        formUpdate.setFieldsValue({
+                                            workDate: "",
+                                            timeSlot: "",
+                                        });
+                                        setTimeSlots([]);
+                                    }}
+
+                                >
+                                    {doctors && doctors?.data?.map((doctor) => (
+                                        <Option key={doctor._id} value={doctor._id} label={doctor?.user?.name}>
+                                            {doctor?.user?.name}
                                         </Option>
-                                    ))
-                                )}
-                            </Select>
-                        </Form.Item>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+                        </LoadingComponent>
+                        <LoadingComponent isLoading={isLoadingPatient}>
+                            <Form.Item
+                                label="Tên bệnh nhân"
+                                name="namePatient"
+                                rules={[{ required: true, message: "Vui lòng nhập tên!" }]}
+                            >
+                                <Select
+                                    showSearch
+                                    placeholder="Chọn bệnh nhân"
+                                    optionFilterProp="children"
+                                    filterOption={(input, option) =>
+                                        (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+                                    }
+                                >
+
+                                    {patients && patients?.data?.map((patient) => (
+                                        <Option key={patient._id} value={patient._id} label={patient.name}>
+                                            {patient.name}
+                                        </Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+                        </LoadingComponent>
+                        <LoadingComponent isLoading={isLoadingSpecialty}>
+
+                            <Form.Item
+                                label="Chuyên khoa"
+                                name="specialty"
+                                rules={[{ required: true, message: "Vui lòng chọn chuyên khoa!" }]}
+                            >
+                                <Select
+                                    showSearch
+                                    placeholder="Chọn chuyên khoa"
+                                    optionFilterProp="children"
+                                    filterOption={(input, option) =>
+                                        (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+                                    }
+                                >
+                                    {specialties && specialties?.data?.map((specialty) => (
+                                        <Option key={specialty._id} value={specialty._id} label={specialty.name}>
+                                            {specialty.name}
+                                        </Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+                        </LoadingComponent>
+                        <LoadingComponent isLoading={isLoadingWorkingSchedule}>
+
+
+                            <Form.Item
+                                label="Ngày khám"
+                                name="workDate"
+                                rules={[{ required: true, message: "Vui lòng chọn ngày khám!" }]}
+                            >
+                                <Select
+                                    showSearch
+                                    placeholder="Chọn ngày khám"
+                                    optionFilterProp="children"
+                                    filterOption={(input, option) =>
+                                        (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+                                    }
+                                    onChange={(value) => {
+                                        const selectedSchedule = workingSchedules?.data?.find(schedule => schedule._id === value);
+                                        if (selectedSchedule) {
+                                            const startTime = selectedSchedule.startTime;
+                                            const endTime = selectedSchedule.endTime;
+                                            setTimeSlots(generateTimeSlots(startTime, endTime));
+                                            formUpdate.setFieldsValue({ timeSlot: "" }); // Reset timeSlot when workDate changes
+                                        } else {
+                                            setTimeSlots([]);
+                                        }
+                                    }}
+                                >
+                                    {workingSchedules && workingSchedules?.data?.length > 0 && (
+                                        workingSchedules.data.map((schedule) => (
+                                            <Option key={schedule._id} value={schedule._id} label={dayjs(schedule?.workDate).format("DD/MM/YYYY")}>
+                                                {dayjs(schedule?.workDate).format("DD/MM/YYYY")}
+                                            </Option>
+                                        ))
+                                    )}
+                                </Select>
+                            </Form.Item>
+                        </LoadingComponent>
+
                         <Form.Item
                             label="Giờ khám"
                             name="timeSlot"

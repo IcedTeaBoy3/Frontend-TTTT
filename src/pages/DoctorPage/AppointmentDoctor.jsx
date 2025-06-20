@@ -1,7 +1,5 @@
 
-import { useSelector, useDispatch } from 'react-redux'
-import { useQuery } from '@tanstack/react-query'
-import * as AppointmentService from '../../services/AppointmentService'
+import { useSelector } from 'react-redux'
 import { Table, Space, Tag, Popconfirm } from 'antd'
 import { useState } from 'react'
 import LoadingComponent from '../../components/LoadingComponent/LoadingComponent'
