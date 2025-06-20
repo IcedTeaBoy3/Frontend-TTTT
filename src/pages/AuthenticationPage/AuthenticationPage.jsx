@@ -60,6 +60,9 @@ const AuthenticationPage = () => {
                         if (user.role === "admin") {
                             navigate("/admin/dashboard");
                         }
+                        else if (user.role === "doctor") {
+                            navigate("/doctor/dashboard");
+                        }
                         else {
                             navigate(from, { replace: true });
                         }

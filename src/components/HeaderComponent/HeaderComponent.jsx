@@ -31,6 +31,7 @@ const HeaderComponent = () => {
     const dispatch = useDispatch();
     const user = useSelector((state) => state.auth.user);
     const isAdmin = user?.role === "admin";
+    const isDoctor = user?.role === "doctor";
     const [isOpenPopupUser, setIsOpenPopupUser] = useState(false);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const handleLogoutUser = async () => {
@@ -68,6 +69,18 @@ const HeaderComponent = () => {
                     >
                         <SettingFilled style={{ fontSize: 15, marginRight: 8 }} />
                         Quản lý hệ thống
+                    </PopupItem>
+                ),
+            },
+            isDoctor && {
+                key: "2",
+                label: (
+                    <PopupItem
+                        onClick={() => navigate("/doctor")}
+                        $isSelected={location.pathname.includes("/doctor")}
+                    >
+                        <SettingFilled style={{ fontSize: 15, marginRight: 8 }} />
+                        Bác sĩ
                     </PopupItem>
                 ),
             },

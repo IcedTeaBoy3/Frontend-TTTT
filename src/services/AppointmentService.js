@@ -63,3 +63,19 @@ export const confirmAppointment = async (id) => {
         throw error.response.data;
     }
 }
+export const completeAppointment = async (id) => {
+    try {
+        const response = await axiosInstance.put(`/appointments/complete-appointment/${id}`);
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
+}
+export const getAllAppointmentsByDoctor = async (doctorId, page, pageSize) => {
+    try {
+        const response = await axiosInstance.get(`/appointments/get-all-appointments-by-doctor/${doctorId}?page=${page}&pageSize=${pageSize}`);
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
+}

@@ -11,6 +11,7 @@ export const useAppointmentData = ({
     setIsModalOpenDelete,
     setSelectedRowKeys,
     setRowSelected,
+    doctorId,
 }) => {
     const [mutationResult, setMutationResult] = useState(null);
 
@@ -18,7 +19,16 @@ export const useAppointmentData = ({
         queryKey: ["getAllAppointments"],
         queryFn: AppointmentService.getAllAppointments,
         retry: 1,
+        enabled: !doctorId,
     });
+    const queryGetAllAppointmentsByDoctor= useQuery({
+        queryKey: ["getAllDoctorAppointments", doctorId],
+        queryFn: () => AppointmentService.getAllAppointmentsByDoctor(doctorId),
+        retry: 1,
+        refetchOnWindowFocus: false,
+        refetchInterval: 10000,
+        enabled: !!doctorId,
+    });    
 
     const mutationDeleteAppointment = useMutation({
         mutationKey: ["deleteAppointment"],
@@ -67,13 +77,43 @@ export const useAppointmentData = ({
             setMutationResult({ success: false, message: error.message });
         },
     });
-    const mutationConfirmApponintment = useMutation({
+    const mutationConfirmApponintment  = useMutation({
         mutationKey: ["confirmAppointment"],
         mutationFn: AppointmentService.confirmAppointment,
         onSuccess: (data) => {
             const result = handleMutationResponse(data, {
                 clearSelection: () => setRowSelected(null),
-                refetchQuery: queryGetAllAppointments.refetch,
+                refetchQuery: doctorId ? queryGetAllAppointmentsByDoctor.refetch : queryGetAllAppointments.refetch,
+            });
+            setMutationResult(result);
+        },
+        onError: (error) => {
+            setMutationResult({ success: false, message: error.message });
+        },
+    });
+    
+    const mutationCompletedAppointment = useMutation({
+        mutationKey: ["completeAppointment"],
+        mutationFn: AppointmentService.completeAppointment,
+
+        onSuccess: (data) => {
+            const result = handleMutationResponse(data, {
+                clearSelection: () => setRowSelected(null),
+                refetchQuery: queryGetAllAppointmentsByDoctor.refetch,
+            });
+            setMutationResult(result);
+        },
+        onError: (error) => {
+            setMutationResult({ success: false, message: error.message });
+        }
+    });
+    const mutationCancelAppointment = useMutation({
+        mutationKey: ["cancelAppointment"],
+        mutationFn: AppointmentService.cancelAppointment,
+        onSuccess: (data) => {
+            const result = handleMutationResponse(data, {
+                clearSelection: () => setRowSelected(null),
+                refetchQuery: doctorId ? queryGetAllAppointmentsByDoctor.refetch : queryGetAllAppointments.refetch,
             });
             setMutationResult(result);
         },
@@ -95,7 +135,10 @@ export const useAppointmentData = ({
 
     return {
         queryGetAllAppointments,
+        queryGetAllAppointmentsByDoctor,
         mutationConfirmApponintment,
+        mutationCancelAppointment,
+        mutationCompletedAppointment,
         mutationDeleteAppointment,
         mutationUpdateAppointment,
         mutationDeleteManyAppointments,

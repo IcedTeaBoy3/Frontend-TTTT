@@ -4,18 +4,20 @@ import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import authReducer from "./Slice/authSlice";
 import appointmentReducer from "./Slice/appointmentSlice";
+import doctorReducer from "./Slice/doctorSlice";
 
 // Cấu hình Redux Persist cho orderReducer
 const persistConfig = {
     key: "root",
     version: 1,
     storage,
-    whitelist: ["auth", "appointment"], // Chỉ lưu trữ authReducer và appointmentReducer
+    whitelist: ["auth", "appointment", "doctor"], // Chỉ lưu trữ authReducer và appointmentReducer
 };
 // Gộp reducer với persistReducer chỉ cho orderReducer
 const rootReducer = combineReducers({
     auth: authReducer,
     appointment: appointmentReducer,
+    doctor: doctorReducer,
     // Các reducer khác nếu cần
 });
 

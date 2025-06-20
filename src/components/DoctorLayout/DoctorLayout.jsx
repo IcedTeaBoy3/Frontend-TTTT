@@ -3,7 +3,6 @@ import {
     Menu,
     Breadcrumb,
     theme,
-    Avatar,
     Badge,
     Popover,
     Grid,
@@ -35,7 +34,7 @@ import * as Message from "../Message/Message";
 const { Header, Sider, Content, Footer } = Layout;
 const { Text, Paragraph } = Typography;
 
-const AdminLayout = () => {
+const DoctorLayout = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const dispatch = useDispatch();
@@ -45,14 +44,11 @@ const AdminLayout = () => {
     const [isOpenPopupUser, setIsOpenPopupUser] = useState(false);
     const user = useSelector((state) => state.auth.user);
     const breadcrumbNameMap = {
-        "/admin": "Quản trị",
-        "/admin/dashboard": "Thống kê",
-        "/admin/appointments": "Lịch hẹn",
-        "/admin/doctors": "Bác sĩ",
-        "/admin/hospitals": "Bệnh viện",
-        "/admin/specilties": "Chuyên khoa",
-        "/admin/patients": "Người dùng",
-        "/admin/doctor-schedules": "Lịch làm việc",
+        "/doctor": "Quản trị",
+        "/doctor/dashboard": "Thống kê",
+        "/doctor/appointments": "Lịch hẹn",
+        "/doctor/doctor-schedules": "Lịch làm việc",
+        "/doctor/profile": "Thông tin cá nhân",
     };
 
     const pathSnippets = location.pathname.split("/").filter((i) => i);
@@ -75,35 +71,10 @@ const AdminLayout = () => {
     } = theme.useToken();
 
     const menuItems = [
-        {
-            key: "/admin/dashboard",
-            icon: <DashboardOutlined />,
-            label: "Thống kê",
-        },
-        {
-            key: "/admin/patients",
-            icon: <TeamOutlined />,
-            label: "Quản lý bệnh nhân",
-        },
-        {
-            icon: <SolutionOutlined />,
-            label: "Quản lý bác sĩ",
-            children: [
-                { key: "/admin/doctors", label: "Bác sĩ" },
-                { key: "/admin/specilties", label: "Chuyên khoa" },
-                { key: "/admin/doctor-schedules", label: "Lịch làm việc" },
-            ],
-        },
-        {
-            key: "/admin/hospitals",
-            icon: <MedicineBoxOutlined />,
-            label: "Quản lý bệnh viện và phòng khám",
-        },
-        {
-            key: "/admin/appointments",
-            icon: <CalendarOutlined />,
-            label: "Quản lý Lịch hẹn",
-        },
+        { key: "/doctor/dashboard", icon: <DashboardOutlined />, label: "Thống kê" },
+        { key: "/doctor/appointments", icon: <CalendarOutlined />, label: "Lịch hẹn" },
+        { key: "/doctor/doctor-schedules", icon: <MedicineBoxOutlined />, label: "Lịch làm việc" },
+        { key: "/doctor/profile", icon: <UserOutlined />, label: "Thông tin cá nhân" },
 
         { key: "/logout", icon: <LogoutOutlined />, label: "Đăng xuất" },
     ];
@@ -288,11 +259,11 @@ const AdminLayout = () => {
                 </Content>
                 <Footer style={{ textAlign: "center" }}>
                     © {new Date().getFullYear()} Hệ thống đặt lịch khám bệnh |
-                    Admin Dashboard
+                    Doctor Dashboard
                 </Footer>
             </Layout>
         </Layout>
-    );
-};
+    )
+}
 
-export default AdminLayout;
+export default DoctorLayout

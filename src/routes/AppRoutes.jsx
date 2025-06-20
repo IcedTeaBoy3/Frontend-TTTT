@@ -14,6 +14,7 @@ import SearchPage from "../pages/SearchPage/SearchPage";
 import ForgotPassword from "../pages/ForgotPassword/ForgotPassword";
 import ResetPassword from "../pages/ResetPassword/ResetPassword";
 import DetailHospitalPage from "../pages/DetailHospitalPage/DetailHospitalPage";
+import DoctorLayout from "../components/DoctorLayout/DoctorLayout";
 // Các trang con trong admin
 import Dashboard from "../pages/AdminPage/Dashboard";
 import Appointment from "../pages/AdminPage/Appointment";
@@ -22,6 +23,11 @@ import Patient from "../pages/AdminPage/Patient";
 import Hospital from "../pages/AdminPage/Hospital";
 import Specialty from "../pages/AdminPage/Specialty";
 import WorkingSchedule from "../pages/AdminPage/WorkingSchedule";
+// Các trang con trong doctor
+import DashboardDoctor from "../pages/DoctorPage/DashboardDoctor";
+import ProfileDoctor from "../pages/DoctorPage/ProfileDoctor";
+import AppointmentDoctor from "../pages/DoctorPage/AppointmentDoctor";
+import WorkingScheduleDoctor from "../pages/DoctorPage/WorkingScheduleDoctor";
 const AppRoutes = () => {
     return (
         <BrowserRouter>
@@ -65,6 +71,22 @@ const AppRoutes = () => {
                     <Route path="doctor-schedules" element={<WorkingSchedule />} />
                     {/* Các route con khác */}
                     <Route index element={<Navigate to="dashboard" />} />
+                </Route>
+                {/* Doctor Routes */}
+                <Route
+                    path="/doctor"
+                    element={
+                        <ProtectedRoute allowedRoles={["doctor"]}>
+                            <DoctorLayout />
+                        </ProtectedRoute>
+                    }
+                >
+                    <Route path="dashboard" element={<DashboardDoctor />} />
+                    <Route path="appointments" element={<AppointmentDoctor />} />
+                    <Route path="doctor-schedules" element={<WorkingScheduleDoctor />} />
+                    <Route path="profile" element={<ProfileDoctor />} />
+
+
                 </Route>
 
                 {/* Route không khớp */}

@@ -63,3 +63,11 @@ export const searchDoctors = async (keyword, specialty,page,limit) => {
         throw error.response.data;
     }
 }
+export const getDoctorByUserId = async () => {
+    try {
+        const response = await axiosInstance.get(`/doctors/get-doctor-by-userId`);
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
+};
