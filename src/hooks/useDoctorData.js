@@ -59,6 +59,7 @@ export const useDoctorData = ({
                 clearSelection: () => setRowSelected(null),
                 closeDrawer: () => setIsDrawerOpen(false),
                 refetchQuery: queryGetAllDoctors.refetch,
+                
             });
             setMutationResult(result);
         },
