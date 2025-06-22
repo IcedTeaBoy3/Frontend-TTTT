@@ -149,7 +149,8 @@ const ProfilePage = () => {
         }
     }
     return (
-        <DefaultLayout>
+        <>
+
             <ProfilePageContainer>
                 <ProfilePageContent>
                     {/* Left: Avatar + Menu */}
@@ -197,7 +198,8 @@ const ProfilePage = () => {
                 patient={user}
                 onCancel={() => setIsModalOpen(false)}
             />
-        </DefaultLayout>
+        </>
+
     );
 };
 

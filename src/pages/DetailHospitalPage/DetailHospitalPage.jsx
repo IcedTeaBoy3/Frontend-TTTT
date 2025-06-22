@@ -1,4 +1,3 @@
-import DefaultLayout from "../../components/DefaultLayout/DefaultLayout"
 import { Container, ContentBox, HospitalInfo, InfoSection, StickyFooter, Hotline, BookingButton } from "./style"
 import { useParams, useNavigate } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
@@ -56,73 +55,73 @@ const DetailHospitalPage = () => {
         },
     ];
     return (
-        <DefaultLayout>
-            <LoadingComponent isLoading={isLoadingHospital}>
 
-                <Container>
-                    <ContentBox>
-                        <HospitalInfo>
-                            <Avatar
-                                shape="square"
-                                size={170}
-                                src={`${import.meta.env.VITE_APP_BACKEND_URL}${hospital?.data?.thumbnail}`}
-                            />
-                            <InfoSection>
-                                <Title level={3}>Phòng khám {hospital?.data?.name}</Title>
+        <LoadingComponent isLoading={isLoadingHospital}>
 
-                                <Space direction="horizontal" style={{ marginTop: 16, gap: 16 }}>
-                                    <ButtonComponent
-                                        type="dashed"
-                                        onClick={() => {
-                                            const address = encodeURIComponent(hospital?.data?.address || '');
-                                            window.open(`https://www.google.com/maps/search/?api=1&query=${address}`, '_blank');
-                                        }}
-                                        icon={<EnvironmentFilled />}
-                                    >
-
-                                        <Text strong>Địa chỉ</Text>
-                                    </ButtonComponent>
-                                    <ButtonComponent
-                                        type="dashed"
-                                        icon={<PhoneFilled />}
-                                        onClick={() => {
-                                            window.open(`tel:${hospital?.data?.phone}`);
-                                        }}
-                                    >
-
-                                        <Text strong> Gọi ngay: {hospital?.data?.phone}</Text>
-                                    </ButtonComponent>
-                                </Space>
-                            </InfoSection>
-                        </HospitalInfo>
-
-                        <CustomTabs
-                            items={items}
-                            onChange={onChange}
-                            defaultActiveKey="1"
-                            style={{ marginBottom: 16 }}
+            <Container>
+                <ContentBox>
+                    <HospitalInfo>
+                        <Avatar
+                            shape="square"
+                            size={170}
+                            src={`${import.meta.env.VITE_APP_BACKEND_URL}${hospital?.data?.thumbnail}`}
                         />
+                        <InfoSection>
+                            <Title level={3}>Phòng khám {hospital?.data?.name}</Title>
+
+                            <Space direction="horizontal" style={{ marginTop: 16, gap: 16 }}>
+                                <ButtonComponent
+                                    type="dashed"
+                                    onClick={() => {
+                                        const address = encodeURIComponent(hospital?.data?.address || '');
+                                        window.open(`https://www.google.com/maps/search/?api=1&query=${address}`, '_blank');
+                                    }}
+                                    icon={<EnvironmentFilled />}
+                                >
+
+                                    <Text strong>Địa chỉ</Text>
+                                </ButtonComponent>
+                                <ButtonComponent
+                                    type="dashed"
+                                    icon={<PhoneFilled />}
+                                    onClick={() => {
+                                        window.open(`tel:${hospital?.data?.phone}`);
+                                    }}
+                                >
+
+                                    <Text strong> Gọi ngay</Text>
+                                </ButtonComponent>
+                            </Space>
+                        </InfoSection>
+                    </HospitalInfo>
+
+                    <CustomTabs
+                        items={items}
+                        onChange={onChange}
+                        defaultActiveKey="1"
+                        style={{ marginBottom: 16 }}
+                    />
 
 
 
-                        <StickyFooter>
-                            <Hotline>
-                                <Text strong>Hỗ trợ đặt khám qua hotline:</Text>
-                                <Text strong style={{ fontSize: 18, color: "#1890ff" }}>{hospital?.data?.phone}</Text>
-                            </Hotline>
-                            <BookingButton
-                                type="primary"
-                                size="large"
-                                onClick={() => { navigate(`/booking?type=hospital&&hospitalId=${hospital?.data._id}`) }}
-                                disabled={false}
-                            >
-                                Đặt lịch khám
-                            </BookingButton>
-                        </StickyFooter>
-                    </ContentBox>
-                </Container>
-            </LoadingComponent>
-        </DefaultLayout>
+                    <StickyFooter>
+                        <Hotline>
+                            <Text strong>Hỗ trợ đặt khám qua hotline:</Text>
+                            <Text strong style={{ fontSize: 18, color: "#1890ff" }}>{hospital?.data?.phone}</Text>
+                        </Hotline>
+                        <BookingButton
+                            type="primary"
+                            size="large"
+                            onClick={() => { navigate(`/booking?type=hospital&&hospitalId=${hospital?.data._id}`) }}
+                            disabled={false}
+                        >
+                            Đặt lịch khám
+                        </BookingButton>
+                    </StickyFooter>
+                </ContentBox>
+            </Container>
+        </LoadingComponent>
+
     )
 }
 

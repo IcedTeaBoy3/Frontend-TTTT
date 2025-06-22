@@ -3,7 +3,6 @@ import HomePage from "../pages/HomePage/HomePage";
 import AuthenticationPage from "../pages/AuthenticationPage/AuthenticationPage";
 import UnauthorizedPage from "../pages/UnauthorizedPage/UnauthorizedPage";
 import NotFoundPage from "../pages/NotFoundPage/NotFoundPage";
-import AdminLayout from "../components/AdminLayout/AdminLayout";
 import ProfilePage from "../pages/ProfilePage/ProfilePage";
 import DetailDoctorPage from "../pages/DetailDoctorPage/DetailDoctorPage";
 import BookingPage from "../pages/BookingPage/BookingPage";
@@ -14,8 +13,9 @@ import SearchPage from "../pages/SearchPage/SearchPage";
 import ForgotPassword from "../pages/ForgotPassword/ForgotPassword";
 import ResetPassword from "../pages/ResetPassword/ResetPassword";
 import DetailHospitalPage from "../pages/DetailHospitalPage/DetailHospitalPage";
-import DoctorLayout from "../components/DoctorLayout/DoctorLayout";
+import DefaultLayout from "../components/DefaultLayout/DefaultLayout";
 // Các trang con trong admin
+import AdminLayout from "../components/AdminLayout/AdminLayout";
 import Dashboard from "../pages/AdminPage/Dashboard";
 import Appointment from "../pages/AdminPage/Appointment";
 import Doctor from "../pages/AdminPage/Doctor";
@@ -24,6 +24,7 @@ import Hospital from "../pages/AdminPage/Hospital";
 import Specialty from "../pages/AdminPage/Specialty";
 import WorkingSchedule from "../pages/AdminPage/WorkingSchedule";
 // Các trang con trong doctor
+import DoctorLayout from "../components/DoctorLayout/DoctorLayout";
 import DashboardDoctor from "../pages/DoctorPage/DashboardDoctor";
 import ProfileDoctor from "../pages/DoctorPage/ProfileDoctor";
 import AppointmentDoctor from "../pages/DoctorPage/AppointmentDoctor";
@@ -33,7 +34,32 @@ const AppRoutes = () => {
         <BrowserRouter>
 
             <Routes>
-                <Route path="/" element={<HomePage />} />
+
+                <Route path="/" element={<DefaultLayout />}>
+                    <Route index element={<HomePage />} />
+                    <Route path="authentication" element={<AuthenticationPage />} />
+                    <Route path="detail-doctor/:id" element={<DetailDoctorPage />} />
+                    <Route path="detail-hospital/:id" element={<DetailHospitalPage />} />
+                    <Route path="unauthorized" element={<UnauthorizedPage />} />
+                    <Route path="profile" element={<ProfilePage />} />
+                    <Route path="search" element={<SearchPage />} />
+                    <Route path="booking" element={
+                        <ProtectedRoute allowedRoles={["patient", "doctor", "admin"]}>
+
+                            <BookingPage />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="booking-success" element={
+                        <ProtectedRoute allowedRoles={["patient", "doctor", "admin"]}>
+                            <BookingSuccess />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="verify-email" element={<VerifyEmail />} />
+                    <Route path="forgot-password" element={<ForgotPassword />} />
+                    <Route path="reset-password" element={<ResetPassword />} />
+                </Route>
+
+                {/* <Route path="/" element={<HomePage />} />
                 <Route path="/authentication" element={<AuthenticationPage />} />
                 <Route path="/detail-doctor/:id" element={<DetailDoctorPage />} />
                 <Route path="/detail-hospital/:id" element={<DetailHospitalPage />} />
@@ -52,7 +78,7 @@ const AppRoutes = () => {
                 } />
                 <Route path="/verify-email" element={<VerifyEmail />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} /> */}
                 {/* Admin Routes */}
                 <Route
                     path="/admin"

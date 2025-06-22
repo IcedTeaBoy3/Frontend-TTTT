@@ -1,6 +1,5 @@
 
 import FormLogin from "../../components/FormLogin/FormLogin";
-import DefaultLayout from "../../components/DefaultLayout/DefaultLayout";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import * as Message from "../../components/Message/Message";
@@ -136,22 +135,22 @@ const AuthenticationPage = () => {
         });
     }
     return (
-        <DefaultLayout>
-            <BackgroundContainer
-                backgroundImage={backgroundImage}
-            >
-                <FormLogin
-                    isRegister={isRegister}
-                    dataUser={dataUser}
-                    isPending={isPending}
-                    onSubmit={(data) => {
-                        mutationAuth.mutate(data);
-                    }}
-                    onChangeForm={() => setIsRegister((prev) => !prev)}
-                    handleGoogleLogin={handleGoogleLogin}
-                />
-            </BackgroundContainer>
-        </DefaultLayout>
+
+        <BackgroundContainer
+            backgroundImage={backgroundImage}
+        >
+            <FormLogin
+                isRegister={isRegister}
+                dataUser={dataUser}
+                isPending={isPending}
+                onSubmit={(data) => {
+                    mutationAuth.mutate(data);
+                }}
+                onChangeForm={() => setIsRegister((prev) => !prev)}
+                handleGoogleLogin={handleGoogleLogin}
+            />
+        </BackgroundContainer>
+
     );
 };
 

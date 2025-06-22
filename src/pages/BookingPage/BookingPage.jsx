@@ -1,8 +1,8 @@
 
-import DefaultLayout from '../../components/DefaultLayout/DefaultLayout'
+
 import { Steps, Typography, Avatar, Flex, Divider, Input, Card } from 'antd'
 import { useSelector } from 'react-redux'
-import { UserOutlined, SolutionOutlined, LoadingOutlined, SmileOutlined, FieldTimeOutlined, UsergroupAddOutlined } from '@ant-design/icons'
+import { UserOutlined, SolutionOutlined, SmileOutlined, FieldTimeOutlined, UsergroupAddOutlined } from '@ant-design/icons'
 import { addMinutesToTime } from '../../utils/timeUtils'
 import { formatDateToDDMMYYYY } from '../../utils/dateUtils'
 import ButtonComponent from '../../components/ButtonComponent/ButtonComponent'
@@ -13,7 +13,7 @@ import * as WorkingScheduleService from '../../services/WorkingScheduleService'
 import * as AppointmentService from '../../services/AppointmentService'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
-import { updateAppointment, setAppointment } from '../../redux/Slice/appointmentSlice'
+import { updateAppointment } from '../../redux/Slice/appointmentSlice'
 import { updateUser } from '../../redux/Slice/authSlice'
 import TimeSlot from '../../components/TimeSlot/TimeSlot'
 import { useNavigate, useLocation } from 'react-router-dom'
@@ -449,7 +449,7 @@ const BookingPage = () => {
         return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
     };
     return (
-        <DefaultLayout>
+        <>
             <BookingPageContainer>
                 <Card>
                     <Steps
@@ -587,8 +587,8 @@ const BookingPage = () => {
             >
 
             </ModalUpdateUser>
+        </>
 
-        </DefaultLayout >
     )
 }
 

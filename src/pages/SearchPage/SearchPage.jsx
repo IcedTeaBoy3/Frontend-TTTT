@@ -185,7 +185,8 @@ const SearchPage = () => {
         }
     }
     return (
-        <DefaultLayout>
+        <>
+
             <Wrapper>
                 <Container>
                     {/* Ô tìm kiếm */}
@@ -382,7 +383,8 @@ const SearchPage = () => {
                     <Paragraph>Không có chuyên khoa nào.</Paragraph>
                 )}
             </ModalComponent>
-        </DefaultLayout >
+        </>
+
     )
 }
 

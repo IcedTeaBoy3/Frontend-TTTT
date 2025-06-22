@@ -1,11 +1,12 @@
 
 import HeaderComponent from '../HeaderComponent/HeaderComponent'
 import FooterComponent from '../FooterComponent/FooterComponent'
-const DefaultLayout = ({ children }) => {
+import { Outlet } from 'react-router-dom'
+const DefaultLayout = () => {
     return (
         <>
             <HeaderComponent />
-            {children}
+            <Outlet />
             <FooterComponent />
         </>
     )

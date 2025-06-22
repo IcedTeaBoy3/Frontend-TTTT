@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
-import { Row, Col, Image, Popover, Drawer, Menu, Dropdown, Anchor, Button } from "antd";
-import { replace, useNavigate } from "react-router-dom";
+import { Row, Col, Image, Popover, Drawer, Menu, Dropdown } from "antd";
+import { useNavigate } from "react-router-dom";
 import {
     HeaderContainer,
     LogoSection,
@@ -24,8 +24,6 @@ import { logout } from "../../redux/Slice/authSlice";
 import { resetAppointment } from "../../redux/Slice/appointmentSlice";
 import * as Message from "../Message/Message";
 import * as AuthService from "../../services/AuthService";
-
-const { Link } = Anchor;
 const HeaderComponent = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -175,7 +173,7 @@ const HeaderComponent = () => {
                             getPopupContainer={(trigger) => trigger.parentNode}
                         >
                             <ButtonComponent
-                                type="default"
+                                type="dashed"
 
                             >
                                 Đặt khám
@@ -194,7 +192,7 @@ const HeaderComponent = () => {
                             >
                                 <ButtonComponent
                                     size="middle"
-                                    type="default"
+                                    type="dashed"
                                     icon={<UserOutlined />}
                                 >
                                     {user?.name || user?.email}{" "}
@@ -204,6 +202,7 @@ const HeaderComponent = () => {
                         ) : (
                             <ButtonComponent
                                 size="middle"
+                                type="dashed"
                                 onClick={() => navigate("/authentication")}
                             >
                                 Đăng nhập

@@ -1,7 +1,6 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import DefaultLayout from '../../components/DefaultLayout/DefaultLayout';
 import { Avatar } from 'antd';
 import { Typography, Divider, Tag } from 'antd';
 import ButtonComponent from '../../components/ButtonComponent/ButtonComponent';
@@ -16,15 +15,15 @@ import { updateAppointment, setAppointment } from '../../redux/Slice/appointment
 import WorkingSchedule from '../../components/WorkingSchedule/WorkingSchedule';
 import TimeSlot from '../../components/TimeSlot/TimeSlot';
 import { Container, ContentBox, DoctorInfo, InfoSection, StickyFooter, Hotline, StyledIframe, BookingButton } from './style';
+import { formatValue } from '../../utils/formatValue';
 dayjs.extend(utc)
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 const DetailDoctorPage = () => {
     const { id } = useParams(); // id ở đây chính là từ /user/:id
     const [timeSlots, setTimeSlots] = useState([]);
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const appointment = useSelector((state) => state.appointment);
-    const user = useSelector((state) => state.auth.user);
     const queryGetWorkingScheduleByDoctor = useQuery({
         queryKey: ["getWorkingScheduleByDoctor", id],
         queryFn: () => WorkingScheduleService.getWorkingScheduleByDoctor(id),
@@ -127,117 +126,124 @@ const DetailDoctorPage = () => {
         navigate("/booking?type=doctor");
     }
     return (
-        <DefaultLayout>
-            <Container>
-                <ContentBox>
-                    <DoctorInfo>
-                        <Avatar
-                            size={170}
-                            src={`${import.meta.env.VITE_APP_BACKEND_URL}${doctor?.data?.user?.avatar}`}
-                            icon={<UserOutlined />}
-                        />
-                        <InfoSection>
-                            <Title level={3}>
-                                {doctor?.data?.qualification} Bác sĩ {doctor?.data?.user?.name || "Chưa cập nhật"}
+
+        <Container>
+            <ContentBox>
+                <DoctorInfo>
+                    <Avatar
+                        size={170}
+                        src={`${import.meta.env.VITE_APP_BACKEND_URL}${doctor?.data?.user?.avatar}`}
+                        icon={<UserOutlined />}
+                    />
+                    <InfoSection>
+                        <Title level={3}>
+                            {formatValue(doctor?.data?.qualification)}, bác sĩ {formatValue(doctor?.data?.user?.name)}
+                        </Title>
+                        <div>
+                            <Title level={4} style={{ fontSize: 18, color: "#1890ff" }}>
+                                <CheckCircleOutlined /> Bác sĩ <span>{formatValue(doctor?.data?.experience)} năm kinh nghiệm</span>
                             </Title>
-                            <div>
-                                <Title level={4} style={{ fontSize: 18, color: "#1890ff" }}>
-                                    <CheckCircleOutlined /> Bác sĩ <span>{doctor?.data?.experience}</span>
-                                </Title>
-                                <Text type="secondary">Chuyên khoa:</Text>{" "}
-                                <Text strong style={{ fontSize: "18px", color: "#1890ff" }}>
-                                    {doctor?.data?.specialties?.map((item) =>
-                                        <Tag
-                                            key={item._id}
-                                            color='blue'
-                                            onClick={() => navigate(`/search?specialty=${item._id}`)}
-                                            style={{ cursor: "pointer", marginBottom: "5px" }}
-                                        >{item.name}
-                                        </Tag>)}
-                                </Text>
-                            </div>
+                            <Text type="secondary">Chuyên khoa:</Text>{" "}
+                            <Text strong style={{ fontSize: "18px", color: "#1890ff" }}>
+                                {doctor?.data?.specialties?.map((item) =>
+                                    <Tag
+                                        key={item._id}
+                                        color='blue'
+                                        onClick={() => navigate(`/search?specialty=${item._id}`)}
+                                        style={{ cursor: "pointer", marginBottom: "5px" }}
+                                    >{item.name}
+                                    </Tag>)}
+                            </Text>
+                        </div>
 
-                            <div>
-                                <Text type="secondary">Chức vụ:</Text>{" "}
-                                <Text strong style={{ fontSize: "18px" }}>
-                                    {doctor?.data?.position || "Không có"}
-                                </Text>
-                            </div>
+                        <div>
+                            <Text type="secondary">Chức vụ:</Text>{" "}
+                            <Text strong style={{ fontSize: "18px" }}>
+                                {formatValue(doctor?.data?.position)}
+                            </Text>
+                        </div>
 
-                            <div>
-                                <Text type="secondary">Địa chỉ phòng khám:</Text>{" "}
-                                <Text strong style={{ fontSize: "18px" }}>
-                                    {doctor?.data?.hospital?.address || "Chưa cập nhật"}
-                                </Text>
-                            </div>
-                        </InfoSection>
-                    </DoctorInfo>
+                        <div>
+                            <Text type="secondary">Địa chỉ phòng khám:</Text>{" "}
+                            <Text strong style={{ fontSize: "18px" }}>
+                                {formatValue(doctor?.data?.hospital?.name)}
+                            </Text>
+                        </div>
+                    </InfoSection>
+                </DoctorInfo>
 
-                    <Divider />
-                    <Title level={4}>Lịch làm việc</Title>
-                    {workingSchedules?.data?.length > 0 ? (
-                        <WorkingSchedule
-                            workingSchedules={workingSchedules}
-                            isLoading={isLoadingWorkingSchedule}
-                            timeSlots={timeSlots}
-                            selectedDate={appointment.selectedDate}
-                            handleCreateWorkingTime={handleCreateWorkingTime}
-                        />
-                    ) : (
-                        <Text type="secondary">Bác sĩ chưa cập nhật lịch làm việc</Text>
-                    )}
+                <Divider />
+                <Title level={4}>Lịch làm việc</Title>
+                {workingSchedules?.data?.length > 0 ? (
+                    <WorkingSchedule
+                        workingSchedules={workingSchedules}
+                        isLoading={isLoadingWorkingSchedule}
+                        timeSlots={timeSlots}
+                        selectedDate={appointment.selectedDate}
+                        handleCreateWorkingTime={handleCreateWorkingTime}
+                    />
+                ) : (
+                    <Text type="secondary">Bác sĩ chưa cập nhật lịch làm việc</Text>
+                )}
 
-                    <Title level={4}>Chọn khung giờ</Title>
-                    {timeSlots.length > 0 ? (
-                        <TimeSlot
-                            timeSlots={timeSlots}
-                            selectedDate={appointment.selectedDate}
-                            selectedTime={appointment.selectedTime}
-                            schedule={appointment.schedule}
-                            handleCheckTime={handleCheckTime}
-                            handleSelectedTime={handleSelectedTime}
-                        />
-                    ) : (
-                        <Text type="secondary">Không có khung giờ làm việc cho ngày này</Text>
-                    )}
+                <Title level={4}>Chọn khung giờ</Title>
+                {timeSlots.length > 0 ? (
+                    <TimeSlot
+                        timeSlots={timeSlots}
+                        selectedDate={appointment.selectedDate}
+                        selectedTime={appointment.selectedTime}
+                        schedule={appointment.schedule}
+                        handleCheckTime={handleCheckTime}
+                        handleSelectedTime={handleSelectedTime}
+                    />
+                ) : (
+                    <Text type="secondary">Không có khung giờ làm việc cho ngày này</Text>
+                )}
 
-                    <div>
-                        <Title level={4}>Giới thiệu</Title>
-                        <Text style={{ fontSize: '16px' }}>{doctor?.data?.description ? doctor?.data?.description : (
-                            <Text type="secondary">Chưa có giới thiệu</Text>
-                        )}</Text>
-                    </div>
+                <div>
+                    <Title level={4}>Giới thiệu</Title>
+                    <Paragraph
+                        ellipsis={{
+                            rows: 3,
+                            expandable: true,
+                            symbol: 'Xem thêm'
+                        }}
+                        style={{ marginBottom: 0 }}
+                    >
+                        {formatValue(doctor?.data?.description)}
+                    </Paragraph>
+                </div>
 
-                    <div>
-                        <Title level={4} style={{ marginBottom: '16px' }}>Địa chỉ : {doctor?.data?.hospital?.address ? doctor?.data?.hospital?.address : (
-                            <Text type="secondary">Chưa có địa chỉ</Text>
-                        )}</Title>
-                        <StyledIframe
-                            loading="lazy"
-                            allowFullScreen
-                            referrerPolicy="no-referrer-when-downgrade"
-                            src={`https://www.google.com/maps?q=${doctor?.data?.hospital?.address}&output=embed`}
-                        />
-                    </div>
+                <div>
+                    <Title level={4} style={{ marginBottom: '16px' }}>Địa chỉ : {doctor?.data?.hospital?.address ? doctor?.data?.hospital?.address : (
+                        <Text type="secondary">Chưa có địa chỉ</Text>
+                    )}</Title>
+                    <StyledIframe
+                        loading="lazy"
+                        allowFullScreen
+                        referrerPolicy="no-referrer-when-downgrade"
+                        src={`https://www.google.com/maps?q=${doctor?.data?.hospital?.address}&output=embed`}
+                    />
+                </div>
 
-                    <Divider />
-                    <StickyFooter>
-                        <Hotline>
-                            <Text strong>Hỗ trợ đặt khám qua hotline:</Text>
-                            <Text strong style={{ fontSize: 18, color: "#1890ff" }}>{doctor?.data?.hospital?.phone}</Text>
-                        </Hotline>
-                        <BookingButton
-                            type="primary"
-                            size="large"
-                            onClick={handleBookingDoctor}
-                            disabled={!appointment.doctor || !appointment.schedule || !doctor?.data?.hospital}
-                        >
-                            Đặt lịch khám
-                        </BookingButton>
-                    </StickyFooter>
-                </ContentBox>
-            </Container>
-        </DefaultLayout >
+                <Divider />
+                <StickyFooter>
+                    <Hotline>
+                        <Text strong>Hỗ trợ đặt khám qua hotline:</Text>
+                        <Text strong style={{ fontSize: 18, color: "#1890ff" }}>{doctor?.data?.hospital?.phone}</Text>
+                    </Hotline>
+                    <BookingButton
+                        type="primary"
+                        size="large"
+                        onClick={handleBookingDoctor}
+                        disabled={!appointment.doctor || !appointment.schedule || !doctor?.data?.hospital}
+                    >
+                        Đặt lịch khám
+                    </BookingButton>
+                </StickyFooter>
+            </ContentBox>
+        </Container>
+
     )
 }
 
