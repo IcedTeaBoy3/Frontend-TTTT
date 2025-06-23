@@ -26,7 +26,7 @@ const DetailDoctorPage = () => {
     const appointment = useSelector((state) => state.appointment);
     const queryGetWorkingScheduleByDoctor = useQuery({
         queryKey: ["getWorkingScheduleByDoctor", id],
-        queryFn: () => WorkingScheduleService.getWorkingScheduleByDoctor(id),
+        queryFn: () => WorkingScheduleService.getWorkingScheduleByDoctor(id, "active", 'future'),
         enabled: !!id,
     })
     const queryGetDoctor = useQuery({
@@ -141,7 +141,7 @@ const DetailDoctorPage = () => {
                         </Title>
                         <div>
                             <Title level={4} style={{ fontSize: 18, color: "#1890ff" }}>
-                                <CheckCircleOutlined /> Bác sĩ <span>{formatValue(doctor?.data?.experience)} năm kinh nghiệm</span>
+                                <CheckCircleOutlined /> Bác sĩ <span>{formatValue(doctor?.data?.yearExperience)} năm kinh nghiệm</span>
                             </Title>
                             <Text type="secondary">Chuyên khoa:</Text>{" "}
                             <Text strong style={{ fontSize: "18px", color: "#1890ff" }}>
@@ -211,6 +211,19 @@ const DetailDoctorPage = () => {
                         style={{ marginBottom: 0 }}
                     >
                         {formatValue(doctor?.data?.description)}
+                    </Paragraph>
+                </div>
+                <div>
+                    <Title level={4}>Kinh nghiệm</Title>
+                    <Paragraph
+                        ellipsis={{
+                            rows: 3,
+                            expandable: true,
+                            symbol: 'Xem thêm'
+                        }}
+                        style={{ marginBottom: 0 }}
+                    >
+                        {formatValue(doctor?.data?.detailExperience)}
                     </Paragraph>
                 </div>
 

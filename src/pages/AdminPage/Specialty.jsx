@@ -58,6 +58,7 @@ const Specialty = () => {
         setIsModalOpenDelete,
         setSelectedRowKeys,
         setRowSelected,
+        filterStatus: "active",
     });
     const { data: specialties, isLoading } = queryGetAllSpecialties;
     const { isPending: isPedingAdd } = mutationCreateSpecialty;

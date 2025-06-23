@@ -12,10 +12,10 @@ export const createHospital = async (data) => {
         throw error;
     }
 };
-export const getAllHospitals = async (type, page, pageSize) => {
+export const getAllHospitals = async (type, status, page, pageSize) => {
     try {
         const response = await axiosInstance.get(
-            `/hospitals/get-all-hospitals?type=${type}&page=${page}&limit=${pageSize}`,
+            `/hospitals/get-all-hospitals?type=${type}&page=${page}&limit=${pageSize}&status=${status}`,
         );
         return response.data;
     } catch (error) {
@@ -81,10 +81,10 @@ export const getHospital = async (id) => {
         throw error;
     }
 }
-export const getAllDoctorsHospital = async (id) => {
+export const getAllDoctorsHospital = async (id,status) => {
     try {
         const response = await axiosInstance.get(
-            `/hospitals/get-all-doctors-hospital/${id}`,
+            `/hospitals/get-all-doctors-hospital/${id}?status=${status}`,
         );
         return response.data;
     } catch (error) {

@@ -7,7 +7,8 @@ const doctorSlice = createSlice({
         specialties: [],
         position: null,
         qualification: null,
-        experience: null,
+        yearExperience: null,
+        detailExperience: null,
         description: null,
     },
     reducers: {
@@ -18,17 +19,20 @@ const doctorSlice = createSlice({
             state.specialties = doctorData.specialties || [];
             state.position = doctorData.position || null;
             state.qualification = doctorData.qualification || null;
-            state.experience = doctorData.experience || null;
+            state.yearExperience = doctorData.yearExperience || null;
+            state.detailExperience = doctorData.detailExperience || null;
             state.description = doctorData.description || null;
         },
         updateDoctor: (state, action) => {
             const updatedData = action.payload;
+            console.log('Updating doctor with data:', updatedData);
             state.doctorId = updatedData.doctorId || state.doctorId;
             state.hospital = updatedData.hospital || state.hospital;
             state.specialties = updatedData.specialties || state.specialties;
             state.position = updatedData.position || state.position;
             state.qualification = updatedData.qualification || state.qualification;
-            state.experience = updatedData.experience || state.experience;
+            state.yearExperience = updatedData.yearExperience || state.yearExperience;
+            state.detailExperience = updatedData.detailExperience || state.detailExperience;
             state.description = updatedData.description || state.description;
         },
         resetDoctor: (state) => {
@@ -37,7 +41,8 @@ const doctorSlice = createSlice({
             state.specialties = [];
             state.position = null;
             state.qualification = null;
-            state.experience = null;
+            state.yearExperience = null;
+            state.detailExperience = null;
             state.description = null;
         },
     },

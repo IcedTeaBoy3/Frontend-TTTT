@@ -129,6 +129,7 @@ const Hospital = () => {
                         ? `${import.meta.env.VITE_APP_BACKEND_URL}${image}`
                         : defaultImage,
                 })) : [],
+                status: hospital.status,
             });
         }
         setIsDrawerOpen(true);
@@ -167,9 +168,6 @@ const Hospital = () => {
         });
         // Gửi tên ảnh cũ giữ lại
         formData.append('oldImages', JSON.stringify(oldImages));
-
-
-
         // Các trường còn lại
         formData.append("name", values.name);
         formData.append("description", values.description);
@@ -177,6 +175,7 @@ const Hospital = () => {
         formData.append("phone", values.phone);
         formData.append("doctors", JSON.stringify(values.doctors || []));
         formData.append("type", values.type);
+        formData.append("status", values.status || "active");
         mutationUpdateHospital.mutate({ id: rowSelected, formData });
     };
     const handleCloseAddSpecialty = () => {
@@ -280,7 +279,6 @@ const Hospital = () => {
             key: "index",
             sorter: (a, b) => a.index - b.index,
         },
-
         {
             title: "Tên",
             dataIndex: "name",
@@ -343,9 +341,24 @@ const Hospital = () => {
             render: (text) => text.length > 60 ? text.substring(0, 50) + "..." : text,
         },
         {
-            title: "Số điện thoại",
+            title: "SĐT",
             dataIndex: "phone",
             key: "phone",
+        },
+        {
+            title: "Trạng thái",
+            dataIndex: "status",
+            key: "status",
+            filters: [
+                { text: "Hoạt động", value: "active" },
+                { text: "Ngừng hoạt động", value: "inactive" },
+            ],
+            onFilter: (value, record) => record.status === value,
+            render: (text) => (
+                <Tag color={text === "active" ? "green" : "red"}>
+                    {text === "active" ? "Hoạt động" : "Ngừng hoạt động"}
+                </Tag>
+            ),
         },
 
         {
@@ -391,7 +404,8 @@ const Hospital = () => {
         phone: item.phone,
         description: item.description,
         doctors: item.doctors,
-        type: item.type
+        type: item.type,
+        status: item.status
     }));
     const beforeUpload = (file, fileList) => {
         const isImage = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'].includes(file.type);
@@ -870,12 +884,17 @@ const Hospital = () => {
                                     required: true,
                                     message: "Vui lòng nhập mô tả!",
                                 },
+                                {
+                                    max: 500,
+                                    message: "Mô tả không được quá 500 ký tự!",
+                                }
                             ]}
                         >
                             <Input.TextArea
                                 name="description"
                                 rows={4}
                                 placeholder="Nhập mô tả chi tiết tại đây..."
+                                maxLength={500}
                             />
                         </Form.Item>
 
@@ -887,12 +906,17 @@ const Hospital = () => {
                                     required: true,
                                     message: "Vui lòng nhập địa chỉ!",
                                 },
+                                {
+                                    max: 500,
+                                    message: "Địa chỉ không được quá 500 ký tự!",
+                                }
                             ]}
                         >
                             <Input.TextArea
                                 name="address"
-                                rows={2}
+                                rows={4}
                                 placeholder="Nhập địa chỉ chi tiết tại đây..."
+                                maxLength={500}
                             />
                         </Form.Item>
                         <Form.Item
@@ -962,6 +986,16 @@ const Hospital = () => {
                                     Chọn file
                                 </ButtonComponent>
                             </Upload>
+                        </Form.Item>
+                        <Form.Item
+                            label="Trạng thái"
+                            name="status"
+                        >
+                            <Radio.Group>
+
+                                <Radio value="active">Hoạt động</Radio>
+                                <Radio value="inactive">Ngừng hoạt động</Radio>
+                            </Radio.Group>
                         </Form.Item>
                         <Form.Item
                             label={null}

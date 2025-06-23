@@ -11,11 +11,12 @@ export const useHospitalData = ({
     setSelectedRowKeys,
     setRowSelected,
     type,
+    status,
 }) => {
     const [mutationResult, setMutationResult] = useState(null);
     const queryGetAllHospitals = useQuery({
         queryKey: ["getAllHospitals"],
-        queryFn: () => HospitalService.getAllHospitals(type),
+        queryFn: () => HospitalService.getAllHospitals(type, status),
         retry: 1,
     });
 

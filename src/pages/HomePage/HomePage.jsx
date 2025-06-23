@@ -39,7 +39,7 @@ const HomePage = () => {
     };
     const queryGetAllHospitals = useQuery({
         queryKey: ["getAllHospitals"],
-        queryFn: () => HospitalService.getAllHospitals('hospital', 1, 10),
+        queryFn: () => HospitalService.getAllHospitals('hospital', 'active', 1, 10),
         retry: 3,
         retryDelay: 1000,
         keepPreviousData: true,

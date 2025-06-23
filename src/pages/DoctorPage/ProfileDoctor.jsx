@@ -36,7 +36,8 @@ const ProfileDoctor = () => {
             doctorId: doctor?.doctorId,
             position: data?.position,
             qualification: data?.qualification,
-            experience: data?.experience,
+            yearExperience: data?.yearExperience,
+            detailExperience: data?.detailExperience,
             description: data?.description,
             specialties: data?.specialties,
             hospital: data?.hospital,
@@ -95,7 +96,8 @@ const ProfileDoctor = () => {
         formData.append("email", values.email);
         formData.append("position", values.position);
         formData.append("qualification", values.qualification);
-        formData.append("experience", values.experience);
+        formData.append("yearExperience", values.yearExperience);
+        formData.append("detailExperience", values.detailExperience);
         formData.append("description", values.description);
         formData.append("specialties", JSON.stringify(values.specialties));
         if (values.hospital) {
@@ -130,7 +132,8 @@ const ProfileDoctor = () => {
                 email: user.email,
                 position: doctor.position,
                 qualification: doctor.qualification,
-                experience: doctor.experience,
+                yearExperience: doctor.yearExperience,
+                detailExperience: doctor.detailExperience,
                 description: doctor.description,
                 specialties: doctor?.specialties?.map(s => s._id),
                 hospital: doctor.hospital?._id
@@ -232,14 +235,45 @@ const ProfileDoctor = () => {
                             </>
                         }
                     >
-                        <p><strong>Họ tên:</strong> {formatValue(user?.name)}</p>
-                        <p><strong>Email:</strong> {formatValue(user?.email)}</p>
-                        <p><strong>Chuyên khoa:</strong> {formatValue(doctor?.specialties?.map(s => s.name).join(', '))}</p>
-                        <p><strong>Kinh nghiệm:</strong> {formatValue(doctor?.experience)}</p>
-                        <p><strong>Vị trí:</strong> {formatValue(doctor?.position)}</p>
-                        <p><strong>Bằng cấp:</strong> {formatValue(doctor?.qualification)}</p>
                         <p>
-                            <Text strong>Mô tả: </Text>
+                            <Text strong>Họ tên: </Text>
+                            {formatValue(user?.name)}
+                        </p>
+                        <p>
+                            <Text strong>Email: </Text>
+                            {formatValue(user?.email)}
+                        </p>
+                        <p>
+                            <Text strong>Chuyên khoa: </Text>
+                            {formatValue(doctor?.specialties?.map(s => s.name).join(', '))}
+                        </p>
+                        <p>
+                            <Text strong>Chức vụ: </Text>
+                            {formatValue(doctor?.position)}
+                        </p>
+                        <p>
+                            <Text strong>Học vị: </Text>
+                            {formatValue(doctor?.qualification)}
+                        </p>
+                        <p>
+                            <Text strong>Kinh nghiệm: </Text>
+                            {formatValue(doctor?.yearExperience)} năm
+                        </p>
+                        <p>
+                            <Text strong>Chi tiết kinh nghiệm: </Text>
+                            <Paragraph
+                                ellipsis={{
+                                    rows: 3,
+                                    expandable: true,
+                                    symbol: 'Xem thêm'
+                                }}
+                                style={{ marginBottom: 0 }}
+                            >
+                                {formatValue(doctor?.detailExperience)}
+                            </Paragraph>
+                        </p>
+                        <p>
+                            <Text strong>Giới thiệu: </Text>
                             <Paragraph
                                 ellipsis={{
                                     rows: 3,
@@ -317,14 +351,36 @@ const ProfileDoctor = () => {
                     <Form.Item
                         label="Họ tên"
                         name="name"
-                        rules={[{ required: true, message: 'Vui lòng nhập họ tên' }]}
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Vui lòng nhập họ tên'
+                            },
+                            {
+                                max: 50,
+                                message: 'Họ tên không được vượt quá 50 ký tự'
+                            }
+                        ]}
                     >
                         <Input placeholder='Tên của bạn' />
                     </Form.Item>
                     <Form.Item
                         label="Email"
                         name="email"
-                        rules={[{ required: true, message: 'Vui lòng nhập email' }]}
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Vui lòng nhập email'
+                            },
+                            {
+                                type: 'email',
+                                message: 'Email không hợp lệ'
+                            },
+                            {
+                                max: 50,
+                                message: 'Email không được vượt quá 50 ký tự'
+                            }
+                        ]}
                     >
                         <Input placeholder='Email của bạn' />
                     </Form.Item>
@@ -382,29 +438,86 @@ const ProfileDoctor = () => {
                         />
                     </Form.Item>
                     <Form.Item
-                        label="Vị trí"
+                        label="Chức vụ"
                         name="position"
+                        rules={[
+                            {
+                                max: 50,
+                                message: "Chức vụ không được vượt quá 50 ký tự!",
+                            },
+                        ]}
                     >
-                        <Input placeholder="Chức vị của bạn" />
+                        <Input placeholder="Chức vụ của bạn" />
                     </Form.Item>
                     <Form.Item
-                        label="Bằng cấp"
+                        label="Học vị"
                         name="qualification"
-                        rules={[{ required: true, message: 'Vui lòng nhập bằng cấp' }]}
+                        rules={[
+                            {
+                                required: true,
+                                message: "Vui lòng nhập học vị!",
+                            },
+                        ]}
                     >
-                        <Input placeholder='Học vị của bạn' />
+                        <Select placeholder="Chọn học vị">
+                            <Select.Option value="Cử nhân">Cử nhân</Select.Option>
+                            <Select.Option value="Bác sĩ đa khoa">Bác sĩ đa khoa</Select.Option>
+                            <Select.Option value="Thạc sĩ">Thạc sĩ</Select.Option>
+                            <Select.Option value="Tiến sĩ">Tiến sĩ</Select.Option>
+                            <Select.Option value="CKI">Bác sĩ CKI</Select.Option>
+                            <Select.Option value="CKII">Bác sĩ CKII</Select.Option>
+                            <Select.Option value="GS.TS">Giáo sư - Tiến sĩ</Select.Option>
+                        </Select>
                     </Form.Item>
                     <Form.Item
                         label="Kinh nghiệm (năm)"
-                        name="experience"
+                        name="yearExperience"
+                        rules={[
+                            {
+                                type: 'number',
+                                min: 0,
+                                max: 50,
+                                message: "Kinh nghiệm phải từ 0 đến 50 năm!",
+                            },
+                        ]}
                     >
-                        <InputNumber min={0} max={50} />
+                        <InputNumber
+                            min={0}
+                            max={50}
+                            placeholder="Số năm kinh nghiệm"
+                        />
                     </Form.Item>
                     <Form.Item
-                        label="Mô tả chuyên môn"
-                        name="description"
+                        label="Chi tiết"
+                        name="detailExperience"
+                        rules={[
+                            {
+                                max: 500,
+                                message: "Mô tả kinh nghiệm không được vượt quá 500 ký tự!",
+                            },
+                        ]}
                     >
-                        <Input.TextArea rows={3} />
+                        <Input.TextArea
+                            rows={4}
+                            placeholder="Mô tả chi tiết kinh nghiệm"
+                            maxLength={500}
+                        />
+                    </Form.Item>
+                    <Form.Item
+                        label="Giới thiệu"
+                        name="description"
+                        rules={[
+                            {
+                                max: 500,
+                                message: "Giới thiệu không được vượt quá 500 ký tự!",
+                            },
+                        ]}
+                    >
+                        <Input.TextArea
+                            rows={4}
+                            placeholder="Giới thiệu về bản thân"
+                            maxLength={500}
+                        />
                     </Form.Item>
                     <Form.Item>
                         <Button

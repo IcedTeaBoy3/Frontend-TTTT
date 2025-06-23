@@ -54,12 +54,12 @@ const BookingPage = () => {
     };
     const queryGetAllDoctorsHospital = useQuery({
         queryKey: ["getAllDoctorsHospital", hospitalId],
-        queryFn: () => HospitalService.getAllDoctorsHospital(hospitalId),
+        queryFn: () => HospitalService.getAllDoctorsHospital(hospitalId, 'active'),
         enabled: isHospital && !!hospitalId,
     })
     const queryGetWorkingScheduleByDoctor = useQuery({
         queryKey: ["getWorkingScheduleByDoctor", doctor?._id],
-        queryFn: () => WorkingScheduleService.getWorkingScheduleByDoctor(doctor?._id),
+        queryFn: () => WorkingScheduleService.getWorkingScheduleByDoctor(doctor?._id, 'active', 'future'),
         enabled: !!doctor?._id
     })
     const mutationUpdateUpdateProfile = useMutation({

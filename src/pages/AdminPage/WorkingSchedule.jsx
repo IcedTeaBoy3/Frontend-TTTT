@@ -1,4 +1,4 @@
-import { Form, Select, DatePicker, TimePicker, Table, Space, Input, Image, Flex, Radio } from "antd";
+import { Form, Select, DatePicker, TimePicker, Table, Space, Input, Image, Flex, Radio, Tag } from "antd";
 import { DeleteOutlined, EditOutlined, SearchOutlined } from "@ant-design/icons";
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
 import ModalComponent from '../../components/ModalComponent/ModalComponent';
@@ -226,6 +226,21 @@ const WorkingSchedule = () => {
             )
         },
         {
+            title: "Trạng thái",
+            dataIndex: "status",
+            key: "status",
+            filters: [
+                { text: "Đang hoạt động", value: "active" },
+                { text: "Ngừng hoạt động", value: "inactive" },
+            ],
+            onFilter: (value, record) => record.status === value,
+            render: (text) => (
+                <Tag color={text === "active" ? "green" : "red"}>
+                    {text === "active" ? "Đang hoạt động" : "Ngừng hoạt động"}
+                </Tag>
+            )
+        },
+        {
             title: "Thao tác",
             key: "action",
             render: (_, record) => (
@@ -259,6 +274,7 @@ const WorkingSchedule = () => {
             shiftDuration: item.shiftDuration,
             startTime: dayjs(item.startTime, "HH:mm").format("HH:mm"),
             endTime: dayjs(item.endTime, "HH:mm").format("HH:mm"),
+            status: item.status,
         }
     })
     const handleAddWorkingSchedule = () => {

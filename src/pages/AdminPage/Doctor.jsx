@@ -1,5 +1,5 @@
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
-import { Form, Input, Select, Table, Space, Button, Tag, Upload, Divider } from "antd";
+import { Form, Input, Select, Table, Space, Button, Tag, Upload, Divider, InputNumber } from "antd";
 import {
     DeleteOutlined,
     EditOutlined,
@@ -51,6 +51,7 @@ const Doctor = () => {
     const { queryGetAllHospitals, mutationCreateHospital } = useHospitalData({
         setIsModalOpenCreate: setOpenModalCreateClinic,
         type: "clinic",
+        status: "active",
     });
 
     const {
@@ -85,7 +86,8 @@ const Doctor = () => {
                 hospitalId: values.hospitalId,
                 qualification: values.qualification,
                 position: values.position,
-                experience: values.experience,
+                yearExperience: values.yearExperience,
+                detailExperience: values.detailExperience,
                 description: values.description,
             })
         }).catch((error) => {
@@ -103,12 +105,13 @@ const Doctor = () => {
             formUpdate.setFieldsValue({
                 name: doctor.user?.name,
                 email: doctor.user?.email,
-                specialties: doctor.specialties.map((item) => item._id),
-                hospitalId: doctor.hospital?._id,
-                qualification: doctor.qualification,
-                position: doctor.position,
-                experience: doctor.experience,
-                description: doctor.description,
+                specialties: doctor?.specialties.map((item) => item._id),
+                hospitalId: doctor?.hospital?._id,
+                qualification: doctor?.qualification || "Cử nhân",
+                position: doctor?.position || "",
+                yearExperience: doctor?.yearExperience || 0,
+                detailExperience: doctor?.detailExperience || "",
+                description: doctor?.description || "",
                 avatar: [
                     {
                         uid: "-1",
@@ -263,12 +266,12 @@ const Doctor = () => {
         },
         {
             title: "Kinh nghiệm",
-            dataIndex: "experience",
-            key: "experience",
+            dataIndex: "yearExperience",
+            key: "yearExperience",
             render: (text) => text?.length > 60 ? text.substring(0, 50) + "..." : text,
         },
         {
-            title: "Mô tả",
+            title: "Giới thiệu",
             dataIndex: "description",
             key: "description",
             render: (text) => text?.length > 60 ? text.substring(0, 50) + "..." : text,
@@ -307,7 +310,7 @@ const Doctor = () => {
         specialties: item.specialties,
         position: item.position,
         qualification: item.qualification,
-        experience: item.experience,
+        yearExperience: item.yearExperience,
         description: item.description,
     })) || [];
 
@@ -320,10 +323,14 @@ const Doctor = () => {
         formData.append("name", values.name);
         formData.append("email", values.email);
         formData.append("specialties", JSON.stringify(values.specialties));
-        formData.append("hospitalId", values.hospitalId);
+        if (values.hospitalId) {
+
+            formData.append("hospitalId", values.hospitalId);
+        }
         formData.append("qualification", values.qualification);
         formData.append("position", values.position);
-        formData.append("experience", values.experience);
+        formData.append("yearExperience", values.yearExperience);
+        formData.append("detailExperience", values.detailExperience);
         formData.append("description", values.description);
         mutationUpdateDoctor.mutate({
             id: rowSelected,
@@ -437,7 +444,7 @@ const Doctor = () => {
                 placement="right"
                 isOpen={isDrawerOpen}
                 onClose={() => setIsDrawerOpen(false)}
-                width={window.innerWidth < 768 ? "100%" : 600}
+                width={window.innerWidth < 768 ? "100%" : 700}
                 forceRender
             >
                 <LoadingComponent isLoading={isPendingUpdate}>
@@ -445,7 +452,7 @@ const Doctor = () => {
                         name="formUpdate"
                         labelCol={{ span: 6 }}
                         wrapperCol={{ span: 18 }}
-                        style={{ maxWidth: 600, padding: "20px" }}
+                        style={{ maxWidth: 700, padding: "20px" }}
                         initialValues={{ remember: true }}
                         onFinish={handleOnUpdateDoctor}
                         autoComplete="off"
@@ -514,8 +521,6 @@ const Doctor = () => {
                                     ))}
                             </Select>
                         </Form.Item>
-
-
                         <Form.Item
                             label="Bệnh viện"
                             name="hospitalId"
@@ -544,7 +549,6 @@ const Doctor = () => {
                                     ))}
                             </Select>
                         </Form.Item>
-
                         <Form.Item
                             label="Học vị"
                             name="qualification"
@@ -555,25 +559,56 @@ const Doctor = () => {
                                 },
                             ]}
                         >
-                            <Input name="qualification" />
+                            <Select placeholder="Chọn học vị">
+                                <Select.Option value="Cử nhân">Cử nhân</Select.Option>
+                                <Select.Option value="Bác sĩ đa khoa">Bác sĩ đa khoa</Select.Option>
+                                <Select.Option value="Thạc sĩ">Thạc sĩ</Select.Option>
+                                <Select.Option value="Tiến sĩ">Tiến sĩ</Select.Option>
+                                <Select.Option value="CKI">Bác sĩ CKI</Select.Option>
+                                <Select.Option value="CKII">Bác sĩ CKII</Select.Option>
+                                <Select.Option value="GS.TS">Giáo sư - Tiến sĩ</Select.Option>
+                            </Select>
                         </Form.Item>
                         <Form.Item
                             label="Chức vụ"
                             name="position"
 
                         >
-                            <Input name="position" />
+                            <Input
+                                name="position"
+                                placeholder="Chức vụ bác sĩ (ví dụ: Bác sĩ chính, Bác sĩ phụ,...)"
+                            />
                         </Form.Item>
                         <Form.Item
                             label="Kinh nghiệm"
-                            name="experience"
-
+                            name="yearExperience"
+                            rules={[{ type: "number", min: 0, max: 50, message: "Số năm kinh nghiệm không hợp lệ!" }]}
                         >
-                            <Input name="experience" />
+                            <InputNumber
+                                name="yearExperience"
+                                min={0}
+                                max={50}
+                                placeholder="Số năm kinh nghiệm"
+                                style={{ width: "100%" }}
+                            />
                         </Form.Item>
                         <Form.Item
-                            label="Mô tả"
+                            label="Chi tiết kinh nghiệm"
+                            name="detailExperience"
+                            rules={[{ max: 500, message: "Chi tiết kinh nghiệm không được quá 500 ký tự!" }]}
+                        >
+                            <Input.TextArea
+                                name="detailExperience"
+                                rows={4}
+                                showCount
+                                maxLength={500}
+                                placeholder="Chi tiết kinh nghiệm"
+                            />
+                        </Form.Item>
+                        <Form.Item
+                            label="Giới thiệu"
                             name="description"
+                            rules={[{ max: 500, message: "Giới thiệu không được quá 500 ký tự!" }]}
                         >
                             <Input.TextArea
                                 name="description"
@@ -806,31 +841,63 @@ const Doctor = () => {
                                 },
                             ]}
                         >
-                            <Input name="qualification" />
+                            <Select placeholder="Chọn học vị">
+                                <Select.Option value="Cử nhân">Cử nhân</Select.Option>
+                                <Select.Option value="Bác sĩ đa khoa">Bác sĩ đa khoa</Select.Option>
+                                <Select.Option value="Thạc sĩ">Thạc sĩ</Select.Option>
+                                <Select.Option value="Tiến sĩ">Tiến sĩ</Select.Option>
+                                <Select.Option value="CKI">Bác sĩ CKI</Select.Option>
+                                <Select.Option value="CKII">Bác sĩ CKII</Select.Option>
+                                <Select.Option value="GS.TS">Giáo sư - Tiến sĩ</Select.Option>
+                            </Select>
                         </Form.Item>
                         <Form.Item
                             label="Chức vụ"
                             name="position"
 
                         >
-                            <Input name="position" />
+                            <Input
+                                name="position"
+                                placeholder="Chức vụ bác sĩ (ví dụ: Bác sĩ chính, Bác sĩ phụ,...)"
+                            />
+                        </Form.Item>
+                        <Form.Item
+                            label="Năm kinh nghiệm"
+                            name="yearExperience"
+                            rules={[{ type: "number", min: 0, max: 50, message: "Số năm kinh nghiệm không hợp lệ!" }]}
+                        >
+                            <InputNumber
+                                name="yearExperience"
+                                min={0}
+                                max={50}
+                                placeholder="Số năm kinh nghiệm"
+                                style={{ width: "100%" }}
+                            />
                         </Form.Item>
                         <Form.Item
                             label="Kinh nghiệm"
-                            name="experience"
-
+                            name="detailExperience"
+                            rules={[{ max: 500, message: "Chi tiết kinh nghiệm không được quá 500 ký tự!" }]}
                         >
-                            <Input name="experience" />
+                            <Input.TextArea
+                                name="detailExperience"
+                                rows={4}
+                                showCount
+                                maxLength={500}
+                                placeholder="Chi tiết kinh nghiệm"
+                            />
                         </Form.Item>
                         <Form.Item
-                            label="Mô tả"
+                            label="Giới thiệu"
                             name="description"
+                            rules={[{ max: 500, message: "Giới thiệu không được vượt quá 500 ký tự !" }]}
                         >
                             <Input.TextArea
                                 name="description"
                                 rows={4}
                                 showCount
-                                maxLength={100}
+                                maxLength={500}
+                                placeholder="Giới thiệu về bác sĩ"
                             />
 
                         </Form.Item>

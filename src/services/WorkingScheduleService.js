@@ -18,9 +18,9 @@ export const createWorkingSchedule = async (data) => {
         throw error;
     }
 }
-export const getWorkingScheduleByDoctor = async (doctorId) => {
+export const getWorkingScheduleByDoctor = async (doctorId,status,time) => {
     try {
-        const response = await axiosInstance.get(`/working-schedules/get-working-schedule-by-doctor/${doctorId}`);
+        const response = await axiosInstance.get(`/working-schedules/get-working-schedule-by-doctor/${doctorId}?status=${status}&time=${time}`);
         return response.data;
     } catch (error) {
         console.error("Error fetching working schedule by doctor:", error);
