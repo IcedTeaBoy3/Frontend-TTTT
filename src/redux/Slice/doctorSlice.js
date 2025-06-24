@@ -25,7 +25,6 @@ const doctorSlice = createSlice({
         },
         updateDoctor: (state, action) => {
             const updatedData = action.payload;
-            console.log('Updating doctor with data:', updatedData);
             state.doctorId = updatedData.doctorId || state.doctorId;
             state.hospital = updatedData.hospital || state.hospital;
             state.specialties = updatedData.specialties || state.specialties;

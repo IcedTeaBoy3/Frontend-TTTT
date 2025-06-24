@@ -467,6 +467,7 @@ const ProfileDoctor = () => {
                             <Select.Option value="CKI">Bác sĩ CKI</Select.Option>
                             <Select.Option value="CKII">Bác sĩ CKII</Select.Option>
                             <Select.Option value="GS.TS">Giáo sư - Tiến sĩ</Select.Option>
+                            <Select.Option value="PGS.TS">Phó Giáo sư - Tiến sĩ</Select.Option>
                         </Select>
                     </Form.Item>
                     <Form.Item
@@ -526,6 +527,10 @@ const ProfileDoctor = () => {
                             loading={isPendingUpdateDoctor}
 
                         >Lưu</Button>
+                        <Button
+                            style={{ marginLeft: 8 }}
+                            onClick={() => setIsOpenModalDoctor(false)}
+                        >Hủy</Button>
                     </Form.Item>
                 </Form>
             </ModalComponent>

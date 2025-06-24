@@ -22,6 +22,7 @@ import {
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../redux/Slice/authSlice";
 import { resetAppointment } from "../../redux/Slice/appointmentSlice";
+import { resetDoctor } from "../../redux/Slice/doctorSlice";
 import * as Message from "../Message/Message";
 import * as AuthService from "../../services/AuthService";
 const HeaderComponent = () => {
@@ -40,6 +41,7 @@ const HeaderComponent = () => {
             setIsOpenPopupUser(false);
             dispatch(logout());
             dispatch(resetAppointment());
+            dispatch(resetDoctor());
         } else if (res?.status == "error") {
             Message.error(res?.message);
         }

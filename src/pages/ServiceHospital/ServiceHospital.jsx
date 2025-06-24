@@ -1,10 +1,11 @@
 
 import { Space, Typography } from 'antd'
 import CardDoctor from '../../components/CardDoctor/CardDoctor'
-import CardSpecialty from '../../components/CardSpecialty/CardSpecialty'
 import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { updateAppointment } from '../../redux/Slice/appointmentSlice'
+import ButtonComponent from '../../components/ButtonComponent/ButtonComponent'
+import { CheckCircleOutlined } from '@ant-design/icons'
 const { Title, Text } = Typography
 const ServiceHospital = ({ doctors, hospitalId }) => {
     const dispatch = useDispatch()
@@ -27,7 +28,7 @@ const ServiceHospital = ({ doctors, hospitalId }) => {
     }, [])
     return (
         <div style={{ margin: '16px 0px' }}>
-            <Title level={4} style={{ marginBottom: '16px' }}>Danh sách bác sĩ</Title>
+            <Title level={4} style={{ marginBottom: '16px' }}>Đội ngũ bác sĩ</Title>
             {doctors && doctors.length > 0 ? (
                 doctors.map((doctor) => (
                     <CardDoctor
@@ -40,16 +41,24 @@ const ServiceHospital = ({ doctors, hospitalId }) => {
             ) : (
                 <Text>Chưa có bác sĩ nào</Text >
             )}
-            <Title level={4} style={{ margin: '16px 0px' }}>Danh sách chuyên khoa</Title>
+            <Title level={4} style={{ margin: '16px 0px' }}>Chuyên khoa khám</Title>
             {specialties && specialties.length > 0 ? (
-                specialties.map((specialty) => (
-                    <CardSpecialty
-                        key={specialty._id}
-                        specialty={specialty}
-                        isSelected={false}
-                        onClick={() => navigate(`/search?specialty=${specialty._id}`)}
-                    />
-                ))
+                <Space wrap>
+                    {specialties.map((specialty) => (
+                        <ButtonComponent
+                            key={specialty._id}
+                            type="default"
+                            onClick={() => navigate(`/search?type=all&specialtyId=${specialty._id}`)}
+                            icon={<CheckCircleOutlined />}
+                            styleButton={{
+                                margin: '4px',
+                                backgroundColor: '#f0f0f0',
+                            }}
+                        >
+                            {specialty.name}
+                        </ButtonComponent>
+                    ))}
+                </Space>
             ) : (
                 <Text>Chưa có chuyên khoa nào</Text>
             )}

@@ -15,7 +15,7 @@ const HospitalInfor = ({ hospital }) => {
             <Row justify="space-between" align="middle" style={{ marginBottom: 16 }} gutter={[16, 16]}>
                 <Image.PreviewGroup>
                     <Col>
-                        <SlideComponent length={hospital?.data?.images?.length || 1}>
+                        <SlideComponent length={hospital?.data?.images?.length}>
                             {hospital?.data?.images?.length > 0 ? (
                                 hospital.data.images.map((image, index) => (
                                     <Image

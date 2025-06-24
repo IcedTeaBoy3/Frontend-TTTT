@@ -1,32 +1,33 @@
 
 import { useDispatch } from 'react-redux'
 import { setDoctor } from '../../redux/Slice/doctorSlice'
-import { useEffect } from 'react'
 import * as DoctorService from '../../services/DoctorService'
+import { useQuery } from '@tanstack/react-query'
+import { useEffect } from 'react'
 const DashboardDoctor = () => {
     const dispatch = useDispatch();
-    const fetchDoctor = async () => {
-        try {
-            const doctor = await DoctorService.getDoctorByUserId();
-            if (doctor) {
-                dispatch(setDoctor({
-                    doctorId: doctor.data._id,
-                    hospital: doctor.data.hospital,
-                    specialties: doctor.data.specialties,
-                    position: doctor.data.position,
-                    qualification: doctor.data.qualification,
-                    experience: doctor.data.experience,
-                    description: doctor.data.description
-                }));
-            }
-        } catch (error) {
-            console.error("Error fetching doctor by userId:", error);
-        }
-    };
 
+    const queryGetDoctor = useQuery({
+        queryKey: ['getDoctor'],
+        queryFn: DoctorService.getDoctorByUserId,
+
+    });
+    const { data: doctor, isLoading: isLoadingDoctor } = queryGetDoctor;
     useEffect(() => {
-        fetchDoctor();
-    }, [dispatch]);
+        if (doctor && doctor.data) {
+            dispatch(setDoctor({
+                doctorId: doctor.data._id,
+                hospital: doctor.data.hospital,
+                specialties: doctor.data.specialties,
+                position: doctor.data.position,
+                qualification: doctor.data.qualification,
+                yearExperience: doctor.data.yearExperience,
+                detailExperience: doctor.data.detailExperience,
+                description: doctor.data.description,
+            }));
+        }
+    }, [doctor, dispatch]);
+
     return (
         <div>DashboardDoctor</div>
     )

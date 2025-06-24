@@ -12,14 +12,12 @@ import {
 import {
     DashboardOutlined,
     CalendarOutlined,
-    TeamOutlined,
     LogoutOutlined,
     UserOutlined,
     BellOutlined,
     InfoCircleFilled,
     SettingFilled,
     MedicineBoxOutlined,
-    SolutionOutlined,
 } from "@ant-design/icons";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import ButtonComponent from "../ButtonComponent/ButtonComponent";
@@ -28,6 +26,7 @@ import { PopupItem } from "./style";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../redux/Slice/authSlice";
 import { resetAppointment } from "../../redux/Slice/appointmentSlice";
+import { resetDoctor } from "../../redux/Slice/doctorSlice";
 import * as AuthService from "../../services/AuthService";
 import * as Message from "../Message/Message";
 
@@ -92,6 +91,7 @@ const DoctorLayout = () => {
             if (res.status === "success") {
                 dispatch(logout());
                 dispatch(resetAppointment());
+                dispatch(resetDoctor());
                 Message.success(res.message || "Đăng xuất thành công");
                 navigate("/authentication");
             } else {

@@ -2,7 +2,7 @@ import { Container, ContentBox, HospitalInfo, InfoSection, StickyFooter, Hotline
 import { useParams, useNavigate } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import * as HospitalService from "../../services/HospitalService"
-import { Avatar, Typography, Tag, Space } from "antd"
+import { Avatar, Typography, Space } from "antd"
 import { PhoneFilled, EnvironmentFilled } from "@ant-design/icons"
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent"
 import { useEffect } from "react"
@@ -47,7 +47,7 @@ const DetailHospitalPage = () => {
         },
         {
             key: '2',
-            label: 'Dịch vụ',
+            label: 'Dịch vụ khám',
             children: <ServiceHospital
                 hospitalId={hospital?.data?._id}
                 doctors={hospital?.data?.doctors}

@@ -29,10 +29,12 @@ import DashboardDoctor from "../pages/DoctorPage/DashboardDoctor";
 import ProfileDoctor from "../pages/DoctorPage/ProfileDoctor";
 import AppointmentDoctor from "../pages/DoctorPage/AppointmentDoctor";
 import WorkingScheduleDoctor from "../pages/DoctorPage/WorkingScheduleDoctor";
+// Cuộn lên đầu trang mỗi khi chuyển trang
+import ScrollToTop from "../components/ScrollToTop/ScrollToTop";
 const AppRoutes = () => {
     return (
         <BrowserRouter>
-
+            <ScrollToTop />
             <Routes>
 
                 <Route path="/" element={<DefaultLayout />}>
