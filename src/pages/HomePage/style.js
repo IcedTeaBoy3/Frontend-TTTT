@@ -22,14 +22,15 @@ export const Section = styled.div`
 `;
 
 export const HospitalCard = styled(Card)`
-    text-align: center;
+    height: 280px;
 `;
 export const TwoLineDescription = styled.div`
-  display: -webkit-box;
-  -webkit-line-clamp: 2;       // số dòng muốn hiển thị
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;       // số dòng muốn hiển thị
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 `;
 export const SpecialtyCard = styled(Card)`
     width: 100%;

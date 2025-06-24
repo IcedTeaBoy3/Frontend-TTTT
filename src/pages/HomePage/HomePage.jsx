@@ -123,6 +123,7 @@ const HomePage = () => {
                             {hospitals?.data.map((item) => (
                                 <HospitalCard
                                     hoverable="true"
+                                    variant="outlined"
                                     key={item._id}
                                     cover={
                                         <HospitalImage

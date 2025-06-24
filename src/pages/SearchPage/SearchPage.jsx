@@ -73,7 +73,9 @@ const SearchPage = () => {
     });
 
 
-    const { queryGetAllSpecialties } = useSpecialtyData({});
+    const { queryGetAllSpecialties } = useSpecialtyData({
+        filterStatus: 'active',
+    });
     const { data: specialties = [], isLoading: isLoadingSpecialty } = queryGetAllSpecialties;
 
 

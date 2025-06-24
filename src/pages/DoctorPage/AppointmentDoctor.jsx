@@ -237,7 +237,7 @@ const AppointmentDoctor = () => {
                     columns={columns}
                     scroll={{ x: "max-content" }}
                     dataSource={dataTable}
-                    locale={{ emptyText: "Không có dữ liệu bệnh viện" }}
+                    locale={{ emptyText: "Không có dữ liệu lịch hẹn" }}
                     pagination={{
                         current: pagination.current,
                         pageSize: pagination.pageSize,

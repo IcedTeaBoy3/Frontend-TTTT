@@ -72,3 +72,11 @@ export const getDoctorByUserId = async () => {
         throw error.response.data;
     }
 };
+export const getDoctorStatistics = async (doctorId,startDate,endDate) => {
+    try {
+        const response = await axiosInstance.get(`/doctors/${doctorId}/statistics?from=${startDate}&to=${endDate}`);
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
+};
