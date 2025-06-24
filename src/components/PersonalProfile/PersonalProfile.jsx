@@ -42,7 +42,6 @@ const PersonalProfile = ({ user, onClick }) => {
             <ButtonComponent
                 type="primary"
                 style={{ marginTop: 24, width: "30%" }}
-                size="large"
                 onClick={onClick}
             >
                 <UserOutlined style={{ marginRight: 8 }} />

@@ -15,7 +15,7 @@ const BannerComponent = () => {
         }
     }
     return (
-        <div style={{ paddingTop: screens.md ? "65px" : "0" }}>
+        <div style={{ paddingTop: screens.md ? "64px" : "48px", paddingBottom: "24px" }}>
             <BannerContainer>
                 <BannerImage
                     $image={bannerImage}

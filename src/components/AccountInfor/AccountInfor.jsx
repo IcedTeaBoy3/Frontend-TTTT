@@ -61,7 +61,6 @@ const AccountInfor = ({ user, handleChangeProfile }) => {
                     <StyleText><strong><EnvironmentOutlined /> Địa chỉ:</strong> {user?.address || "--"}</StyleText>
                     <ButtonComponent
                         type="default"
-                        size="large"
                         style={{ marginTop: 16, width: "50%" }}
                         onClick={handleChangeProfile}
                     >

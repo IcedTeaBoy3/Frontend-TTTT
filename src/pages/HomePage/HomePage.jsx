@@ -63,8 +63,6 @@ const HomePage = () => {
 
     return (
         <>
-
-
             <BannerComponent />
             <Wrapper>
                 <CenteredTitleWrapper>
