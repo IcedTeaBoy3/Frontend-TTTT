@@ -50,7 +50,6 @@ export const StickyFooter = styled.div`
   bottom: 0;
   z-index: 1000;
   margin-top: 32px;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
 `;
 
 export const InfoText = styled(Text)`

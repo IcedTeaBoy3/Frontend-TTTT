@@ -1,5 +1,5 @@
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
-import { Form, Input, Select, Table, Space, Button, Tag, Upload, Divider, InputNumber } from "antd";
+import { Form, Input, Select, Table, Space, Button, Tag, Upload, Divider, InputNumber, Typography } from "antd";
 import {
     DeleteOutlined,
     EditOutlined,
@@ -15,6 +15,7 @@ import { useDoctorData } from "../../hooks/useDoctorData";
 import { useSpecialtyData } from "../../hooks/useSpecialtyData";
 import { useHospitalData } from "../../hooks/useHospitalData";
 import { useState, useRef } from "react";
+const { Text, Paragraph } = Typography;
 const Doctor = () => {
     const [isModalOpenCreate, setIsModalOpenCreate] = useState(false);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -226,6 +227,11 @@ const Doctor = () => {
             key: "hospital",
             ...getColumnSearchProps("hospital"),
             sorter: (a, b) => a.hospital?.length - b.hospital?.length,
+            render: (hospital) => {
+                return <span>
+                    {hospital ? hospital : <Text type="secondary">Chưa cập nhất</Text>}
+                </span>
+            },
         },
         {
             title: "Tên chuyên khoa",
@@ -241,7 +247,7 @@ const Doctor = () => {
                                 {specialty.name}
                             </Tag>
                         ))
-                        : "Chưa có chuyên khoa"}
+                        : <Text type="secondary">Chưa cập nhất</Text>}
                 </span>
             },
             filters: specialties?.data?.map((item) => ({
@@ -258,24 +264,56 @@ const Doctor = () => {
             dataIndex: "position",
             key: "position",
             sorter: (a, b) => a.position?.length - b.position?.length,
+            render: (text) =>
+                text
+                    ? text.length > 60
+                        ? text.substring(0, 50) + "..."
+                        : text
+                    : <Typography.Text type="secondary">Chưa cập nhật</Typography.Text>
         },
         {
             title: "Học vị",
             dataIndex: "qualification",
             key: "qualification",
+            render: (text) => {
+                return <span>
+                    {text ? text : <Text type="secondary">Chưa cập nhật</Text>}
+                </span>
+            }
         },
         {
             title: "Kinh nghiệm",
             dataIndex: "yearExperience",
             key: "yearExperience",
-            render: (text) => text?.length > 60 ? text.substring(0, 50) + "..." : text,
+            render: (text) => {
+                return <span>
+                    {text ? text : <Text type="secondary">Chưa cập nhật</Text>}
+                </span>
+            },
+            sorter: (a, b) => a.yearExperience - b.yearExperience,
         },
+        {
+            title: "Chi tiết kinh nghiệm",
+            dataIndex: "detailExperience",
+            key: "detailExperience",
+            render: (text) =>
+                text
+                    ? text.length > 60
+                        ? text.substring(0, 50) + "..."
+                        : text
+                    : <Typography.Text type="secondary">Chưa cập nhật</Typography.Text>
+        },
+
         {
             title: "Giới thiệu",
             dataIndex: "description",
             key: "description",
-            render: (text) => text?.length > 60 ? text.substring(0, 50) + "..." : text,
-
+            render: (text) =>
+                text
+                    ? text.length > 60
+                        ? text.substring(0, 50) + "..."
+                        : text
+                    : <Typography.Text type="secondary">Chưa cập nhật</Typography.Text>
         },
         {
             title: "Thao tác",
@@ -311,6 +349,7 @@ const Doctor = () => {
         position: item.position,
         qualification: item.qualification,
         yearExperience: item.yearExperience,
+        detailExperience: item.detailExperience,
         description: item.description,
     })) || [];
 

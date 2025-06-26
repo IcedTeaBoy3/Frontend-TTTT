@@ -1,8 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 export const FooterWrapper = styled.div`
-    background-color: rgb(249 250 251);
-    padding: 30px 20px;
+    padding: 30px 0px;
     margin: 0 auto;
     min-height: 50vh;
     max-width: 1200px;
@@ -35,8 +34,8 @@ export const SocialLinks = styled.div`
 export const SocialIcon = styled.a`
     display: flex;
     align-items: center;
-    color: #000;
     font-size: 20px;
+    color: #333;
     transition: color 0.3s;
     text-decoration: none;
 

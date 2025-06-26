@@ -1,5 +1,5 @@
 
-import { Space, Table, Input, Button, Form, Flex, Popconfirm, Select, Radio } from "antd";
+import { Space, Table, Input, Button, Form, Select, Radio, Typography } from "antd";
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
 import {
     EditOutlined,
@@ -16,7 +16,9 @@ import { saveAs } from "file-saver";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 const { Option } = Select;
+const { Text, Paragraph } = Typography;
 import ethnicGroups from "../../data/ethnicGroups"; // Giả sử bạn đã có file ethnicGroups.js chứa dữ liệu dân tộc
+import { data } from "react-router-dom";
 const Patient = () => {
     const [isOpenDrawer, setIsOpenDrawer] = useState(false);
     const [isModalOpenDelete, setIsModalOpenDelete] = useState(false);
@@ -192,19 +194,18 @@ const Patient = () => {
             sorter: (a, b) => a.index - b.index,
 
         },
+        {
+            title: "Email",
+            dataIndex: "email",
+            key: "email",
+            ...getColumnSearchProps("email"),
+        },
         hasName && {
             title: "Tên",
             dataIndex: "name",
             key: "name",
             ...getColumnSearchProps("name"),
             sorter: (a, b) => a.name?.length - b.name?.length,
-        },
-        {
-            title: "Email",
-            dataIndex: "email",
-            key: "email",
-            ...getColumnSearchProps("email"),
-            sorter: (a, b) => a.email.length - b.email.length,
         },
         hasPhone && {
             title: "Số điện thoại",
@@ -217,12 +218,17 @@ const Patient = () => {
             dataIndex: "address",
             key: "address",
             ...getColumnSearchProps("address"),
-            render: (text) => {
-                // Giới hạn độ dài hiển thị
-                const maxLength = 20; // Độ dài tối đa
-                return text?.length > maxLength
-                    ? `${text.slice(0, maxLength)}...`
-                    : text;
+            render: (address) => {
+                return address ? (
+                    <Paragraph
+                        ellipsis={{ rows: 2, expandable: true, symbol: "Xem thêm" }}
+                        title={address}
+                    >
+                        {address}
+                    </Paragraph>
+                ) : (
+                    <Text type="secondary">Chưa cập nhật</Text>
+                );
             }
 
         },
@@ -249,8 +255,44 @@ const Patient = () => {
                     default:
                         return "Chưa cập nhật";
                 }
-            }
+            },
+            filters: [
+                { text: "Nam", value: "male" },
+                { text: "Nữ", value: "female" },
+                { text: "Khác", value: "other" },
+            ],
+            onFilter: (value, record) => record.gender.includes(value),
 
+        },
+        {
+            title: "Dân tộc",
+            dataIndex: "ethnic",
+            key: "ethnic",
+
+        },
+        {
+            title: "CMND/CCCD",
+            dataIndex: "idCard",
+            key: "idCard",
+            render: (idCard) => {
+                return idCard ? (
+                    <Text>{idCard}</Text>
+                ) : (
+                    <Text type="secondary">Chưa cập nhật</Text>
+                );
+            }
+        },
+        {
+            title: "Mã thẻ BHYT",
+            dataIndex: "insuranceCode",
+            key: "insuranceCode",
+            render: (insuranceCode) => {
+                return insuranceCode ? (
+                    <Text>{insuranceCode}</Text>
+                ) : (
+                    <Text type="secondary">Chưa cập nhật</Text>
+                );
+            }
         },
         {
             title: "Thao tác",
@@ -288,6 +330,10 @@ const Patient = () => {
             address: item.address,
             dateOfBirth: item.dateOfBirth,
             gender: item.gender,
+            ethnic: item.ethnic,
+            idCard: item.idCard,
+            insuranceCode: item.insuranceCode,
+            job: item.job,
         };
     });
     const handleOkDeleteMany = () => {

@@ -1,47 +1,51 @@
 
-import { Row, Col } from 'antd';
+import { Row, Col, Typography } from 'antd';
 import { FacebookOutlined, TwitterOutlined, InstagramOutlined, LinkedinOutlined, YoutubeOutlined } from '@ant-design/icons';
 import { FooterWrapper, FooterTitle, FooterText, FooterBottom, SocialLinks, SocialIcon } from './style';
 import { useNavigate } from 'react-router-dom';
+const { Text } = Typography;
 const FooterComponent = () => {
     const navigate = useNavigate();
     return (
         <div style={{ backgroundColor: 'rgb(249 250 251)', borderTop: '2px solid #1890ff', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
             <FooterWrapper>
-                <Row justify="space-around" gutter={[16, 16]} align="middle">
+                <Row justify="space-around" gutter={[16, 16]} align="center" style={{ marginBottom: '30px' }}>
                     <Col sm={24} md={12} lg={8} xl={6}>
                         <FooterTitle>Công ty TNHH Medicare</FooterTitle>
-                        <FooterText><strong>Địa chỉ:</strong> 123 Đường ABC, Quận 1, TP.HCM</FooterText>
-                        <FooterText><strong>Điện thoại:</strong> 0123456789</FooterText>
-                        <FooterText><strong>Email:</strong> abc@gmail.com</FooterText>
+                        <FooterText><Text strong>Địa chỉ: </Text> <Text type='secondary'>123 Đường ABC, Quận 1, TP.HCM</Text> </FooterText>
+                        <FooterText><Text strong>Điện thoại: </Text> <Text type='secondary'>0123456789</Text></FooterText>
+                        <FooterText><Text strong>Email: </Text><Text type='secondary'>abc@gmail.com</Text></FooterText>
                     </Col>
 
                     <Col sm={24} md={12} lg={8} xl={6}>
                         <FooterTitle>Về Medicare</FooterTitle>
-                        <FooterText>Giới thiệu</FooterText>
-                        <FooterText>Điều khoản sử dụng</FooterText>
-                        <FooterText>Liên hệ</FooterText>
+                        <FooterText><Text type='secondary'>Giới thiệu</Text></FooterText>
+                        <FooterText><Text type='secondary'>Điều khoản sử dụng</Text></FooterText>
+                        <FooterText><Text type='secondary'>Liên hệ</Text></FooterText>
                     </Col>
 
                     <Col sm={24} md={12} lg={8} xl={6}>
                         <FooterTitle>Dịch vụ</FooterTitle>
                         <FooterText onClick={() => navigate('/search?type=doctor', {
                             replace: true
-                        })}>Đặt khám bác sĩ</FooterText>
+                        })}><Text type='secondary'>Đặt khám bác sĩ</Text></FooterText>
                         <FooterText onClick={() => navigate('/search?type=hospital', {
                             replace: true
-                        })}>Đặt khám phòng khám</FooterText>
+                        })}><Text type='secondary'>Đặt khám phòng khám</Text></FooterText>
+                        <FooterText onClick={() => navigate('/search?type=hospital', {
+                            replace: true
+                        })}><Text type='secondary'>Đặt khám bệnh viện</Text></FooterText>
                     </Col>
 
                     <Col sm={24} md={12} lg={8} xl={6}>
                         <FooterTitle>Hỗ trợ</FooterTitle>
-                        <FooterText>Hướng dẫn sử dụng</FooterText>
-                        <FooterText>Câu hỏi thường gặp</FooterText>
-                        <FooterText>Chính sách bảo mật</FooterText>
+                        <FooterText><Text type='secondary'>Hướng dẫn sử dụngs</Text></FooterText>
+                        <FooterText><Text type='secondary'>Câu hỏi thường gặp</Text></FooterText>
+                        <FooterText><Text type='secondary'>Chính sách bảo mật</Text></FooterText>
                     </Col>
                 </Row>
-                <Row>
-                    <Col style={{ marginTop: '20px' }} span={24}>
+                <Row justify="space-around" gutter={[16, 16]} align="middle" style={{ marginTop: '30px' }}>
+                    <Col span={24}>
                         <FooterTitle>Kết nối với chúng tôi</FooterTitle>
                         <SocialLinks>
                             <SocialIcon href="https://facebook.com" target="_blank" rel="noopener noreferrer">

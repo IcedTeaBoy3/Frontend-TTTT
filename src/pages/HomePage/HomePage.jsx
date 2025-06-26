@@ -18,7 +18,7 @@ import { SpecialtyCard, SpecialtyImage, HospitalCard, HospitalImage, TwoLineDesc
 import { Wrapper, CenteredTitleWrapper, Section } from "./style";
 const { Text, Title, Paragraph } = Typography;
 const HomePage = () => {
-    const [limit, setLimit] = useState(6)
+    const [limit, setLimit] = useState(12)
     const navigate = useNavigate();
     const location = useLocation();
     useEffect(() => {
@@ -172,7 +172,7 @@ const HomePage = () => {
                                 Xem thêm
                             </ButtonComponent>
                         ) : (
-                            <ButtonComponent type="primary" hoverable="true" onClick={() => setLimit(6)}>
+                            <ButtonComponent type="primary" hoverable="true" onClick={() => setLimit(12)}>
                                 Thu hẹp danh sách
                             </ButtonComponent>
                         )}
