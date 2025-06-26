@@ -60,6 +60,7 @@ const Hospital = () => {
         setSelectedRowKeys,
         setRowSelected,
         type: '',
+        status: 'active',
     });
     const { queryGetAllDoctors } = useDoctorData({});
 
@@ -403,7 +404,7 @@ const Hospital = () => {
         address: item.address,
         phone: item.phone,
         description: item.description,
-        doctors: item.doctors,
+        doctors: item?.doctors,
         type: item.type,
         status: item.status
     }));
@@ -431,7 +432,7 @@ const Hospital = () => {
     };
     const handleExportExcel = () => {
         // Xuất file Excel
-        const dataExport = hospitals?.data.map((item) => ({
+        const dataExport = hospitals?.data?.map((item) => ({
             "Tên": item.name,
             "Địa chỉ": item.address,
             "Số điện thoại": item.phone,
@@ -457,7 +458,7 @@ const Hospital = () => {
     };
     const handleExportCSV = () => {
         // Xuất file CSV
-        const dataExport = hospitals?.data.map((item) => ({
+        const dataExport = hospitals?.data?.map((item) => ({
             "Tên": item.name,
             "Địa chỉ": item.address,
             "Số điện thoại": item.phone,
@@ -486,7 +487,7 @@ const Hospital = () => {
                 header: true,
                 skipEmptyLines: true,
                 complete: (results) => {
-                    const hospitals = results.data.map((item) => ({
+                    const hospitals = results?.data?.map((item) => ({
                         name: item["Tên"],
                         address: item["Địa chỉ"],
                         phone: item["Số điện thoại"],
@@ -515,7 +516,7 @@ const Hospital = () => {
                 const worksheet = workbook.Sheets[firstSheetName];
                 const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-                const hospitals = jsonData.map((item) => ({
+                const hospitals = jsonData?.map((item) => ({
                     name: item["Tên"],
                     address: item["Địa chỉ"],
                     phone: item["Số điện thoại"],

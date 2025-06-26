@@ -4,7 +4,7 @@ import { Pie, Line } from '@ant-design/charts';
 import { CalendarOutlined, CloseCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import StaticService from '../../services/StaticService';
 import { useQuery } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { StyledCard } from './style';
 const { Title } = Typography;
 const AppointmentStats = ({ dataRange }) => {
     const { data: overviewStats, isLoading } = useQuery({
@@ -74,31 +74,31 @@ const AppointmentStats = ({ dataRange }) => {
             <Title level={3}>Thống kê tổng quan</Title>
             <Row gutter={16}>
                 <Col span={8}>
-                    <Card>
+                    <StyledCard>
                         <Statistic
                             title="Tổng số lịch hẹn"
                             value={totalAppointments}
                             prefix={<CalendarOutlined />}
                         />
-                    </Card>
+                    </StyledCard>
                 </Col>
                 <Col span={8}>
-                    <Card>
+                    <StyledCard>
                         <Statistic
                             title="Tỷ lệ hoàn thành"
                             value={completionRate}
                             prefix={<CheckCircleOutlined />}
                         />
-                    </Card>
+                    </StyledCard>
                 </Col>
                 <Col span={8}>
-                    <Card>
+                    <StyledCard>
                         <Statistic
                             title="Tỷ lệ huỷ"
                             value={cancellationRate}
                             prefix={<CloseCircleOutlined />}
                         />
-                    </Card>
+                    </StyledCard>
                 </Col>
             </Row>
             <Row style={{ marginTop: '20px' }} gutter={16}>

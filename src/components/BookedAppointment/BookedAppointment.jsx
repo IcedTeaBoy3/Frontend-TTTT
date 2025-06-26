@@ -1,5 +1,5 @@
 
-import { Typography, Divider, Row, Col, Card, Tag, Avatar, Flex, Pagination } from 'antd'
+import { Typography, Divider, Row, Col, Card, Tag, Avatar, Flex, Pagination, Popconfirm } from 'antd'
 import { UserOutlined, WarningOutlined } from '@ant-design/icons'
 import { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
@@ -211,18 +211,27 @@ const BookedAppointment = ({ userId }) => {
                                             <strong>Địa chỉ:</strong> {patient.address}
                                         </Paragraph>
                                     </Card>
-                                    <ButtonComponent
-                                        danger
-                                        onClick={() => handleCancelAppointment(appointmentDetails._id)}
-                                        disabled={appointmentDetails.status === 'cancelled' || appointmentDetails.status === 'completed'}
-                                        loading={mutationCancelAppointment.isLoading}
-                                        styleButton={{
-                                            marginTop: '16px',
-                                            width: '100%',
-                                        }}
+                                    <Popconfirm
+                                        title="Huỷ lịch hẹn"
+                                        placement="topRight"
+                                        description="Bạn có chắc chắn muốn huỷ lịch hẹn này không?"
+                                        onConfirm={() => handleCancelAppointment(appointmentDetails._id)}
+                                        okText="Đồng ý"
+                                        cancelText="Huỷ"
                                     >
-                                        Huỷ lịch hẹn
-                                    </ButtonComponent>
+
+                                        <ButtonComponent
+                                            danger
+                                            disabled={appointmentDetails.status === 'cancelled' || appointmentDetails.status === 'completed'}
+                                            loading={mutationCancelAppointment.isLoading}
+                                            styleButton={{
+                                                marginTop: '16px',
+                                                width: '100%',
+                                            }}
+                                        >
+                                            Huỷ lịch hẹn
+                                        </ButtonComponent>
+                                    </Popconfirm>
                                 </>
                             )}
                         </Col>

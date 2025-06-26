@@ -12,10 +12,20 @@ export const createHospital = async (data) => {
         throw error;
     }
 };
-export const getAllHospitals = async (type, status, page, pageSize) => {
+export const getAllHospitals = async (type, status, page, pageSize,specialty,searchValue) => {
     try {
         const response = await axiosInstance.get(
-            `/hospitals/get-all-hospitals?type=${type}&page=${page}&limit=${pageSize}&status=${status}`,
+            `/hospitals/get-all-hospitals`,
+            {
+                params: {
+                    type: type,
+                    status: status,
+                    page: page,
+                    limit: pageSize,
+                    searchValue: searchValue,
+                    specialty: specialty
+                }
+            }
         );
         return response.data;
     } catch (error) {

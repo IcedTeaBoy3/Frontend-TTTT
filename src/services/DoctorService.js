@@ -8,12 +8,15 @@ export const createDoctor = async (data) => {
         throw error.response.data;
     }
 };
-export const getAllDoctors = async (isHospitalNotNull, page, pageSize) => {
+export const getAllDoctors = async (isHospitalNotNull, page, pageSize, specialty,qualification,searchValue) => {
     try {
         const response = await axiosInstance.get(`/doctors/get-all-doctors`,
             {
                 params: {
                     isHospitalNotNull: isHospitalNotNull,
+                    specialty: specialty,
+                    qualification: qualification,
+                    searchValue: searchValue,
                     page: page,
                     limit: pageSize
                 }
