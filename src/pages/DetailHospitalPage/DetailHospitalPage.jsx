@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import * as HospitalService from "../../services/HospitalService"
 import { Avatar, Typography, Space } from "antd"
-import { PhoneFilled, EnvironmentFilled } from "@ant-design/icons"
+import { PhoneFilled, EnvironmentFilled, HomeOutlined, InfoCircleOutlined } from "@ant-design/icons"
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent"
 import { useEffect } from "react"
 import { useDispatch } from "react-redux"
@@ -11,7 +11,8 @@ import { setAppointment, updateAppointment } from "../../redux/Slice/appointment
 import { CustomTabs } from "../../components/TabsComponent/style"
 import LoadingComponent from "../../components/LoadingComponent/LoadingComponent"
 import HospitalInfor from "../../components/HospitalInfor/HospitalInfor"
-import ServiceHospital from "../ServiceHospital/ServiceHospital"
+import ServiceHospital from "../../components/ServiceHospital/ServiceHospital"
+import CustomBreadcrumb from "../../components/CustomBreadcrumb/CustomBreadcrumb"
 const { Title, Text } = Typography
 const DetailHospitalPage = () => {
     const { id } = useParams()
@@ -54,11 +55,16 @@ const DetailHospitalPage = () => {
             />,
         },
     ];
+    const breadcrumbItems = [
+        { label: 'Trang chủ', to: '/', icon: <HomeOutlined /> },
+        { label: hospital?.data?.name || 'Chi tiết bệnh viện', to: '', icon: <InfoCircleOutlined /> },
+    ];
     return (
 
         <LoadingComponent isLoading={isLoadingHospital}>
 
             <Container>
+                <CustomBreadcrumb items={breadcrumbItems} />
                 <ContentBox>
                     <HospitalInfo>
                         <Avatar

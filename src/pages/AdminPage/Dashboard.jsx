@@ -1,10 +1,11 @@
-import { DatePicker, Tabs, Space } from "antd";
+import { DatePicker, Space } from "antd";
 import { useState } from 'react';
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
 import AppointmentStats from "../../components/AppointmentStats/AppointmentStats";
 import { useDebounce } from '../../hooks/useDebounce';
 import DoctorStats from "../../components/DoctorStats/DoctorStats";
 import PatientStats from "../../components/PatientStats/PatientStats";
+import TabsComponent from "../../components/TabsComponent/TabsComponent";
 const { RangePicker } = DatePicker;
 
 const Dashboard = () => {
@@ -49,13 +50,7 @@ const Dashboard = () => {
                 </ButtonComponent>
             </Space>
             {/* Tab thống kê chi tiết */}
-            <Tabs
-                defaultActiveKey="1"
-                style={{ marginTop: '20px' }}
-                items={items}
-            >
-
-            </Tabs>
+            <TabsComponent items={items} />
         </>
     );
 };

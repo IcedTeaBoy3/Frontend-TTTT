@@ -1,8 +1,10 @@
 
 import BannerComponent from "../../components/BannerComponent/BannerComponent";
-import DefaultLayout from "../../components/DefaultLayout/DefaultLayout";
 import SlideComponent from "../../components/SlideComponent/SlideComponent";
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
+import LoadingComponent from "../../components/LoadingComponent/LoadingComponent";
+import CardComponent from "../../components/CardComponent/CardComponent";
+import SecurityInfo from "../../components/SecurityInfo/SecurityInfo";
 import { Typography, Card, Row, Col, Flex } from 'antd';
 import { RightOutlined } from '@ant-design/icons';
 import { useQuery } from "@tanstack/react-query";
@@ -10,10 +12,8 @@ import * as SpecialtyService from "../../services/SpecialtyService";
 import * as HospitalService from "../../services/HospitalService";
 import * as DoctorService from "../../services/DoctorService";
 import * as Message from "../../components/Message/Message";
-import LoadingComponent from "../../components/LoadingComponent/LoadingComponent";
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import CardComponent from "../../components/CardComponent/CardComponent";
 import { SpecialtyCard, SpecialtyImage, HospitalCard, HospitalImage, TwoLineDescription } from "./style";
 import { Wrapper, CenteredTitleWrapper, Section } from "./style";
 const { Text, Title, Paragraph } = Typography;
@@ -69,13 +69,13 @@ const HomePage = () => {
                     <Title level={2} style={{ fontWeight: 'bold' }}>
                         Đặt lịch khám trực tuyến
                     </Title>
-                    <Text type="secondary">
+                    <Text type="secondary" style={{ fontSize: 16 }}>
                         Tìm bác sĩ chính xác, đặt lịch khám dễ dàng và nhanh chóng
                     </Text>
                 </CenteredTitleWrapper>
 
                 {/* Đặt khám bác sĩ */}
-                <Section id="doctors-section">
+                <Section>
                     <Flex justify="space-between" align="center">
                         <Title level={3} style={{ fontWeight: 'bold' }}>Đặt khám bác sĩ</Title>
                         <ButtonComponent
@@ -177,6 +177,12 @@ const HomePage = () => {
                             </ButtonComponent>
                         )}
                     </Flex>
+                </Section>
+
+                {/* Thông tin bảo mật */}
+                <Section>
+
+                    <SecurityInfo />
                 </Section>
             </Wrapper>
         </>

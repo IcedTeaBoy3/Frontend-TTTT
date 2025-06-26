@@ -1,12 +1,10 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Avatar } from 'antd';
-import { Typography, Divider, Tag } from 'antd';
-import ButtonComponent from '../../components/ButtonComponent/ButtonComponent';
+import { Typography, Divider, Tag, Avatar } from 'antd';
 import * as DoctorService from '../../services/DoctorService';
 import * as WorkingScheduleService from '../../services/WorkingScheduleService';
-import { CheckCircleOutlined, UserOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, UserOutlined, HomeOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -15,6 +13,7 @@ import { updateAppointment, setAppointment } from '../../redux/Slice/appointment
 import WorkingSchedule from '../../components/WorkingSchedule/WorkingSchedule';
 import TimeSlot from '../../components/TimeSlot/TimeSlot';
 import { Container, ContentBox, DoctorInfo, InfoSection, StickyFooter, Hotline, StyledIframe, BookingButton } from './style';
+import CustomBreadcrumb from '../../components/CustomBreadcrumb/CustomBreadcrumb';
 import { formatValue } from '../../utils/formatValue';
 dayjs.extend(utc)
 const { Title, Text, Paragraph } = Typography;
@@ -99,7 +98,6 @@ const DetailDoctorPage = () => {
     }
     const handleCreateWorkingTime = (schedule) => {
         if (!schedule.startTime || !schedule.endTime || !schedule.workDate || !schedule.shiftDuration) return;
-        console.log("handleCreateWorkingTime", schedule);
         const timeSlots = generateTimeSlots(schedule.startTime, schedule.endTime, schedule.shiftDuration);
         setTimeSlots(timeSlots);
         dispatch(updateAppointment({ selectedDate: schedule.workDate }))
@@ -125,9 +123,14 @@ const DetailDoctorPage = () => {
     const handleBookingDoctor = () => {
         navigate("/booking?type=doctor");
     }
+    const breadcrumbItems = [
+        { label: 'Trang chủ', to: '/', icon: <HomeOutlined /> },
+        { label: 'Chi tiết bác sĩ', to: `/detail-doctor/${id}`, icon: <UserOutlined /> }
+    ];
     return (
 
         <Container>
+            <CustomBreadcrumb items={breadcrumbItems} />
             <ContentBox>
                 <DoctorInfo>
                     <Avatar

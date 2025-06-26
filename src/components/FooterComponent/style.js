@@ -1,4 +1,4 @@
-import React from 'react';
+
 import styled from 'styled-components';
 export const FooterWrapper = styled.div`
     padding: 30px 0px;

@@ -499,7 +499,6 @@ const Hospital = () => {
                             : [],
                     }));
 
-                    console.log("✅ Hospitals từ CSV:", hospitals);
                     Message.success("Đã nhập dữ liệu từ file CSV thành công!");
                     // mutationInsertManyHospitals.mutate({ hospitals }); // nếu cần gửi lên
                 },

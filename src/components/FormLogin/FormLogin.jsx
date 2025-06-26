@@ -12,7 +12,6 @@ const FormLogin = ({ isRegister, onSubmit, handleGoogleLogin, onChangeForm, isPe
     const location = useLocation();
     const navigate = useNavigate();
     const [formLogin] = Form.useForm();
-    console.log("location.state?.email", location.state?.email);
 
     useEffect(() => {
         if (location.state?.email) {

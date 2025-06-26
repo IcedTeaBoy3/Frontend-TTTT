@@ -1,10 +1,10 @@
 
 import { Space, Typography } from 'antd'
-import CardDoctor from '../../components/CardDoctor/CardDoctor'
+import CardDoctor from '../CardDoctor/CardDoctor'
 import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { updateAppointment } from '../../redux/Slice/appointmentSlice'
-import ButtonComponent from '../../components/ButtonComponent/ButtonComponent'
+import ButtonComponent from '../ButtonComponent/ButtonComponent'
 import { CheckCircleOutlined } from '@ant-design/icons'
 const { Title, Text } = Typography
 const ServiceHospital = ({ doctors, hospitalId }) => {
@@ -39,7 +39,7 @@ const ServiceHospital = ({ doctors, hospitalId }) => {
                     />
                 ))
             ) : (
-                <Text>Chưa có bác sĩ nào</Text >
+                <Text type='secondary'>Chưa có bác sĩ nào</Text >
             )}
             <Title level={4} style={{ margin: '16px 0px' }}>Chuyên khoa khám</Title>
             {specialties && specialties.length > 0 ? (
@@ -60,7 +60,7 @@ const ServiceHospital = ({ doctors, hospitalId }) => {
                     ))}
                 </Space>
             ) : (
-                <Text>Chưa có chuyên khoa nào</Text>
+                <Text type='secondary'>Chưa có chuyên khoa nào</Text>
             )}
         </div>
     )

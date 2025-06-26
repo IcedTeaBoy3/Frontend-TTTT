@@ -41,8 +41,6 @@ export const updateUser = async (id, data) => {
 };
 export const deleteManyUsers = async (ids) => {
     try {
-        console.log(ids);
-
         const response = await axiosInstance.post(
             `/users/delete-all-users`,
             ids,
