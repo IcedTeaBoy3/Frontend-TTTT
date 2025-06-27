@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Table, Space, Form, Select, Input, Tag, Popconfirm } from "antd";
+import { Table, Space, Form, Select, Input, Tag, Popconfirm, Popover, Typography } from "antd";
 import { DeleteOutlined, EditOutlined, SearchOutlined, CheckSquareOutlined } from "@ant-design/icons";
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
 import LoadingComponent from "../../components/LoadingComponent/LoadingComponent";
@@ -233,11 +233,21 @@ const Appointment = () => {
             title: "Lý do khám",
             dataIndex: "reason",
             key: "reason",
-            render: (text) => text.length > 50 ? (
-                <span title={text}>{text.slice(0, 50)}...</span>
-            ) : (
-                text || "Chưa có thông tin"
-            ),
+            render: (text) => {
+                return text ? (
+                    <Popover
+                        content={<Typography.Text>{text}</Typography.Text>}
+                        title="Lý do khám"
+                        trigger="hover"
+                    >
+                        <Typography.Text ellipsis={{ rows: 2, expandable: true, symbol: "Xem thêm" }}>
+                            {text}
+                        </Typography.Text>
+                    </Popover>
+                ) : (
+                    <Typography.Text type="secondary">Chưa có thông tin</Typography.Text>
+                );
+            }
         },
         {
             title: "Trạng thái",

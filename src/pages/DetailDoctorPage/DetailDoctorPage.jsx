@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Typography, Divider, Tag, Avatar } from 'antd';
 import * as DoctorService from '../../services/DoctorService';
 import * as WorkingScheduleService from '../../services/WorkingScheduleService';
-import { CheckCircleOutlined, UserOutlined, HomeOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, UserOutlined, HomeOutlined, SolutionOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -125,7 +125,8 @@ const DetailDoctorPage = () => {
     }
     const breadcrumbItems = [
         { label: 'Trang chủ', to: '/', icon: <HomeOutlined /> },
-        { label: 'Chi tiết bác sĩ', to: `/detail-doctor/${id}`, icon: <UserOutlined /> }
+        { label: 'Danh sách bác sĩ', to: '/doctor-hospital-lists', icon: <SolutionOutlined /> },
+        { label: doctor?.data?.user?.name ? doctor?.data?.user?.name : 'Chi tiết bác sĩ', to: `/detail-doctor/${id}`, icon: <UserOutlined /> }
     ];
     return (
 

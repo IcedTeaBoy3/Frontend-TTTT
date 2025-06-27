@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import * as HospitalService from "../../services/HospitalService"
 import { Avatar, Typography, Space } from "antd"
-import { PhoneFilled, EnvironmentFilled, HomeOutlined, InfoCircleOutlined } from "@ant-design/icons"
+import { PhoneFilled, EnvironmentFilled, HomeOutlined, InfoCircleOutlined, MedicineBoxOutlined } from "@ant-design/icons"
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent"
 import { useEffect } from "react"
 import { useDispatch } from "react-redux"
@@ -57,6 +57,7 @@ const DetailHospitalPage = () => {
     ];
     const breadcrumbItems = [
         { label: 'Trang chủ', to: '/', icon: <HomeOutlined /> },
+        { label: 'Danh sách phòng khám', to: '/doctor-hospital-lists?type=hospitals', icon: <MedicineBoxOutlined /> },
         { label: hospital?.data?.name || 'Chi tiết bệnh viện', to: '', icon: <InfoCircleOutlined /> },
     ];
     return (

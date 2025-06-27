@@ -1,5 +1,5 @@
 
-import { Space, Table, Input, Button, Form, Select, Radio, Typography } from "antd";
+import { Space, Table, Input, Button, Form, Select, Radio, Typography, Popover } from "antd";
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
 import {
     EditOutlined,
@@ -218,18 +218,21 @@ const Patient = () => {
             dataIndex: "address",
             key: "address",
             ...getColumnSearchProps("address"),
-            render: (address) => {
-                return address ? (
-                    <Paragraph
-                        ellipsis={{ rows: 2, expandable: true, symbol: "Xem thêm" }}
-                        title={address}
+            render: (text) => (
+                text ? (
+                    <Popover
+                        content={<div style={{ maxWidth: 300 }}>{text}</div>}
+                        title="Nội dung đầy đủ"
+                        trigger="hover"
                     >
-                        {address}
-                    </Paragraph>
+                        <Typography.Text ellipsis style={{ maxWidth: 200, display: "inline-block" }}>
+                            {text.length > 60 ? text.substring(0, 50) + "..." : text}
+                        </Typography.Text>
+                    </Popover>
                 ) : (
-                    <Text type="secondary">Chưa cập nhật</Text>
-                );
-            }
+                    <Typography.Text type="secondary">Chưa cập nhật</Typography.Text>
+                )
+            )
 
         },
         {

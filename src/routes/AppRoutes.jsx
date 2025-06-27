@@ -13,8 +13,7 @@ import SearchPage from "../pages/SearchPage/SearchPage";
 import ForgotPassword from "../pages/ForgotPassword/ForgotPassword";
 import ResetPassword from "../pages/ResetPassword/ResetPassword";
 import DetailHospitalPage from "../pages/DetailHospitalPage/DetailHospitalPage";
-import DoctorListPage from "../pages/DoctorListPage/DoctorListPage";
-import HospitalListPage from "../pages/HospitalListPage/HospitalListPage";
+import DoctorHospitalLists from "../pages/DoctorHospitalLists/DoctorHospitalLists";
 import DefaultLayout from "../components/DefaultLayout/DefaultLayout";
 // Các trang con trong admin
 import AdminLayout from "../components/AdminLayout/AdminLayout";
@@ -43,8 +42,7 @@ const AppRoutes = () => {
                     <Route path="authentication" element={<AuthenticationPage />} />
                     <Route path="detail-doctor/:id" element={<DetailDoctorPage />} />
                     <Route path="detail-hospital/:id" element={<DetailHospitalPage />} />
-                    <Route path="doctor-list" element={<DoctorListPage />} />
-                    <Route path="hospital-list" element={<HospitalListPage />} />
+                    <Route path="doctor-hospital-lists" element={<DoctorHospitalLists />} />
                     <Route path="unauthorized" element={<UnauthorizedPage />} />
                     <Route path="profile" element={<ProfilePage />} />
                     <Route path="search" element={<SearchPage />} />
@@ -64,26 +62,6 @@ const AppRoutes = () => {
                     <Route path="reset-password" element={<ResetPassword />} />
                 </Route>
 
-                {/* <Route path="/" element={<HomePage />} />
-                <Route path="/authentication" element={<AuthenticationPage />} />
-                <Route path="/detail-doctor/:id" element={<DetailDoctorPage />} />
-                <Route path="/detail-hospital/:id" element={<DetailHospitalPage />} />
-                <Route path="/unauthorized" element={<UnauthorizedPage />} />
-                <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/search" element={<SearchPage />} />
-                <Route path="/booking" element={
-                    <ProtectedRoute allowedRoles={["patient", "doctor", "admin"]}>
-                        <BookingPage />
-                    </ProtectedRoute>
-                } />
-                <Route path="/booking-success" element={
-                    <ProtectedRoute allowedRoles={["patient", "doctor", "admin"]}>
-                        <BookingSuccess />
-                    </ProtectedRoute>
-                } />
-                <Route path="/verify-email" element={<VerifyEmail />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/reset-password" element={<ResetPassword />} /> */}
                 {/* Admin Routes */}
                 <Route
                     path="/admin"

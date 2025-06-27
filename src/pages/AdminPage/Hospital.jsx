@@ -1,5 +1,5 @@
 
-import { Form, Input, Upload, Table, Space, Image, Select, Tag, Radio } from "antd";
+import { Form, Input, Upload, Table, Space, Image, Select, Tag, Radio, Popover, Typography } from "antd";
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
 import LoadingComponent from "../../components/LoadingComponent/LoadingComponent";
 import ModalComponent from "../../components/ModalComponent/ModalComponent";
@@ -333,13 +333,41 @@ const Hospital = () => {
             title: "Mô tả",
             dataIndex: "description",
             key: "description",
-            render: (text) => text.length > 60 ? text.substring(0, 50) + "..." : text,
+            render: (text) => (
+                text ? (
+                    <Popover
+                        content={<div style={{ maxWidth: 300 }}>{text}</div>}
+                        title="Nội dung đầy đủ"
+                        trigger="hover"
+                    >
+                        <Typography.Text ellipsis style={{ maxWidth: 200, display: "inline-block" }}>
+                            {text.length > 60 ? text.substring(0, 50) + "..." : text}
+                        </Typography.Text>
+                    </Popover>
+                ) : (
+                    <Typography.Text type="secondary">Chưa cập nhật</Typography.Text>
+                )
+            )
         },
         {
             title: "Địa chỉ",
             dataIndex: "address",
             key: "address",
-            render: (text) => text.length > 60 ? text.substring(0, 50) + "..." : text,
+            render: (text) => (
+                text ? (
+                    <Popover
+                        content={<div style={{ maxWidth: 300 }}>{text}</div>}
+                        title="Nội dung đầy đủ"
+                        trigger="hover"
+                    >
+                        <Typography.Text ellipsis style={{ maxWidth: 200, display: "inline-block" }}>
+                            {text.length > 60 ? text.substring(0, 50) + "..." : text}
+                        </Typography.Text>
+                    </Popover>
+                ) : (
+                    <Typography.Text type="secondary">Chưa cập nhật</Typography.Text>
+                )
+            )
         },
         {
             title: "SĐT",

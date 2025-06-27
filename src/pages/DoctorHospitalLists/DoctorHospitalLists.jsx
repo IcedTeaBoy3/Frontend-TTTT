@@ -1,7 +1,8 @@
 
 import { Row, Col, Pagination, Typography, Select, Input, Radio, Flex, Card, Divider, Carousel, Image, Rate, Space } from 'antd'
 import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import * as DoctorService from '../../services/DoctorService'
 import * as SpecialtyService from '../../services/SpecialtyService'
 import * as HospitalService from '../../services/HospitalService'
@@ -11,9 +12,11 @@ import { FilterOutlined } from '@ant-design/icons';
 import ButtonComponent from '../../components/ButtonComponent/ButtonComponent'
 import LoadingComponent from '../../components/LoadingComponent/LoadingComponent'
 import { Wrapper, Section, SpecialtyCard, SpecialtyImage, InfoBox, BoldTitle, LightText, FilterCard, HospitalCard, HospitalImage, TwoLineDescription } from './style'
+import { HomeOutlined, SolutionOutlined, MedicineBoxOutlined } from '@ant-design/icons'
 import bookingDoctorImage1 from '../../assets/dat_kham_bac_si_2.webp'
 import bookingDoctorImage2 from '../../assets/dat_kham_bac_si.webp'
 import TabsComponent from '../../components/TabsComponent/TabsComponent'
+import CustomBreadcrumb from '../../components/CustomBreadcrumb/CustomBreadcrumb'
 import { useDebounce } from '../../hooks/useDebounce'
 const { Title, Text } = Typography;
 const options = [
@@ -26,18 +29,27 @@ const options = [
     { label: "Giáo sư - Tiến sĩ", value: "GS.TS" },
     { label: "Phó giáo sư - Tiến sĩ", value: "PGS.TS" },
 ];
-const DoctorListPage = () => {
+const DoctorHospitalLists = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const type = searchParams.get('type');
     const [selectedSpecialty, setSelectedSpecialty] = useState(null);
     const [searchValue, setSearchValue] = useState('');
-    const [selectedTab, setSelectedTab] = useState('doctors'); // Default to 'doctors'
+    const [selectedTab, setSelectedTab] = useState('doctors');
     const [selectedQualification, setSelectedQualification] = useState(null);
     const [pagination, setPagination] = useState({
         current: 1,
-        pageSize: 9,
+        pageSize: 6,
         total: 0,
     });
     const debouncedSearchValue = useDebounce(searchValue, 500);
+    useEffect(() => {
+        if (type === 'hospitals') {
+            setSelectedTab('hospitals');
+        } else {
+            setSelectedTab('doctors');
+        }
+    }, [type]);
     const queryGetAllDoctors = useQuery({
         queryKey: ["getAllDoctors", pagination.current, pagination.pageSize, selectedSpecialty, selectedQualification, debouncedSearchValue],
         queryFn: () => DoctorService.getAllDoctors(
@@ -70,9 +82,9 @@ const DoctorListPage = () => {
 
     })
 
-    const { data: doctors, isLoading: isLoadingDoctor, isError } = queryGetAllDoctors;
+    const { data: doctors, isLoading: isLoadingDoctor, isError: isErrorDoctor } = queryGetAllDoctors;
     const { data: specialties, isLoading: isLoadingSpecialty } = queryGetAllSpecialties;
-    const { data: hospitals, isLoading: isLoadingHospital } = queryGetAllHospitals;
+    const { data: hospitals, isLoading: isLoadingHospital, isError: isErrorHospital } = queryGetAllHospitals;
     pagination.total = selectedTab === 'doctors' ? doctors?.total : hospitals?.total || 0;
     const handleOnchangePage = (page, pageSize) => {
         setPagination(prev => ({
@@ -103,30 +115,110 @@ const DoctorListPage = () => {
             key: 'hospitals',
             label: 'Tất cả phòng khám',
         },
-        {
-            key: 'specialties',
-            label: 'Tất cả chuyên khoa',
-        }
     ]
     const handleOnchangeTab = (key) => {
         setSelectedTab(key);
         setPagination({
             current: 1,
-            pageSize: 9,
+            pageSize: 6,
             total: 0,
         });
     }
+    const renderDoctors = () => {
+        if (isErrorDoctor) {
+            return (
+                <Col span={24} style={{ textAlign: 'center' }}>
+                    <Text type="danger">Đã xảy ra lỗi khi tải danh sách bác sĩ. Vui lòng thử lại sau.</Text>
+                </Col>
+            );
+        }
+
+        return (
+
+            doctors?.data?.map((doctor) => (
+                <Col key={doctor._id} xs={24} sm={12} md={8} lg={8}>
+                    <CardComponent
+                        name={doctor.user?.name}
+                        avatar={doctor.user?.avatar}
+                        specialty={doctor.specialties?.[0]?.name}
+                        hospital={doctor.hospital?.name}
+                        onClick={() => navigate(`/detail-doctor/${doctor._id}`)}
+                    />
+                </Col>
+            ))
+        )
+
+    };
+
+    const renderHospitals = () => {
+        if (isErrorHospital) {
+            return (
+                <Col span={24} style={{ textAlign: 'center' }}>
+                    <Text type="danger">Đã xảy ra lỗi khi tải danh sách phòng khám. Vui lòng thử lại sau.</Text>
+                </Col>
+            );
+        }
+
+        return (
+            hospitals?.data?.map((hospital) => (
+                <Col key={hospital._id} xs={24} sm={12} md={8} lg={8}>
+                    <HospitalCard
+                        hoverable
+                        variant="outlined"
+                        cover={
+                            <HospitalImage
+                                src={`${import.meta.env.VITE_APP_BACKEND_URL}${hospital.thumbnail}`}
+                                alt={hospital.name}
+                            />
+                        }
+                        onClick={() => navigate(`/detail-hospital/${hospital._id}`)}
+                    >
+                        <Card.Meta
+                            title={hospital.name}
+                            description={<TwoLineDescription>{hospital.address}</TwoLineDescription>}
+                        />
+                    </HospitalCard>
+                </Col>
+            ))
+
+        )
+    };
+
+    const renderEmptyState = () => {
+        if (selectedTab === 'doctors' && (!doctors || doctors?.data?.length === 0)) {
+            return (
+                <Col span={24} style={{ textAlign: 'center' }}>
+                    <Text type="secondary">Không có bác sĩ nào phù hợp với tiêu chí tìm kiếm của bạn.</Text>
+                </Col>
+            );
+        }
+
+        if (selectedTab === 'hospitals' && (!hospitals || hospitals?.data?.length === 0)) {
+            return (
+                <Col span={24} style={{ textAlign: 'center' }}>
+                    <Text type="secondary">Không có phòng khám nào phù hợp với tiêu chí tìm kiếm của bạn.</Text>
+                </Col>
+            );
+        }
+
+        return null;
+    };
     return (
         <Wrapper>
             <TabsComponent
                 items={items}
-                selectedTab={selectedTab}
+                activeKey={selectedTab}
                 onChange={handleOnchangeTab}
             />
             <Section>
+                <CustomBreadcrumb
+                    items={[
+                        { label: 'Trang chủ', to: '/', icon: <HomeOutlined /> },
+                        { label: `Danh sách ${selectedTab === 'hospitals' ? 'phòng khám' : 'bác sĩ'}`, to: '/doctor-hospital-lists', icon: selectedTab === 'hospitals' ? <MedicineBoxOutlined /> : <SolutionOutlined /> }
+                    ]}
+                />
                 <Row gutter={[16, 16]} justify="center">
                     <Col md={6} sm={12} xs={24}>
-                        { /* Placeholder for filter options */}
                         <FilterCard>
                             <Flex justify="space-between" align="center" style={{ marginBottom: 16 }}>
                                 <Title level={4} style={{ margin: 0 }}>
@@ -191,86 +283,35 @@ const DoctorListPage = () => {
                             <Rate allowHalf defaultValue={2.5} style={{ marginTop: 4 }} />
                         </FilterCard>
                     </Col>
-                    {/* Placeholder for doctor cards */}
-                    {selectedTab === "doctors" && (
-                        <Col md={18} sm={12} xs={24}>
-                            <Row gutter={[16, 16]} justify="center">
-                                {doctors && doctors?.data?.map((doctor) => (
-                                    <Col key={doctor._id} xs={24} sm={12} md={8} lg={8}>
-                                        <CardComponent
-                                            name={doctor?.user?.name}
-                                            avatar={doctor?.user?.avatar}
-                                            specialty={doctor?.specialties[0]?.name}
-                                            hospital={doctor?.hospital?.name}
-                                            onClick={() => navigate(`/detail-doctor/${doctor._id}`)}
-                                        />
-                                    </Col>
-                                ))}
-                                {isError && (
-                                    <Col span={24} style={{ textAlign: 'center' }}>
-                                        <Text type="danger">Đã xảy ra lỗi khi tải danh sách bác sĩ. Vui lòng thử lại sau.</Text>
-                                    </Col>
-                                )}
-                            </Row>
-                            {
-                                doctors && doctors?.total > 9 && (
-                                    <Row justify="center" style={{ marginTop: '20px' }}>
-                                        <Pagination
-                                            current={pagination.current}
-                                            pageSize={pagination.pageSize}
-                                            total={pagination.total}
-                                            showSizeChanger={false}
-                                            onChange={handleOnchangePage}
-                                            style={{ marginTop: '20px', textAlign: 'center' }}
-                                        />
-                                    </Row>
-                                )
-                            }
-                        </Col>
-                    )}
-                    {selectedTab === "hospitals" && (
-                        <Col md={18} sm={12} xs={24}>
-                            <Row gutter={[16, 16]} justify="center">
-                                {hospitals && hospitals?.data?.map((hospital) => (
-                                    <Col key={hospital._id} xs={24} sm={12} md={8} lg={8}>
-                                        <HospitalCard
-                                            hoverable="true"
-                                            variant="outlined"
-                                            cover={
-                                                <HospitalImage
-                                                    src={`${import.meta.env.VITE_APP_BACKEND_URL}${hospital.thumbnail}`}
-                                                    alt={hospital.name}
-                                                />
-                                            }
-                                            onClick={() => navigate(`/detail-hospital/${hospital._id}`)}
-                                        >
-                                            <Card.Meta
-                                                title={hospital.name}
-                                                description={<TwoLineDescription>{hospital.address}</TwoLineDescription>}
-                                            />
-                                        </HospitalCard>
-                                    </Col>
-                                ))}
-                            </Row>
-                            {
-                                hospitals && hospitals?.total > 9 && (
-                                    <Row justify="center" style={{ marginTop: '20px' }}>
-                                        <Pagination
-                                            current={pagination.current}
-                                            pageSize={pagination.pageSize}
-                                            total={pagination.total}
-                                            showSizeChanger={false}
-                                            onChange={handleOnchangePage}
-                                            style={{ marginTop: '20px', textAlign: 'center' }}
-                                        />
-                                    </Row>
-                                )
-                            }
 
-                        </Col>
-                    )}
+
+                    <Col md={18} sm={12} xs={24}>
+                        <LoadingComponent isLoading={isLoadingDoctor || isLoadingHospital || isLoadingSpecialty}>
+
+                            <Row gutter={[16, 16]} justify="start" >
+                                {selectedTab === "doctors" && renderDoctors()}
+                                {selectedTab === "hospitals" && renderHospitals()}
+                            </Row>
+
+                            {pagination.total > pagination.pageSize && (
+                                <Row justify="center" style={{ marginTop: '20px' }}>
+                                    <Pagination
+                                        current={pagination.current}
+                                        pageSize={pagination.pageSize}
+                                        total={pagination.total}
+                                        showSizeChanger={false}
+                                        onChange={handleOnchangePage}
+                                    />
+                                </Row>
+                            )}
+
+                        </LoadingComponent>
+                        {renderEmptyState()}
+                    </Col>
+
                 </Row>
             </Section>
+
             <Section>
                 <Title level={2} style={{ marginTop: '40px', fontWeight: 'bold', textAlign: 'center' }}>
                     Đa dạng chuyên khoa khám
@@ -344,4 +385,4 @@ const DoctorListPage = () => {
     )
 }
 
-export default DoctorListPage
+export default DoctorHospitalLists

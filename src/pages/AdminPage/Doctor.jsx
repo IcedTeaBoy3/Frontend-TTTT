@@ -1,5 +1,5 @@
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
-import { Form, Input, Select, Table, Space, Button, Tag, Upload, Divider, InputNumber, Typography } from "antd";
+import { Form, Input, Select, Table, Space, Button, Tag, Upload, Divider, InputNumber, Typography, Popover } from "antd";
 import {
     DeleteOutlined,
     EditOutlined,
@@ -240,15 +240,28 @@ const Doctor = () => {
             sorter: (a, b) => a.specialties?.length - b.specialties?.length,
 
             render: (specialties) => {
-                return <span>
-                    {specialties?.length > 0
-                        ? specialties.map((specialty) => (
-                            <Tag key={specialty._id} color="green">
-                                {specialty.name}
-                            </Tag>
-                        ))
-                        : <Text type="secondary">Chưa cập nhất</Text>}
-                </span>
+                if (!specialties || specialties.length === 0) {
+                    return <Text type="secondary">Chưa cập nhật</Text>;
+                }
+                return (
+                    <Popover
+                        content={
+                            <div style={{ maxWidth: 300 }}>
+                                {specialties.map((item) => (
+                                    <Tag key={item._id} color="blue" style={{ margin: "2px" }}>
+                                        {item.name}
+                                    </Tag>
+                                ))}
+                            </div>
+                        }
+                        title="Chuyên khoa"
+                        trigger="hover"
+                    >
+                        <Typography.Text ellipsis style={{ maxWidth: 200, display: "inline-block" }}>
+                            {specialties.map((item) => item.name).join(", ") || "Chưa cập nhật"}
+                        </Typography.Text>
+                    </Popover>
+                )
             },
             filters: specialties?.data?.map((item) => ({
                 text: item.name,
@@ -297,11 +310,19 @@ const Doctor = () => {
             dataIndex: "detailExperience",
             key: "detailExperience",
             render: (text) =>
-                text
-                    ? text.length > 60
-                        ? text.substring(0, 50) + "..."
-                        : text
-                    : <Typography.Text type="secondary">Chưa cập nhật</Typography.Text>
+                text ? (
+                    <Popover
+                        content={<div style={{ maxWidth: 300 }}>{text}</div>}
+                        title="Nội dung đầy đủ"
+                        trigger="hover"
+                    >
+                        <Typography.Text ellipsis style={{ maxWidth: 200, display: "inline-block" }}>
+                            {text.length > 60 ? text.substring(0, 50) + "..." : text}
+                        </Typography.Text>
+                    </Popover>
+                ) : (
+                    <Typography.Text type="secondary">Chưa cập nhật</Typography.Text>
+                ),
         },
 
         {
@@ -309,11 +330,19 @@ const Doctor = () => {
             dataIndex: "description",
             key: "description",
             render: (text) =>
-                text
-                    ? text.length > 60
-                        ? text.substring(0, 50) + "..."
-                        : text
-                    : <Typography.Text type="secondary">Chưa cập nhật</Typography.Text>
+                text ? (
+                    <Popover
+                        content={<div style={{ maxWidth: 300 }}>{text}</div>}
+                        title="Nội dung đầy đủ"
+                        trigger="hover"
+                    >
+                        <Typography.Text ellipsis style={{ maxWidth: 200, display: "inline-block" }}>
+                            {text.length > 60 ? text.substring(0, 50) + "..." : text}
+                        </Typography.Text>
+                    </Popover>
+                ) : (
+                    <Typography.Text type="secondary">Chưa cập nhật</Typography.Text>
+                ),
         },
         {
             title: "Thao tác",

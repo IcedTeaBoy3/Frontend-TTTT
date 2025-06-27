@@ -10,7 +10,7 @@ import {
     EditOutlined,
     SearchOutlined,
 } from "@ant-design/icons";
-import { Form, Input, Upload, Table, Space, Image, Tag, Radio } from "antd";
+import { Form, Input, Upload, Table, Space, Image, Tag, Radio, Popover, Typography } from "antd";
 import { useSpecialtyData } from "../../hooks/useSpecialtyData";
 import ActionButtonGroup from "../../components/ActionButtonGroup/ActionButtonGroup";
 import { saveAs } from "file-saver";
@@ -175,7 +175,22 @@ const Specialty = () => {
             title: "Mô tả",
             dataIndex: "description",
             key: "description",
-            render: (text) => text.length > 60 ? text.substring(0, 50) + "..." : text,
+            render: (text) => (
+                text ? (
+                    <Popover
+                        content={<div style={{ maxWidth: 300 }}>{text}</div>}
+                        title="Nội dung đầy đủ"
+                        trigger="hover"
+                    >
+                        <Typography.Text ellipsis style={{ maxWidth: 200, display: "inline-block" }}>
+                            {text.length > 60 ? text.substring(0, 50) + "..." : text}
+                        </Typography.Text>
+                    </Popover>
+                ) : (
+                    <Typography.Text type="secondary">Chưa cập nhật</Typography.Text>
+                )
+            )
+
         },
         {
             title: "Hình ảnh",

@@ -85,7 +85,7 @@ const HomePage = () => {
                             <ButtonComponent
                                 type="primary"
                                 hoverable="true"
-                                onClick={() => handleNavigate('/doctor-list')}
+                                onClick={() => handleNavigate('/doctor-hospital-lists')}
                             >
                                 Xem tất cả <RightOutlined />
                             </ButtonComponent>
@@ -119,7 +119,7 @@ const HomePage = () => {
                             <ButtonComponent
                                 type="primary"
                                 hoverable="true"
-                                onClick={() => handleNavigate('/search?type=hospital')}
+                                onClick={() => handleNavigate('/doctor-hospital-lists?type=hospitals')}
                             >
                                 Xem tất cả <RightOutlined />
                             </ButtonComponent>
