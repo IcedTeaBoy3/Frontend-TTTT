@@ -12,14 +12,24 @@ const StaticService = {
             throw new Error(error.response?.data?.message || 'Lỗi khi lấy dữ liệu thống kê tổng quan.');
         }
     },
-    getDoctorStats: async (startDate, endDate) => {
+    getDoctorOverviewStats: async (startDate, endDate) => {
         try {
-            const response = await axiosInstance.get('/static/doctor-stats', {
+            const response = await axiosInstance.get('/static/stats/doctor/overview', {
                 params: { startDate, endDate }
             });
             return response.data;
         } catch (error) {
             throw new Error(error.response?.data?.message || 'Lỗi khi lấy dữ liệu thống kê bác sĩ.');
+        }
+    },
+    getDoctorStatsBySpecialty: async (startDate, endDate) => {
+        try {
+            const response = await axiosInstance.get('/static/stats/doctor/by-specialty', {
+                params: { startDate, endDate }
+            });
+            return response.data;
+        } catch (error) {
+            throw new Error(error.response?.data?.message || 'Lỗi khi lấy dữ liệu thống kê bác sĩ theo chuyên khoa.');
         }
     },
     getAppointmentTrend: async (data) => {
@@ -35,7 +45,7 @@ const StaticService = {
     },
     getPatientOverviewStats: async () => {
         try {
-            const response = await axiosInstance.get('/static/patient-stats/overview');
+            const response = await axiosInstance.get('/static/stats/patient/overview');
             return response.data;
         } catch (error) {
             throw new Error(error.response?.data?.message || 'Lỗi khi lấy dữ liệu thống kê bệnh nhân.');

@@ -72,7 +72,7 @@ const Dashboard = () => {
                     type="primary"
                     onClick={() => setDateRange([last30Days, today])}
                 >
-                    Lọc 30 ngày trước
+                    30 ngày trước
                 </ButtonComponent>
                 <ButtonComponent
                     type="primary"

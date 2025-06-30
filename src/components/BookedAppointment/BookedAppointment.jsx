@@ -8,6 +8,7 @@ import * as AppointmentService from '../../services/AppointmentService'
 import * as Message from '../../components/Message/Message'
 import { StyledCard } from './style'
 import ButtonComponent from '../ButtonComponent/ButtonComponent'
+import { convertGender } from '../../utils/convertGender'
 const { Title, Text, Paragraph } = Typography
 const BookedAppointment = ({ userId }) => {
     const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
@@ -205,7 +206,7 @@ const BookedAppointment = ({ userId }) => {
                                             <strong>Số điện thoại:</strong> {patient.phone}
                                         </Paragraph>
                                         <Paragraph>
-                                            <strong>Giới tính:</strong> {patient.gender}
+                                            <strong>Giới tính:</strong> {convertGender(patient.gender)}
                                         </Paragraph>
                                         <Paragraph>
                                             <strong>Địa chỉ:</strong> {patient.address}

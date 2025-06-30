@@ -88,6 +88,7 @@ const AppointmentStats = ({ dataRange }) => {
                             title="Tỷ lệ hoàn thành"
                             value={completionRate}
                             prefix={<CheckCircleOutlined />}
+                            valueStyle={{ color: '#3f8600' }}
                         />
                     </StyledCard>
                 </Col>
@@ -97,6 +98,7 @@ const AppointmentStats = ({ dataRange }) => {
                             title="Tỷ lệ huỷ"
                             value={cancellationRate}
                             prefix={<CloseCircleOutlined />}
+                            valueStyle={{ color: '#cf1322' }}
                         />
                     </StyledCard>
                 </Col>
