@@ -37,7 +37,13 @@ const HeaderComponent = () => {
     const isAdmin = user?.role === "admin";
     const isDoctor = user?.role === "doctor";
     const [isOpenPopupUser, setIsOpenPopupUser] = useState(false);
+    const [isOpenPopupBooked, setIsOpenPopupBooked] = useState(false);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+    const handleNavigate = (path) => {
+        navigate(path);
+        setIsDrawerOpen(false);
+    }
     const handleLogoutUser = async () => {
         const res = await AuthService.logoutUser();
         if (res?.status == "success") {
@@ -56,47 +62,53 @@ const HeaderComponent = () => {
             key: "booked-doctor",
             label: "Đặt khám bác sĩ",
             icon: <SolutionOutlined />,
-            onClick: () => navigate("/search?type=doctor"),
+            onClick: () => handleNavigate("/search?type=doctor"),
         },
         {
             key: "booked-hospital",
             label: "Đặt khám phòng khám",
             icon: <MedicineBoxOutlined />,
-            onClick: () => navigate("/search?type=hospital"),
+            onClick: () => handleNavigate("/search?type=hospital"),
         },
     ];
-
     const getMenuItems = () => {
         const menu = [
             {
                 key: "profile",
                 label: "Thông tin người dùng",
                 icon: <InfoCircleFilled />,
-                onClick: () => navigate("/profile"),
+                onClick: () => {
+                    navigate("/profile", {
+                        state: { tab: "profile" },
+                    });
+                    setIsDrawerOpen(false);
+                },
                 isSelected: location.pathname === "/profile",
             },
             isAdmin && {
                 key: "admin",
                 label: "Quản lý hệ thống",
                 icon: <SettingFilled />,
-                onClick: () => navigate("/admin"),
+                onClick: () => handleNavigate("/admin"),
                 isSelected: location.pathname.includes("/admin"),
             },
             isDoctor && {
                 key: "doctor",
                 label: "Bác sĩ",
                 icon: <SettingFilled />,
-                onClick: () => navigate("/doctor"),
+                onClick: () => handleNavigate("/doctor"),
                 isSelected: location.pathname.includes("/doctor"),
             },
             {
                 key: "appointments",
                 label: "Lịch sử đặt khám",
                 icon: <HistoryOutlined />,
-                onClick: () =>
+                onClick: () => {
                     navigate("/profile", {
                         state: { tab: "appointments" },
-                    }),
+                    });
+                    setIsDrawerOpen(false);
+                },
                 isSelected: location.state?.tab === "appointments",
             },
             {
@@ -108,7 +120,6 @@ const HeaderComponent = () => {
         ];
         return menu.filter(Boolean);
     };
-
     const menuItems = useMemo(() => getMenuItems(), [navigate, location.pathname, isAdmin, isDoctor, handleLogoutUser]);
     const popupContent = useMemo(() => (
         <>
@@ -134,7 +145,7 @@ const HeaderComponent = () => {
             key: "home",
             label: "Trang chủ",
             icon: <HomeFilled />,
-            onClick: () => navigate("/"),
+            onClick: () => handleNavigate("/"),
         },
         {
             type: "divider",
@@ -148,13 +159,23 @@ const HeaderComponent = () => {
         {
             type: "divider",
         },
-        {
-            key: "info",
-            label: user?.name || user?.email || "Chưa đăng nhập",
-            icon: <UserOutlined />,
-            children: menuItems,
-        },
-    ];
+        user?.access_token ? (
+            {
+                key: "info",
+                label: user?.name || user?.email,
+                icon: <UserOutlined />,
+                children: menuItems,
+
+            }
+        ) : (
+            {
+                key: "login",
+                label: "Đăng nhập",
+                icon: <UserOutlined />,
+                onClick: () => handleNavigate("/authentication"),
+            }
+        )
+    ].filter(Boolean);
 
     return (
         <HeaderContainer>
@@ -176,6 +197,9 @@ const HeaderComponent = () => {
                         <Popover
                             content={contentBooked}
                             placement="bottomLeft"
+                            open={isOpenPopupBooked}
+                            onOpenChange={(visible) => setIsOpenPopupBooked(visible)}
+                            trigger="click"
                             getPopupContainer={(trigger) => trigger.parentNode}
                         >
                             <ButtonComponent
