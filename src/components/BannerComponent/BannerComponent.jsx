@@ -1,6 +1,6 @@
 
 import InputComponent from "../InputComponent/InputComponent";
-import { BannerContainer, BannerImage, BannerContent } from "./style";
+import { BannerContainer, BannerImage, BannerContent, StyledCarousel } from "./style";
 import { Typography, Grid, Carousel } from "antd";
 import { useNavigate } from "react-router-dom";
 import banner1 from "../../assets/banner_2.jpg";
@@ -39,9 +39,9 @@ const BannerComponent = () => {
     }
     return (
         <div style={{ paddingTop: screens.md ? "60px" : "15px" }}>
-            <Carousel autoplay={{ dotDuration: true }} speed={500}>
+            <StyledCarousel autoplay speed={500} dots swipeToSlide draggable arrows>
                 {banners.map((banner, index) => (
-                    <BannerContainer key={banner.image + index} $padding={screens.md ? "15px 30px" : "0 15px"}>
+                    <BannerContainer key={banner.image + index}>
                         <BannerImage
                             $image={banner.image}
                         />
@@ -81,7 +81,7 @@ const BannerComponent = () => {
                         </BannerContent>
                     </BannerContainer>
                 ))}
-            </Carousel>
+            </StyledCarousel>
         </div>
     );
 };
