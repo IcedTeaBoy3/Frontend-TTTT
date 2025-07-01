@@ -38,10 +38,10 @@ const BannerComponent = () => {
         }
     }
     return (
-        <div style={{ paddingTop: screens.md ? "64px" : "48px" }}>
+        <div style={{ paddingTop: screens.md ? "60px" : "15px" }}>
             <Carousel autoplay={{ dotDuration: true }} speed={500}>
                 {banners.map((banner, index) => (
-                    <BannerContainer key={banner.image + index} $padding={screens.md ? "85px" : "30px 15px"}>
+                    <BannerContainer key={banner.image + index} $padding={screens.md ? "15px 30px" : "0 15px"}>
                         <BannerImage
                             $image={banner.image}
                         />

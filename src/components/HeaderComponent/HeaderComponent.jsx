@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
-import { Row, Col, Image, Popover, Drawer, Menu, Dropdown } from "antd";
+import React from "react";
+import { Row, Col, Image, Popover, Drawer, Menu } from "antd";
 import { useNavigate } from "react-router-dom";
 import {
     HeaderContainer,
@@ -18,6 +19,10 @@ import {
     LogoutOutlined,
     CaretDownOutlined,
     MenuOutlined,
+    HistoryOutlined,
+    HomeFilled,
+    MedicineBoxOutlined,
+    SolutionOutlined,
 } from "@ant-design/icons";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../redux/Slice/authSlice";
@@ -46,112 +51,111 @@ const HeaderComponent = () => {
             Message.error(res?.message);
         }
     };
-    const menuItems = useMemo(() => {
-        const items = [
+    const bookedMenuItems = [
+        {
+            key: "booked-doctor",
+            label: "Đặt khám bác sĩ",
+            icon: <SolutionOutlined />,
+            onClick: () => navigate("/search?type=doctor"),
+        },
+        {
+            key: "booked-hospital",
+            label: "Đặt khám phòng khám",
+            icon: <MedicineBoxOutlined />,
+            onClick: () => navigate("/search?type=hospital"),
+        },
+    ];
+
+    const getMenuItems = () => {
+        const menu = [
             {
-                key: "1",
-                label: (
-                    <PopupItem
-                        onClick={() => navigate("/profile")}
-                        $isSelected={location.pathname === "/profile"}
-                    >
-                        <InfoCircleFilled style={{ fontSize: 15, marginRight: 8 }} />
-                        Thông tin người dùng
-                    </PopupItem>
-                ),
+                key: "profile",
+                label: "Thông tin người dùng",
+                icon: <InfoCircleFilled />,
+                onClick: () => navigate("/profile"),
+                isSelected: location.pathname === "/profile",
             },
             isAdmin && {
-                key: "2",
-                label: (
-                    <PopupItem
-                        onClick={() => navigate("/admin")}
-                        $isSelected={location.pathname.includes("/admin")}
-                    >
-                        <SettingFilled style={{ fontSize: 15, marginRight: 8 }} />
-                        Quản lý hệ thống
-                    </PopupItem>
-                ),
+                key: "admin",
+                label: "Quản lý hệ thống",
+                icon: <SettingFilled />,
+                onClick: () => navigate("/admin"),
+                isSelected: location.pathname.includes("/admin"),
             },
             isDoctor && {
-                key: "2",
-                label: (
-                    <PopupItem
-                        onClick={() => navigate("/doctor")}
-                        $isSelected={location.pathname.includes("/doctor")}
-                    >
-                        <SettingFilled style={{ fontSize: 15, marginRight: 8 }} />
-                        Bác sĩ
-                    </PopupItem>
-                ),
+                key: "doctor",
+                label: "Bác sĩ",
+                icon: <SettingFilled />,
+                onClick: () => navigate("/doctor"),
+                isSelected: location.pathname.includes("/doctor"),
             },
             {
-                key: "3",
-                label: (
-                    <PopupItem
-                        $isSelected={location.state?.tab === "appointments"}
-                        onClick={() => navigate("/profile", {
-                            state: { tab: "appointments" },
-                        })}>
-                        <InfoCircleFilled style={{ fontSize: 15, marginRight: 8 }} />
-                        Lịch sử đặt khám
-                    </PopupItem >
-                ),
+                key: "appointments",
+                label: "Lịch sử đặt khám",
+                icon: <HistoryOutlined />,
+                onClick: () =>
+                    navigate("/profile", {
+                        state: { tab: "appointments" },
+                    }),
+                isSelected: location.state?.tab === "appointments",
             },
             {
-                key: "4",
-                label: (
-                    <PopupItem onClick={handleLogoutUser}>
-                        <LogoutOutlined style={{ fontSize: 15, marginRight: 8 }} />
-                        Đăng xuất
-                    </PopupItem>
-                ),
+                key: "logout",
+                label: "Đăng xuất",
+                icon: <LogoutOutlined />,
+                onClick: handleLogoutUser,
             },
-        ].filter(Boolean); // loại bỏ false nếu isAdmin === false
+        ];
+        return menu.filter(Boolean);
+    };
 
-        return items;
-    }, [navigate, location.pathname, isAdmin, handleLogoutUser]);
-    const dropdownMenu = { items: menuItems };
+    const menuItems = useMemo(() => getMenuItems(), [navigate, location.pathname, isAdmin, isDoctor, handleLogoutUser]);
     const popupContent = useMemo(() => (
         <>
-            {menuItems.map((item) => (
-                <div key={item.key}>{item.label}</div>
+            {menuItems.map(({ key, label, icon, onClick, isSelected }) => (
+                <PopupItem key={key} onClick={onClick} $isSelected={isSelected}>
+                    {icon && React.cloneElement(icon, { style: { fontSize: 15, marginRight: 8 } })}
+                    {label}
+                </PopupItem>
             ))}
         </>
-    ), [menuItems])
+    ), [menuItems]);
+
     const contentBooked = (
         <Menu
-            items={[
-                {
-                    key: "1",
-                    label: (
-                        <p
-                            onClick={() => {
-                                navigate("/search?type=doctor", {
-                                    replace: true,
-                                });
-                            }}
-                        >
-                            Đặt khám bác sĩ
-                        </p>
-                    ),
-                },
-                {
-                    key: "2",
-                    label: (
-                        <p
-                            onClick={() => {
-                                navigate("/search?type=hospital", {
-                                    replace: true,
-                                });
-                            }}
-                        >
-                            Đặt khám phòng khám
-                        </p>
-                    ),
-                },
-            ]}
+            items={bookedMenuItems.map(({ key, label, icon, onClick }) => ({
+                key,
+                label: <p onClick={onClick}>{icon} {label}</p>,
+            }))}
         />
     );
+    const itemsMenuMobile = [
+        {
+            key: "home",
+            label: "Trang chủ",
+            icon: <HomeFilled />,
+            onClick: () => navigate("/"),
+        },
+        {
+            type: "divider",
+        },
+        {
+            key: "booked",
+            label: "Đặt khám",
+            icon: <CustomerServiceOutlined />,
+            children: bookedMenuItems,
+        },
+        {
+            type: "divider",
+        },
+        {
+            key: "info",
+            label: user?.name || user?.email || "Chưa đăng nhập",
+            icon: <UserOutlined />,
+            children: menuItems,
+        },
+    ];
+
     return (
         <HeaderContainer>
             <Row justify="space-between">
@@ -176,7 +180,7 @@ const HeaderComponent = () => {
                         >
                             <ButtonComponent
                                 type="dashed"
-
+                                icon={<CustomerServiceOutlined />}
                             >
                                 Đặt khám
                             </ButtonComponent>
@@ -236,50 +240,16 @@ const HeaderComponent = () => {
                 onClose={() => setIsDrawerOpen(false)}
                 open={isDrawerOpen}
                 forceRender
+                style={{
+                    backgroundColor: "#f0f2f5",
+                }}
             >
-                <Popover
-                    content={contentBooked}
-                    placement="bottomLeft"
-                    getPopupContainer={(trigger) => trigger.parentNode}
-                >
-
-
-                    <ButtonComponent
-                        type="default"
-                        icon={<CustomerServiceOutlined />}
-                        style={{ width: "100%", marginBottom: 10 }}
-                    >
-                        Đặt khám
-                    </ButtonComponent>
-                </Popover>
-                {user?.access_token ? (
-                    <Dropdown
-                        menu={dropdownMenu}
-                        trigger={["click"]}
-                        getPopupContainer={(trigger) => trigger.parentNode}
-                    >
-
-                        <ButtonComponent
-                            type="default"
-                            icon={<UserOutlined />}
-                            style={{ width: "100%", marginBottom: 10 }}
-                        >
-                            {user?.name || user?.email} ▼
-                        </ButtonComponent>
-
-                    </Dropdown>
-                ) : (
-                    <ButtonComponent
-                        size="middle"
-                        onClick={() => {
-                            navigate("/authentication");
-                            setIsDrawerOpen(false);
-                        }}
-                        style={{ width: "100%", marginBottom: 10 }}
-                    >
-                        Đăng nhập
-                    </ButtonComponent>
-                )}
+                <Menu
+                    mode="inline"
+                    items={itemsMenuMobile}
+                    theme="light"
+                    defaultSelectedKeys={["home"]}
+                />
             </Drawer>
         </HeaderContainer>
     );
