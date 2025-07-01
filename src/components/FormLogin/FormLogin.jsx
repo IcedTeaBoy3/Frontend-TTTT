@@ -1,5 +1,5 @@
 
-import { Form, Input, Checkbox, Space, Row, Col } from "antd";
+import { Form, Input, Checkbox, Space, Row, Col, Grid } from "antd";
 import TabsComponent from "../TabsComponent/TabsComponent";
 import { MailOutlined, LockOutlined } from "@ant-design/icons";
 import ButtonComponent from "../ButtonComponent/ButtonComponent";
@@ -12,6 +12,8 @@ const FormLogin = ({ isRegister, onSubmit, handleGoogleLogin, onChangeForm, isPe
     const location = useLocation();
     const navigate = useNavigate();
     const [formLogin] = Form.useForm();
+    const { useBreakpoint } = Grid;
+    const screens = useBreakpoint();
 
     useEffect(() => {
         if (location.state?.email) {
@@ -58,167 +60,165 @@ const FormLogin = ({ isRegister, onSubmit, handleGoogleLogin, onChangeForm, isPe
         console.error("Google login failed:", error);
     };
     return (
-        <Row justify="center" align="middle" style={{ minHeight: "100vh", padding: 16 }}>
-            <Col xs={24} sm={20} md={16} lg={12} xl={8}>
 
-                <FormContainer>
-                    <TabsComponent
-                        items={items}
-                        onChange={onChange}
-                        defaultActiveKey="2"
-                        activeKey={isRegister ? "2" : "1"}
-                        style={{ width: "100%" }}
+
+        <FormContainer style={{ width: screens.md ? "450px" : "100%", padding: screens.md ? "20px" : "16px" }}>
+            <TabsComponent
+                items={items}
+                onChange={onChange}
+                defaultActiveKey="2"
+                activeKey={isRegister ? "2" : "1"}
+                style={{ width: "100%" }}
+            />
+
+            <Form
+                name="formLogin"
+                form={formLogin}
+                layout="vertical"
+                initialValues={{
+                    email: localStorage.getItem("email") || "",
+
+                    remember: true,
+                }}
+                onFinish={handleSubmitForm}
+                autoComplete="off"
+            >
+                <Form.Item
+                    label="Email"
+                    name="email"
+
+                    hasFeedback
+                    rules={[
+                        {
+                            required: true,
+                            message: "Vui lòng nhập email!",
+                        },
+                        {
+                            type: "email",
+                            message: "Email không hợp lệ!",
+                        },
+                    ]}
+                >
+                    <Input placeholder="Email" autoComplete="username" prefix={<MailOutlined />} />
+                </Form.Item>
+
+                <Form.Item
+                    label="Mật khẩu"
+                    name="password"
+
+                    hasFeedback
+                    rules={[
+                        {
+                            required: true,
+                            message: "Vui lòng nhập mật khẩu!",
+                        },
+                        {
+                            min: 6,
+                            message: "Mật khẩu phải có ít nhất 6 ký tự!",
+                        },
+                        {
+                            max: 20,
+                            message: "Mật khẩu không được quá 20 ký tự!",
+                        },
+                        {
+                            pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/,
+                            message:
+                                "Mật khẩu phải có ít nhất một chữ cái viết hoa, một chữ cái viết thường, một số và một ký tự đặc biệt!",
+                        },
+                    ]}
+                >
+                    <Input.Password
+                        placeholder="Password"
+                        prefix={<LockOutlined />}
+                        autoComplete="current-password"
                     />
-
-                    <Form
-                        name="formLogin"
-                        form={formLogin}
-                        layout="vertical"
-                        initialValues={{
-                            email: localStorage.getItem("email") || "",
-
-                            remember: true,
-                        }}
-                        onFinish={handleSubmitForm}
-                        autoComplete="off"
+                </Form.Item>
+                {isRegister && (
+                    <Form.Item
+                        label="Nhập lại mật khẩu"
+                        name="confirmPassword"
+                        dependencies={["password"]}
+                        hasFeedback
+                        rules={[
+                            {
+                                required: true,
+                                message: "Vui lòng nhập lại mật khẩu!",
+                            },
+                            ({ getFieldValue }) => ({
+                                validator(_, value) {
+                                    if (
+                                        !value ||
+                                        getFieldValue("password") === value
+                                    ) {
+                                        return Promise.resolve();
+                                    }
+                                    return Promise.reject(
+                                        new Error("Mật khẩu không khớp!"),
+                                    );
+                                },
+                            }),
+                        ]}
                     >
+                        <Input.Password
+                            placeholder="Nhập lại mật khẩu"
+                            prefix={<LockOutlined />}
+                            autoComplete="new-password"
+                        />
+                    </Form.Item>
+                )}
+                {!isRegister && (
+                    <Form.Item>
                         <Form.Item
-                            label="Email"
-                            name="email"
-
-                            hasFeedback
-                            rules={[
-                                {
-                                    required: true,
-                                    message: "Vui lòng nhập email!",
-                                },
-                                {
-                                    type: "email",
-                                    message: "Email không hợp lệ!",
-                                },
-                            ]}
+                            name="remember"
+                            valuePropName="checked"
+                            noStyle
                         >
-                            <Input placeholder="Email" autoComplete="username" prefix={<MailOutlined />} />
+                            <Checkbox>Ghi nhớ tôi</Checkbox>
                         </Form.Item>
 
-                        <Form.Item
-                            label="Mật khẩu"
-                            name="password"
+                        <span style={{ float: "right", color: "#1890ff" }} onClick={() => navigate("/forgot-password")}>
+                            Quên mật khẩu?
+                        </span>
+                    </Form.Item>
+                )}
+                <LoadingComponent isLoading={isPending} >
 
-                            hasFeedback
-                            rules={[
-                                {
-                                    required: true,
-                                    message: "Vui lòng nhập mật khẩu!",
-                                },
-                                {
-                                    min: 6,
-                                    message: "Mật khẩu phải có ít nhất 6 ký tự!",
-                                },
-                                {
-                                    max: 20,
-                                    message: "Mật khẩu không được quá 20 ký tự!",
-                                },
-                                {
-                                    pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/,
-                                    message:
-                                        "Mật khẩu phải có ít nhất một chữ cái viết hoa, một chữ cái viết thường, một số và một ký tự đặc biệt!",
-                                },
-                            ]}
+                    <Form.Item>
+                        <ButtonComponent
+                            type="primary"
+                            htmlType="submit"
+                            size="large"
+                            disabled={!email || !password}
+                            styleButton={{
+                                width: "100%",
+                                backgroundColor: "#1890ff",
+                                fontWeight: 500,
+                            }}
                         >
-                            <Input.Password
-                                placeholder="Password"
-                                prefix={<LockOutlined />}
-                                autoComplete="current-password"
-                            />
-                        </Form.Item>
-                        {isRegister && (
-                            <Form.Item
-                                label="Nhập lại mật khẩu"
-                                name="confirmPassword"
-                                dependencies={["password"]}
-                                hasFeedback
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: "Vui lòng nhập lại mật khẩu!",
-                                    },
-                                    ({ getFieldValue }) => ({
-                                        validator(_, value) {
-                                            if (
-                                                !value ||
-                                                getFieldValue("password") === value
-                                            ) {
-                                                return Promise.resolve();
-                                            }
-                                            return Promise.reject(
-                                                new Error("Mật khẩu không khớp!"),
-                                            );
-                                        },
-                                    }),
-                                ]}
-                            >
-                                <Input.Password
-                                    placeholder="Nhập lại mật khẩu"
-                                    prefix={<LockOutlined />}
-                                    autoComplete="new-password"
-                                />
-                            </Form.Item>
-                        )}
-                        {!isRegister && (
-                            <Form.Item>
-                                <Form.Item
-                                    name="remember"
-                                    valuePropName="checked"
-                                    noStyle
-                                >
-                                    <Checkbox>Ghi nhớ tôi</Checkbox>
-                                </Form.Item>
+                            {isRegister ? "Đăng ký" : "Đăng nhập"}
+                        </ButtonComponent>
+                    </Form.Item>
+                </LoadingComponent>
+            </Form>
+            <div style={{ display: 'flex', alignItems: 'center', marginTop: '10px', marginBottom: '10px' }}>
+                <div style={{ flex: 1, height: '1px', backgroundColor: '#ccc' }}></div>
+                <p style={{ margin: '0 10px', whiteSpace: 'nowrap' }}>Hoặc tiếp tục bằng</p>
+                <div style={{ flex: 1, height: '1px', backgroundColor: '#ccc' }}></div>
+            </div>
+            <Space direction="vertical" style={{ width: "100%" }}>
+                <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+                    <GoogleLogin
+                        onSuccess={handleSuccess}
+                        onError={handleFailure}
+                        theme="filled_blue"
+                        size="large"
+                        text="signin_with"
+                        shape="pill"
+                    />
+                </GoogleOAuthProvider>
+            </Space>
+        </FormContainer >
 
-                                <span style={{ float: "right", color: "#1890ff" }} onClick={() => navigate("/forgot-password")}>
-                                    Quên mật khẩu?
-                                </span>
-                            </Form.Item>
-                        )}
-                        <LoadingComponent isLoading={isPending} >
-
-                            <Form.Item>
-                                <ButtonComponent
-                                    type="primary"
-                                    htmlType="submit"
-                                    size="large"
-                                    disabled={!email || !password}
-                                    styleButton={{
-                                        width: "100%",
-                                        backgroundColor: "#1890ff",
-                                        fontWeight: 500,
-                                    }}
-                                >
-                                    {isRegister ? "Đăng ký" : "Đăng nhập"}
-                                </ButtonComponent>
-                            </Form.Item>
-                        </LoadingComponent>
-                    </Form>
-                    <div style={{ display: 'flex', alignItems: 'center', marginTop: '10px', marginBottom: '10px' }}>
-                        <div style={{ flex: 1, height: '1px', backgroundColor: '#ccc' }}></div>
-                        <p style={{ margin: '0 10px', whiteSpace: 'nowrap' }}>Hoặc tiếp tục bằng</p>
-                        <div style={{ flex: 1, height: '1px', backgroundColor: '#ccc' }}></div>
-                    </div>
-                    <Space direction="vertical" style={{ width: "100%" }}>
-                        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-                            <GoogleLogin
-                                onSuccess={handleSuccess}
-                                onError={handleFailure}
-                                theme="filled_blue"
-                                size="large"
-                                text="signin_with"
-                                shape="pill"
-                            />
-                        </GoogleOAuthProvider>
-                    </Space>
-                </FormContainer >
-            </Col>
-        </Row>
     );
 };
 
