@@ -18,7 +18,7 @@ const BookedAppointment = ({ userId }) => {
     const patient = useSelector((state) => state.auth.user);
     const [pagination, setPagination] = useState({
         current: 1,
-        pageSize: 5,
+        pageSize: 3,
         total: 0,
     });
     const getStatusTag = (status) => {
@@ -90,7 +90,7 @@ const BookedAppointment = ({ userId }) => {
             {isError && Message.error(error.message)}
             {appointments && appointments?.data?.length === 0 && <Paragraph style={{ textAlign: 'left', width: '100%' }}>Bạn chưa có lịch hẹn nào.</Paragraph>}
             <Row gutter={[28, 16]}>
-                <Col span={8} >
+                <Col xs={24} md={10} lg={8} >
                     <Row gutter={[16, 16]} justify="space-between" align="center">
 
                         {appointments && appointments?.data?.map((appointment) => {
@@ -132,12 +132,13 @@ const BookedAppointment = ({ userId }) => {
                                 </Col>
                             );
                         })}
-                        {(appointments && appointments.total >= 5) && (
+                        {(appointments && appointments.total >= 3) && (
                             <Col span={24}>
                                 <Pagination
                                     style={{ marginTop: '20px' }}
                                     align="center"
-                                    showSizeChanger
+                                    showLessItems
+                                    pageSizeOptions={['3', '5', '10']}
                                     current={pagination.current}
                                     pageSize={pagination.pageSize}
                                     total={pagination.total}
@@ -148,7 +149,7 @@ const BookedAppointment = ({ userId }) => {
 
                     </Row>
                 </Col >
-                <Col span={16}>
+                <Col xs={24} md={14} lg={16}>
                     <Row gutter={[16, 16]}>
                         <Col span={24}>
 
@@ -169,7 +170,12 @@ const BookedAppointment = ({ userId }) => {
                                             borderBottom: "1px solid #f0f0f0",
                                         }}
                                     >
-                                        <Avatar size={56} icon={<UserOutlined />} />
+                                        <Avatar
+                                            size={56}
+                                            icon={<UserOutlined />}
+                                            src={typeBooked == 'hospital' ? `${import.meta.env.VITE_APP_BACKEND_URL}${appointmentDetails?.hospital?.thumbnail}` :
+                                                `${import.meta.env.VITE_APP_BACKEND_URL}${appointmentDetails?.doctor?.user?.avatar}`}
+                                        />
                                         <div style={{ display: "flex", flexDirection: "column" }}>
                                             <Text strong style={{ fontSize: "18px" }}>
                                                 {typeBooked == 'hospital' ? appointmentDetails?.hospital?.name : appointmentDetails?.doctor?.user?.name}

@@ -18,6 +18,7 @@ import bookingDoctorImage2 from '../../assets/dat_kham_bac_si.webp'
 import TabsComponent from '../../components/TabsComponent/TabsComponent'
 import CustomBreadcrumb from '../../components/CustomBreadcrumb/CustomBreadcrumb'
 import { useDebounce } from '../../hooks/useDebounce'
+import FadeInOnScroll from '../../components/FadeInOnScroll/FadeInOnScroll'
 const { Title, Text } = Typography;
 const options = [
     { label: "Cử nhân", value: "Cử nhân" },
@@ -245,22 +246,25 @@ const DoctorHospitalLists = () => {
                             <Divider style={{ margin: '16px 0' }} />
 
                             <Text strong>Chuyên khoa:</Text>
-                            <Select
-                                mode="single"
-                                placeholder="Chọn chuyên khoa"
-                                style={{ width: '100%' }}
-                                value={selectedSpecialty}
-                                options={specialties?.data?.map(specialty => ({
-                                    label: specialty.name,
-                                    value: specialty._id
-                                }))}
-                                showSearch
-                                optionFilterProp="children"
-                                onChange={(value) => {
-                                    setSelectedSpecialty(value);
-                                    setPagination(prev => ({ ...prev, current: 1 }));
-                                }}
-                            />
+                            <LoadingComponent isLoading={isLoadingSpecialty}>
+
+                                <Select
+                                    mode="single"
+                                    placeholder="Chọn chuyên khoa"
+                                    style={{ width: '100%' }}
+                                    value={selectedSpecialty}
+                                    options={specialties?.data?.map(specialty => ({
+                                        label: specialty.name,
+                                        value: specialty._id
+                                    }))}
+                                    showSearch
+                                    optionFilterProp="children"
+                                    onChange={(value) => {
+                                        setSelectedSpecialty(value);
+                                        setPagination(prev => ({ ...prev, current: 1 }));
+                                    }}
+                                />
+                            </LoadingComponent>
 
                             <Divider style={{ margin: '16px 0' }} />
 
@@ -283,27 +287,27 @@ const DoctorHospitalLists = () => {
                             <Rate allowHalf defaultValue={2.5} style={{ marginTop: 4 }} />
                         </FilterCard>
                     </Col>
-
-
                     <Col md={18} sm={12} xs={24}>
-                        <LoadingComponent isLoading={isLoadingDoctor || isLoadingHospital || isLoadingSpecialty}>
+                        <LoadingComponent isLoading={isLoadingDoctor || isLoadingHospital}>
+                            <FadeInOnScroll>
 
-                            <Row gutter={[16, 16]} justify="start" >
-                                {selectedTab === "doctors" && renderDoctors()}
-                                {selectedTab === "hospitals" && renderHospitals()}
-                            </Row>
-
-                            {pagination.total > pagination.pageSize && (
-                                <Row justify="center" style={{ marginTop: '20px' }}>
-                                    <Pagination
-                                        current={pagination.current}
-                                        pageSize={pagination.pageSize}
-                                        total={pagination.total}
-                                        showSizeChanger={false}
-                                        onChange={handleOnchangePage}
-                                    />
+                                <Row gutter={[16, 16]} justify="start" >
+                                    {selectedTab === "doctors" && renderDoctors()}
+                                    {selectedTab === "hospitals" && renderHospitals()}
                                 </Row>
-                            )}
+
+                                {pagination.total > pagination.pageSize && (
+                                    <Row justify="center" style={{ marginTop: '20px' }}>
+                                        <Pagination
+                                            current={pagination.current}
+                                            pageSize={pagination.pageSize}
+                                            total={pagination.total}
+                                            showSizeChanger={false}
+                                            onChange={handleOnchangePage}
+                                        />
+                                    </Row>
+                                )}
+                            </FadeInOnScroll>
 
                         </LoadingComponent>
                         {renderEmptyState()}

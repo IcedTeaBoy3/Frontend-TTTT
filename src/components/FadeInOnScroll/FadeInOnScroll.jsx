@@ -4,7 +4,7 @@ import { useInView } from "react-intersection-observer";
 
 const FadeInOnScroll = ({ children }) => {
     const { ref, inView } = useInView({
-        triggerOnce: true, // chỉ kích hoạt một lần
+        triggerOnce: true, // chỉ kích hoạt một lần khi phần tử xuất hiện
         threshold: 0.2,     // phần trăm phần tử hiển thị thì sẽ kích hoạt
     });
 

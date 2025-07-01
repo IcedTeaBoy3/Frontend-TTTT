@@ -1,4 +1,4 @@
-import { DatePicker, Typography, Flex, Button } from "antd";
+import { DatePicker, Typography, Flex, Select } from "antd";
 import { useState } from 'react';
 import { useDebounce } from '../../hooks/useDebounce';
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
@@ -16,13 +16,9 @@ const { RangePicker } = DatePicker;
 const { Title } = Typography;
 
 const Dashboard = () => {
-    // để giá trị mặc định là khoảng thời gian 30 ngày trước
     const today = dayjs().tz('Asia/Ho_Chi_Minh').startOf('day');
-    const last7Days = today.subtract(6, 'day');
-    const last30Days = today.subtract(29, 'day');
-    const [dateRange, setDateRange] = useState(
-        [last30Days, today] // Giá trị mặc định là khoảng thời gian 30 ngày trước
-    );
+    const last30Days = today.subtract(30, 'day');
+    const [dateRange, setDateRange] = useState([last30Days, today]);
     const debouncedDateRange = useDebounce(dateRange, 500);
     const handleDateChange = (dates) => {
         setDateRange(dates);
@@ -55,25 +51,21 @@ const Dashboard = () => {
                     value={dateRange}
                     onChange={handleDateChange}
                 />
-                <ButtonComponent
-                    type="primary"
-                    onClick={() => setDateRange([today, today])}
+                <Select
+                    defaultValue="30"
+                    style={{ width: '50%' }}
+                    onChange={(value) => {
+                        const startDate = today.subtract(value, 'day');
+                        setDateRange([startDate, today]);
+                    }}
                 >
-                    Hôm nay
-                </ButtonComponent>
-                <ButtonComponent
-                    type="primary"
-                    style={{ marginLeft: '10px' }}
-                    onClick={() => setDateRange([last7Days, today])}
-                >
-                    7 ngày trước
-                </ButtonComponent>
-                <ButtonComponent
-                    type="primary"
-                    onClick={() => setDateRange([last30Days, today])}
-                >
-                    30 ngày trước
-                </ButtonComponent>
+                    <Select.Option value="1">Hôm nay</Select.Option>
+                    <Select.Option value="7">7 ngày</Select.Option>
+                    <Select.Option value="30">30 ngày</Select.Option>
+                    <Select.Option value="90">90 ngày</Select.Option>
+                    <Select.Option value="180">180 ngày</Select.Option>
+                    <Select.Option value="365">365 ngày</Select.Option>
+                </Select>
                 <ButtonComponent
                     type="primary"
                     style={{ marginLeft: '10px' }}
