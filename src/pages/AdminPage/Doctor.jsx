@@ -14,6 +14,9 @@ import ActionButtonGroup from "../../components/ActionButtonGroup/ActionButtonGr
 import { useDoctorData } from "../../hooks/useDoctorData";
 import { useSpecialtyData } from "../../hooks/useSpecialtyData";
 import { useHospitalData } from "../../hooks/useHospitalData";
+import ViewerCKeditorPlain from "../../components/ViewerCKEditorPlain/ViewerCKEditorPlain";
+import ViewerCKEditorStyled from "../../components/ViewerCKEditorStyled/ViewerCKEditorStyled";
+import CKEditorInput from "../../components/CKEditorInput/CKeditorInput";
 import { useState, useRef } from "react";
 const { Text, Paragraph } = Typography;
 const Doctor = () => {
@@ -88,7 +91,6 @@ const Doctor = () => {
                 qualification: values.qualification,
                 position: values.position,
                 yearExperience: values.yearExperience,
-                detailExperience: values.detailExperience,
                 description: values.description,
             })
         }).catch((error) => {
@@ -111,7 +113,6 @@ const Doctor = () => {
                 qualification: doctor?.qualification || "Cử nhân",
                 position: doctor?.position || "",
                 yearExperience: doctor?.yearExperience || 0,
-                detailExperience: doctor?.detailExperience || "",
                 description: doctor?.description || "",
                 avatar: [
                     {
@@ -306,39 +307,41 @@ const Doctor = () => {
             sorter: (a, b) => a.yearExperience - b.yearExperience,
         },
         {
-            title: "Chi tiết kinh nghiệm",
-            dataIndex: "detailExperience",
-            key: "detailExperience",
-            render: (text) =>
-                text ? (
-                    <Popover
-                        content={<div style={{ maxWidth: 300 }}>{text}</div>}
-                        title="Nội dung đầy đủ"
-                        trigger="hover"
-                    >
-                        <Typography.Text ellipsis style={{ maxWidth: 200, display: "inline-block" }}>
-                            {text.length > 60 ? text.substring(0, 50) + "..." : text}
-                        </Typography.Text>
-                    </Popover>
-                ) : (
-                    <Typography.Text type="secondary">Chưa cập nhật</Typography.Text>
-                ),
-        },
-
-        {
             title: "Giới thiệu",
             dataIndex: "description",
             key: "description",
             render: (text) =>
                 text ? (
                     <Popover
-                        content={<div style={{ maxWidth: 300 }}>{text}</div>}
+                        placement="top"
+                        content={
+                            <div
+                                style={{
+                                    maxWidth: '90vw', // Chiếm tối đa 90% chiều rộng màn hình
+                                    maxHeight: '70vh', // Giới hạn chiều cao để không tràn màn
+                                    overflow: 'auto', // Cho phép cuộn nếu vượt quá kích thước
+                                    wordWrap: 'break-word', // Ngắt từ dài
+                                    whiteSpace: 'normal' // Đảm bảo xuống dòng
+                                }}
+                            >
+                                <ViewerCKEditorStyled content={text} />
+                            </div>
+                        }
                         title="Nội dung đầy đủ"
-                        trigger="hover"
                     >
-                        <Typography.Text ellipsis style={{ maxWidth: 200, display: "inline-block" }}>
-                            {text.length > 60 ? text.substring(0, 50) + "..." : text}
-                        </Typography.Text>
+                        <div
+                            style={{
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                cursor: 'pointer',
+                                maxWidth: 250,
+                            }}
+                        >
+                            <ViewerCKeditorPlain content={text} />
+                        </div>
                     </Popover>
                 ) : (
                     <Typography.Text type="secondary">Chưa cập nhật</Typography.Text>
@@ -378,7 +381,6 @@ const Doctor = () => {
         position: item.position,
         qualification: item.qualification,
         yearExperience: item.yearExperience,
-        detailExperience: item.detailExperience,
         description: item.description,
     })) || [];
 
@@ -392,13 +394,11 @@ const Doctor = () => {
         formData.append("email", values.email);
         formData.append("specialties", JSON.stringify(values.specialties));
         if (values.hospitalId) {
-
             formData.append("hospitalId", values.hospitalId);
         }
         formData.append("qualification", values.qualification);
         formData.append("position", values.position);
         formData.append("yearExperience", values.yearExperience);
-        formData.append("detailExperience", values.detailExperience);
         formData.append("description", values.description);
         mutationUpdateDoctor.mutate({
             id: rowSelected,
@@ -564,10 +564,7 @@ const Doctor = () => {
                                 },
                             ]}
                         >
-
-
                             <Select
-
                                 mode="multiple"
                                 showSearch
                                 placeholder="Chọn chuyên khoa"
@@ -661,29 +658,15 @@ const Doctor = () => {
                                 style={{ width: "100%" }}
                             />
                         </Form.Item>
-                        <Form.Item
-                            label="Chi tiết kinh nghiệm"
-                            name="detailExperience"
-                            rules={[{ max: 500, message: "Chi tiết kinh nghiệm không được quá 500 ký tự!" }]}
-                        >
-                            <Input.TextArea
-                                name="detailExperience"
-                                rows={4}
-                                showCount
-                                maxLength={500}
-                                placeholder="Chi tiết kinh nghiệm"
-                            />
-                        </Form.Item>
+
                         <Form.Item
                             label="Giới thiệu"
                             name="description"
-                            rules={[{ max: 500, message: "Giới thiệu không được quá 500 ký tự!" }]}
+
                         >
-                            <Input.TextArea
+                            <CKEditorInput
                                 name="description"
-                                rows={4}
-                                showCount
-                                maxLength={500}
+                                placeholder="Giới thiệu về bác sĩ"
                             />
 
                         </Form.Item>
@@ -944,32 +927,15 @@ const Doctor = () => {
                                 style={{ width: "100%" }}
                             />
                         </Form.Item>
-                        <Form.Item
-                            label="Kinh nghiệm"
-                            name="detailExperience"
-                            rules={[{ max: 500, message: "Chi tiết kinh nghiệm không được quá 500 ký tự!" }]}
-                        >
-                            <Input.TextArea
-                                name="detailExperience"
-                                rows={4}
-                                showCount
-                                maxLength={500}
-                                placeholder="Chi tiết kinh nghiệm"
-                            />
-                        </Form.Item>
+
                         <Form.Item
                             label="Giới thiệu"
                             name="description"
-                            rules={[{ max: 500, message: "Giới thiệu không được vượt quá 500 ký tự !" }]}
-                        >
-                            <Input.TextArea
-                                name="description"
-                                rows={4}
-                                showCount
-                                maxLength={500}
-                                placeholder="Giới thiệu về bác sĩ"
-                            />
 
+                        >
+                            <CKEditorInput
+                                name="description"
+                            />
                         </Form.Item>
                     </Form>
                 </ModalComponent>
@@ -1007,7 +973,11 @@ const Doctor = () => {
                             message: "Vui lòng nhập địa chỉ phòng khám!"
                         }]}
                     >
-                        <Input type="text" placeholder="Địa chỉ phòng khám" />
+                        <Input.TextArea
+                            type="text"
+                            placeholder="Địa chỉ phòng khám"
+                            autoSize={{ minRows: 2, maxRows: 6 }}
+                        />
                     </Form.Item>
                     <Form.Item
                         name="phone"
@@ -1027,7 +997,9 @@ const Doctor = () => {
                             message: "Vui lòng nhập mô tả phòng khám!"
                         }]}
                     >
-                        <Input.TextArea placeholder="Mô tả" rows={4} maxLength={400} />
+                        <CKEditorInput
+                            name="description"
+                        />
                     </Form.Item>
                     <Form.Item
                         label="Ảnh"

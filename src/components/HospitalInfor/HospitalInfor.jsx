@@ -1,15 +1,12 @@
 
-import { useState } from 'react';
 import { Row, Col, Typography, Image, Space } from 'antd';
 import defaultImage from '../../assets/default_image.png';
 import { StyledIframe } from './style';
 import SlideComponent from '../SlideComponent/SlideComponent';
+import ViewerCKeditorStyled from '../ViewerCKEditorStyled/ViewerCKEditorStyled';
 const { Title, Text } = Typography;
 const HospitalInfor = ({ hospital }) => {
-    const maxLength = 300;
     const description = hospital?.data?.description || 'Chưa có giới thiệu';
-    const [expanded, setExpanded] = useState(false);
-    const displayedText = expanded ? description : (description.length > maxLength ? description.slice(0, maxLength) + '...' : description);
     return (
         <div style={{ margin: '16px 0px' }}>
             <Row justify="space-between" align="middle" style={{ marginBottom: 16 }} gutter={[16, 16]}>
@@ -39,19 +36,14 @@ const HospitalInfor = ({ hospital }) => {
                     </Col>
                 </Image.PreviewGroup>
             </Row>
-            <Space direction="vertical" style={{ marginBottom: 16 }}>
+            <div>
                 <Title level={4}>Giới thiệu</Title>
-                <Text style={{ fontSize: '16px', whiteSpace: 'pre-line' }}>
-                    {displayedText}
-                    {description.length > maxLength && (
-                        <a type="primary" onClick={() => setExpanded(!expanded)}>
-                            {expanded ? 'Thu gọn' : 'Xem thêm'}
-                        </a>
+                <ViewerCKeditorStyled
+                    content={description}
+                    style={{ minHeight: '100px', marginBottom: '16px' }}
+                />
 
-                    )}
-                </Text>
-
-            </Space>
+            </div>
             <div>
                 <Title level={4}>
                     Địa chỉ: {hospital?.data?.address || 'Chưa có địa chỉ'}

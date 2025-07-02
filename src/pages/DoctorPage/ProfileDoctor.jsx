@@ -16,6 +16,9 @@ import { useMutation } from '@tanstack/react-query';
 import { updateUser } from '../../redux/Slice/authSlice';
 import { updateDoctor } from '../../redux/Slice/doctorSlice';
 import { Wrapper, AvatarWrapper, UploadButton, AddClinicButton } from './style';
+import CKEditorInput from '../../components/CKEditorInput/CKeditorInput';
+import ViewerCKeditorPlain from '../../components/ViewerCKEditorPlain/ViewerCKEditorPlain';
+import ViewerCKeditorStyled from '../../components/ViewerCKEditorStyled/ViewerCKEditorStyled';
 import { formatValue } from '../../utils/formatValue';
 const { Text, Paragraph } = Typography;
 const ProfileDoctor = () => {
@@ -37,7 +40,6 @@ const ProfileDoctor = () => {
             position: data?.position,
             qualification: data?.qualification,
             yearExperience: data?.yearExperience,
-            detailExperience: data?.detailExperience,
             description: data?.description,
             specialties: data?.specialties,
             hospital: data?.hospital,
@@ -97,7 +99,6 @@ const ProfileDoctor = () => {
         formData.append("position", values.position);
         formData.append("qualification", values.qualification);
         formData.append("yearExperience", values.yearExperience);
-        formData.append("detailExperience", values.detailExperience);
         formData.append("description", values.description);
         formData.append("specialties", JSON.stringify(values.specialties));
         if (values.hospital) {
@@ -133,7 +134,6 @@ const ProfileDoctor = () => {
                 position: doctor.position,
                 qualification: doctor.qualification,
                 yearExperience: doctor.yearExperience,
-                detailExperience: doctor.detailExperience,
                 description: doctor.description,
                 specialties: doctor?.specialties?.map(s => s._id),
                 hospital: doctor.hospital?._id
@@ -259,31 +259,14 @@ const ProfileDoctor = () => {
                             <Text strong>Kinh nghiệm: </Text>
                             {formatValue(doctor?.yearExperience)} năm
                         </p>
-                        <p>
-                            <Text strong>Chi tiết kinh nghiệm: </Text>
-                            <Paragraph
-                                ellipsis={{
-                                    rows: 3,
-                                    expandable: true,
-                                    symbol: 'Xem thêm'
-                                }}
-                                style={{ marginBottom: 0 }}
-                            >
-                                {formatValue(doctor?.detailExperience)}
-                            </Paragraph>
-                        </p>
+
                         <p>
                             <Text strong>Giới thiệu: </Text>
-                            <Paragraph
-                                ellipsis={{
-                                    rows: 3,
-                                    expandable: true,
-                                    symbol: 'Xem thêm'
-                                }}
-                                style={{ marginBottom: 0 }}
+                            <ViewerCKeditorPlain
+                                content={doctor?.description || 'Chưa có giới thiệu'}
                             >
-                                {formatValue(doctor?.description)}
-                            </Paragraph>
+                            </ViewerCKeditorPlain>
+
                         </p>
                     </Card>
                 </Col>
@@ -317,16 +300,9 @@ const ProfileDoctor = () => {
                                 <p><strong>Loại:</strong> {formatValue(doctor?.hospital?.type === 'clinic' ? 'Phòng khám' : 'Bệnh viện')}</p>
                                 <p>
                                     <Text strong>Mô tả: </Text>
-                                    <Paragraph
-                                        ellipsis={{
-                                            rows: 3,
-                                            expandable: true,
-                                            symbol: 'Xem thêm'
-                                        }}
-                                        style={{ marginBottom: 0 }}
-                                    >
-                                        {formatValue(doctor?.hospital?.description)}
-                                    </Paragraph>
+                                    <ViewerCKeditorPlain
+                                        content={doctor?.hospital?.description || 'Chưa có mô tả'}
+                                    />
                                 </p>
                             </div>
                         </Card>
@@ -488,37 +464,13 @@ const ProfileDoctor = () => {
                             placeholder="Số năm kinh nghiệm"
                         />
                     </Form.Item>
-                    <Form.Item
-                        label="Chi tiết"
-                        name="detailExperience"
-                        rules={[
-                            {
-                                max: 500,
-                                message: "Mô tả kinh nghiệm không được vượt quá 500 ký tự!",
-                            },
-                        ]}
-                    >
-                        <Input.TextArea
-                            rows={4}
-                            placeholder="Mô tả chi tiết kinh nghiệm"
-                            maxLength={500}
-                        />
-                    </Form.Item>
+
                     <Form.Item
                         label="Giới thiệu"
                         name="description"
-                        rules={[
-                            {
-                                max: 500,
-                                message: "Giới thiệu không được vượt quá 500 ký tự!",
-                            },
-                        ]}
+
                     >
-                        <Input.TextArea
-                            rows={4}
-                            placeholder="Giới thiệu về bản thân"
-                            maxLength={500}
-                        />
+                        <CKEditorInput name="description" />
                     </Form.Item>
                     <Form.Item>
                         <Button
@@ -564,12 +516,22 @@ const ProfileDoctor = () => {
                     <Form.Item
                         name="address"
                         label="Địa chỉ"
-                        rules={[{
-                            required: true,
-                            message: "Vui lòng nhập địa chỉ phòng khám!"
-                        }]}
+                        rules={[
+                            {
+                                required: true,
+                                message: "Vui lòng nhập địa chỉ phòng khám!"
+                            },
+                            {
+                                max: 200,
+                                message: "Địa chỉ không được vượt quá 200 ký tự!"
+                            }
+                        ]}
                     >
-                        <Input type="text" placeholder="Địa chỉ phòng khám" />
+                        <Input.TextArea
+                            placeholder="Địa chỉ phòng khám"
+                            rows={2}
+                            maxLength={200}
+                        />
                     </Form.Item>
                     <Form.Item
                         name="phone"
@@ -589,7 +551,7 @@ const ProfileDoctor = () => {
                             message: "Vui lòng nhập mô tả phòng khám!"
                         }]}
                     >
-                        <Input.TextArea placeholder="Mô tả" rows={4} maxLength={400} />
+                        <CKEditorInput name="description" />
                     </Form.Item>
                     <Form.Item
                         label="Ảnh phòng khám"

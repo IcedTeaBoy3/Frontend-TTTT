@@ -5,6 +5,9 @@ import LoadingComponent from "../../components/LoadingComponent/LoadingComponent
 import ModalComponent from "../../components/ModalComponent/ModalComponent";
 import DrawerComponent from "../../components/DrawerComponent/DrawerComponent";
 import ActionButtonGroup from "../../components/ActionButtonGroup/ActionButtonGroup";
+import CKEditorInput from "../../components/CKEditorInput/CKEditorInput";
+import ViewerCKEditorStyled from "../../components/ViewerCKEditorStyled/ViewerCKEditorStyled";
+import ViewerCKeditorPlain from "../../components/ViewerCKeditorPlain/ViewerCKeditorPlain";
 import {
     UploadOutlined,
     EditOutlined,
@@ -190,7 +193,7 @@ const Hospital = () => {
     };
     const handleOkDeleteMany = () => {
         mutationDeleteManyHospitals.mutate({ ids: selectedRowKeys },);
-    }
+    };
     const handleCancelDeleteMany = () => {
         setIsModalOpenDeleteMany(false);
     }
@@ -262,13 +265,11 @@ const Hospital = () => {
                 text
             ),
     });
-
     const handleSearch = (selectedKeys, confirm, dataIndex) => {
         confirm();
         setSearchText(selectedKeys[0]);
         setSearchedColumn(dataIndex);
     };
-
     const handleReset = (clearFilters) => {
         clearFilters();
         setSearchText("");
@@ -330,26 +331,6 @@ const Hospital = () => {
             filterMode: "tree",
         },
         {
-            title: "Mô tả",
-            dataIndex: "description",
-            key: "description",
-            render: (text) => (
-                text ? (
-                    <Popover
-                        content={<div style={{ maxWidth: 300 }}>{text}</div>}
-                        title="Nội dung đầy đủ"
-                        trigger="hover"
-                    >
-                        <Typography.Text ellipsis style={{ maxWidth: 200, display: "inline-block" }}>
-                            {text.length > 60 ? text.substring(0, 50) + "..." : text}
-                        </Typography.Text>
-                    </Popover>
-                ) : (
-                    <Typography.Text type="secondary">Chưa cập nhật</Typography.Text>
-                )
-            )
-        },
-        {
             title: "Địa chỉ",
             dataIndex: "address",
             key: "address",
@@ -373,6 +354,48 @@ const Hospital = () => {
             title: "SĐT",
             dataIndex: "phone",
             key: "phone",
+        },
+        {
+            title: "Mô tả",
+            dataIndex: "description",
+            key: "description",
+            render: (text) =>
+                text ? (
+                    <Popover
+                        placement="top"
+                        content={
+                            <div
+                                style={{
+                                    maxWidth: '90vw', // Chiếm tối đa 90% chiều rộng màn hình
+                                    maxHeight: '70vh', // Giới hạn chiều cao để không tràn màn
+                                    overflow: 'auto', // Cho phép cuộn nếu vượt quá kích thước
+                                    wordWrap: 'break-word', // Ngắt từ dài
+                                    whiteSpace: 'normal' // Đảm bảo xuống dòng
+                                }}
+                            >
+                                <ViewerCKEditorStyled content={text} />
+                            </div>
+                        }
+                        title="Chi tiết mô tả"
+                    >
+                        <div
+                            style={{
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                cursor: 'pointer',
+                                maxWidth: 250,
+                            }}
+                        >
+                            <ViewerCKeditorPlain content={text} />
+                        </div>
+                    </Popover>
+                ) : (
+                    <Typography.Text type="secondary">Chưa cập nhật</Typography.Text>
+                ),
+
         },
         {
             title: "Trạng thái",
@@ -718,10 +741,11 @@ const Hospital = () => {
                                 },
                             ]}
                         >
-                            <Input.TextArea
-                                rows={4}
-                                placeholder="Nhập mô tả chi tiết tại đây..."
+                            <CKEditorInput
+                                placeholder="Nhập mô tả tại đây"
+                                name="description"
                             />
+
                         </Form.Item>
                         <Form.Item
                             label="Địa chỉ"
@@ -912,17 +936,12 @@ const Hospital = () => {
                                     required: true,
                                     message: "Vui lòng nhập mô tả!",
                                 },
-                                {
-                                    max: 500,
-                                    message: "Mô tả không được quá 500 ký tự!",
-                                }
+
                             ]}
                         >
-                            <Input.TextArea
+                            <CKEditorInput
+                                placeholder="Nhập mô tả tại đây"
                                 name="description"
-                                rows={4}
-                                placeholder="Nhập mô tả chi tiết tại đây..."
-                                maxLength={500}
                             />
                         </Form.Item>
 

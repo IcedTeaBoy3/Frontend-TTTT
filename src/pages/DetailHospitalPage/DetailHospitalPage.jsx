@@ -13,6 +13,7 @@ import LoadingComponent from "../../components/LoadingComponent/LoadingComponent
 import HospitalInfor from "../../components/HospitalInfor/HospitalInfor"
 import ServiceHospital from "../../components/ServiceHospital/ServiceHospital"
 import CustomBreadcrumb from "../../components/CustomBreadcrumb/CustomBreadcrumb"
+import ViewerCKeditorStyled from "../../components/ViewerCKeditorStyled/ViewerCKeditorStyled"
 const { Title, Text } = Typography
 const DetailHospitalPage = () => {
     const { id } = useParams()
@@ -63,7 +64,6 @@ const DetailHospitalPage = () => {
     return (
 
         <LoadingComponent isLoading={isLoadingHospital}>
-
             <Container>
                 <CustomBreadcrumb items={breadcrumbItems} />
                 <ContentBox>
@@ -101,16 +101,12 @@ const DetailHospitalPage = () => {
                             </Space>
                         </InfoSection>
                     </HospitalInfo>
-
                     <CustomTabs
                         items={items}
                         onChange={onChange}
                         defaultActiveKey="1"
                         style={{ marginBottom: 16 }}
                     />
-
-
-
                     <StickyFooter>
                         <Hotline>
                             <Text strong>Hỗ trợ đặt khám qua hotline:</Text>
