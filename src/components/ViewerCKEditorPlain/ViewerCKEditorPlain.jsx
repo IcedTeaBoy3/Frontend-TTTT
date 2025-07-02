@@ -1,7 +1,7 @@
 // ViewerCKeditorPlain.jsx
 import DOMPurify from 'dompurify';
 
-const ViewerCKeditorPlain = ({ content = '' }) => {
+const ViewerCKEditorPlain = ({ content = '' }) => {
     // Bước 1: Làm sạch XSS
     const sanitized = DOMPurify.sanitize(content);
 
@@ -15,4 +15,4 @@ const ViewerCKeditorPlain = ({ content = '' }) => {
     );
 };
 
-export default ViewerCKeditorPlain;
+export default ViewerCKEditorPlain;

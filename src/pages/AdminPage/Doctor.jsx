@@ -14,9 +14,9 @@ import ActionButtonGroup from "../../components/ActionButtonGroup/ActionButtonGr
 import { useDoctorData } from "../../hooks/useDoctorData";
 import { useSpecialtyData } from "../../hooks/useSpecialtyData";
 import { useHospitalData } from "../../hooks/useHospitalData";
-import ViewerCKeditorPlain from "../../components/ViewerCKEditorPlain/ViewerCKEditorPlain";
+import ViewerCKEditorPlain from "../../components/ViewerCKEditorPlain/ViewerCKEditorPlain";
 import ViewerCKEditorStyled from "../../components/ViewerCKEditorStyled/ViewerCKEditorStyled";
-import CKEditorInput from "../../components/CKEditorInput/CKeditorInput";
+import CKEditorInput from "../../components/CKEditorInput/CKEditorInput";
 import { useState, useRef } from "react";
 const { Text, Paragraph } = Typography;
 const Doctor = () => {
@@ -340,7 +340,7 @@ const Doctor = () => {
                                 maxWidth: 250,
                             }}
                         >
-                            <ViewerCKeditorPlain content={text} />
+                            <ViewerCKEditorPlain content={text} />
                         </div>
                     </Popover>
                 ) : (

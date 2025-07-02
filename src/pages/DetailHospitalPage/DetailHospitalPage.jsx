@@ -13,7 +13,6 @@ import LoadingComponent from "../../components/LoadingComponent/LoadingComponent
 import HospitalInfor from "../../components/HospitalInfor/HospitalInfor"
 import ServiceHospital from "../../components/ServiceHospital/ServiceHospital"
 import CustomBreadcrumb from "../../components/CustomBreadcrumb/CustomBreadcrumb"
-import ViewerCKeditorStyled from "../../components/ViewerCKeditorStyled/ViewerCKeditorStyled"
 const { Title, Text } = Typography
 const DetailHospitalPage = () => {
     const { id } = useParams()

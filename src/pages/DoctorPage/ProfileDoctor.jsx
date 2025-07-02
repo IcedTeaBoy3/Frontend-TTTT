@@ -16,9 +16,8 @@ import { useMutation } from '@tanstack/react-query';
 import { updateUser } from '../../redux/Slice/authSlice';
 import { updateDoctor } from '../../redux/Slice/doctorSlice';
 import { Wrapper, AvatarWrapper, UploadButton, AddClinicButton } from './style';
-import CKEditorInput from '../../components/CKEditorInput/CKeditorInput';
-import ViewerCKeditorPlain from '../../components/ViewerCKEditorPlain/ViewerCKEditorPlain';
-import ViewerCKeditorStyled from '../../components/ViewerCKEditorStyled/ViewerCKEditorStyled';
+import CKEditorInput from '../../components/CKEditorInput/CKEditorInput';
+import ViewerCKEditorPlain from '../../components/ViewerCKEditorPlain/ViewerCKEditorPlain';
 import { formatValue } from '../../utils/formatValue';
 const { Text, Paragraph } = Typography;
 const ProfileDoctor = () => {
@@ -262,11 +261,9 @@ const ProfileDoctor = () => {
 
                         <p>
                             <Text strong>Giới thiệu: </Text>
-                            <ViewerCKeditorPlain
+                            <ViewerCKEditorPlain
                                 content={doctor?.description || 'Chưa có giới thiệu'}
-                            >
-                            </ViewerCKeditorPlain>
-
+                            />
                         </p>
                     </Card>
                 </Col>
@@ -300,7 +297,7 @@ const ProfileDoctor = () => {
                                 <p><strong>Loại:</strong> {formatValue(doctor?.hospital?.type === 'clinic' ? 'Phòng khám' : 'Bệnh viện')}</p>
                                 <p>
                                     <Text strong>Mô tả: </Text>
-                                    <ViewerCKeditorPlain
+                                    <ViewerCKEditorPlain
                                         content={doctor?.hospital?.description || 'Chưa có mô tả'}
                                     />
                                 </p>

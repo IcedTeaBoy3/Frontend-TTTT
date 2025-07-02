@@ -3,7 +3,7 @@ import { Row, Col, Typography, Image, Space } from 'antd';
 import defaultImage from '../../assets/default_image.png';
 import { StyledIframe } from './style';
 import SlideComponent from '../SlideComponent/SlideComponent';
-import ViewerCKeditorStyled from '../ViewerCKEditorStyled/ViewerCKEditorStyled';
+import ViewerCKEditorStyled from '../ViewerCKEditorStyled/ViewerCKEditorStyled';
 const { Title, Text } = Typography;
 const HospitalInfor = ({ hospital }) => {
     const description = hospital?.data?.description || 'Chưa có giới thiệu';
@@ -38,11 +38,11 @@ const HospitalInfor = ({ hospital }) => {
             </Row>
             <div>
                 <Title level={4}>Giới thiệu</Title>
-                <ViewerCKeditorStyled
-                    content={description}
-                    style={{ minHeight: '100px', marginBottom: '16px' }}
-                />
-
+                {description ? (
+                    <ViewerCKEditorStyled content={description} />
+                ) : (
+                    <Text type="secondary">Chưa có giới thiệu về bệnh viện này.</Text>
+                )}
             </div>
             <div>
                 <Title level={4}>
@@ -56,7 +56,7 @@ const HospitalInfor = ({ hospital }) => {
                         src={`https://www.google.com/maps?q=${encodeURIComponent(hospital?.data?.address)}&output=embed`}
                     />
                 ) : (
-                    <p>Không có địa chỉ để hiển thị bản đồ.</p>
+                    <Text type="secondary">Chưa có địa chỉ này.</Text>
                 )}
             </div>
         </div>

@@ -7,7 +7,7 @@ import DrawerComponent from "../../components/DrawerComponent/DrawerComponent";
 import ActionButtonGroup from "../../components/ActionButtonGroup/ActionButtonGroup";
 import CKEditorInput from "../../components/CKEditorInput/CKEditorInput";
 import ViewerCKEditorStyled from "../../components/ViewerCKEditorStyled/ViewerCKEditorStyled";
-import ViewerCKeditorPlain from "../../components/ViewerCKeditorPlain/ViewerCKeditorPlain";
+import ViewerCKEditorPlain from "../../components/ViewerCKEditorPlain/ViewerCKEditorPlain";
 import {
     UploadOutlined,
     EditOutlined,
@@ -389,7 +389,7 @@ const Hospital = () => {
                                 maxWidth: 250,
                             }}
                         >
-                            <ViewerCKeditorPlain content={text} />
+                            <ViewerCKEditorPlain content={text} />
                         </div>
                     </Popover>
                 ) : (

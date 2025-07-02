@@ -2,7 +2,7 @@
 import DOMPurify from 'dompurify';
 import { StyledCKEditor } from './style';
 
-const ViewerCKeditorStyled = ({ content = '' }) => {
+const ViewerCKEditorStyled = ({ content = '' }) => {
     const contentSanitized = DOMPurify.sanitize(content); // giữ nguyên class/style
     return (
         <StyledCKEditor
@@ -11,4 +11,4 @@ const ViewerCKeditorStyled = ({ content = '' }) => {
     );
 };
 
-export default ViewerCKeditorStyled;
+export default ViewerCKEditorStyled;

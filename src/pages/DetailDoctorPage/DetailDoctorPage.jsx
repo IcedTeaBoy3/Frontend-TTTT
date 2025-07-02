@@ -15,7 +15,7 @@ import TimeSlot from '../../components/TimeSlot/TimeSlot';
 import { Container, ContentBox, DoctorInfo, InfoSection, StickyFooter, Hotline, StyledIframe, BookingButton } from './style';
 import CustomBreadcrumb from '../../components/CustomBreadcrumb/CustomBreadcrumb';
 import { formatValue } from '../../utils/formatValue';
-import ViewerCKeditorStyled from '../../components/ViewerCKEditorStyled/ViewerCKEditorStyled';
+import ViewerCKEditorStyled from '../../components/ViewerCKEditorStyled/ViewerCKEditorStyled';
 dayjs.extend(utc)
 const { Title, Text, Paragraph } = Typography;
 const DetailDoctorPage = () => {
@@ -207,7 +207,13 @@ const DetailDoctorPage = () => {
 
                 <div>
                     <Title level={4}>Giới thiệu</Title>
-                    <ViewerCKeditorStyled content={doctor?.data?.description} />
+                    {doctor?.data?.description ? (
+                        <ViewerCKEditorStyled
+                            content={doctor?.data?.description}
+                        />
+                    ) : (
+                        <Text type="secondary">Chưa có thông tin giới thiệu</Text>
+                    )}
                 </div>
 
                 <div>

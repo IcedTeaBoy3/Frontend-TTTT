@@ -199,7 +199,6 @@ const HeaderComponent = () => {
                             placement="bottomLeft"
                             open={isOpenPopupBooked}
                             onOpenChange={(visible) => setIsOpenPopupBooked(visible)}
-                            trigger="click"
                             getPopupContainer={(trigger) => trigger.parentNode}
                         >
                             <ButtonComponent
