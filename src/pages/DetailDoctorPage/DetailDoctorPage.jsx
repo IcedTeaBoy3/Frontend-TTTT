@@ -14,8 +14,8 @@ import WorkingSchedule from '../../components/WorkingSchedule/WorkingSchedule';
 import TimeSlot from '../../components/TimeSlot/TimeSlot';
 import { Container, ContentBox, DoctorInfo, InfoSection, StickyFooter, Hotline, StyledIframe, BookingButton } from './style';
 import CustomBreadcrumb from '../../components/CustomBreadcrumb/CustomBreadcrumb';
-import { formatValue } from '../../utils/formatValue';
 import ViewerCKEditorStyled from '../../components/ViewerCKEditorStyled/ViewerCKEditorStyled';
+import { formatValue } from '../../utils/formatValue';
 dayjs.extend(utc)
 const { Title, Text, Paragraph } = Typography;
 const DetailDoctorPage = () => {
