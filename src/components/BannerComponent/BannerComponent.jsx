@@ -41,7 +41,7 @@ const BannerComponent = () => {
         <div style={{ paddingTop: screens.md ? "60px" : "15px" }}>
             <StyledCarousel autoplay speed={500} dots swipeToSlide draggable arrows>
                 {banners.map((banner, index) => (
-                    <BannerContainer key={banner.image + index} $padding={screens.md ? "85px 30px" : "60px 20px"}>
+                    <BannerContainer key={banner.image + index}>
                         <BannerImage
                             $image={banner.image}
                         />

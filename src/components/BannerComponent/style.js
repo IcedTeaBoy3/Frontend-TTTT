@@ -6,11 +6,12 @@ export const BannerContainer = styled.div`
     position: relative;
     width: 100%;
     height: 400px;
-    /* padding: ${({ $padding }) => $padding || "85px 30px"}; */
+    padding: ${({ $padding }) => $padding || "85px 30px"};
     display: flex;
     justify-content: center;
     text-align: center;
     overflow: hidden;
+    box-sizing: border-box;
 
     @media (max-width: 768px) {
         
@@ -50,7 +51,6 @@ export const BannerImage = styled.div`
 export const BannerContent = styled(motion.div)`
     position: relative;
     z-index: 2;
-    margin-top: 80px;
 `;
 export const StyledCarousel = styled(Carousel)`
     .slick-slide {
@@ -64,7 +64,7 @@ export const StyledCarousel = styled(Carousel)`
 
     .slick-prev:before,
     .slick-next:before {
-        font-size: 28px; /* 👈 tăng icon */
+        font-size: 20px; /* 👈 tăng icon */
         color: #fff;
     }
 
