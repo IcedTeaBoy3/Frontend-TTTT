@@ -39,7 +39,7 @@ const FooterComponent = () => {
 
                     <Col sm={24} md={12} lg={8} xl={6}>
                         <FooterTitle>Hỗ trợ</FooterTitle>
-                        <FooterText><Text type='secondary'>Hướng dẫn sử dụngs</Text></FooterText>
+                        <FooterText><Text type='secondary'>Hướng dẫn sử dụng</Text></FooterText>
                         <FooterText><Text type='secondary'>Câu hỏi thường gặp</Text></FooterText>
                         <FooterText><Text type='secondary'>Chính sách bảo mật</Text></FooterText>
                     </Col>

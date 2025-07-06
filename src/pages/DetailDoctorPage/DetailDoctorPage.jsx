@@ -171,7 +171,7 @@ const DetailDoctorPage = () => {
                         <div>
                             <Text type="secondary">Địa chỉ phòng khám:</Text>{" "}
                             <Text strong style={{ fontSize: "18px" }}>
-                                {formatValue(doctor?.data?.hospital?.name)}
+                                {formatValue(doctor?.data?.hospital?.address)}
                             </Text>
                         </div>
                     </InfoSection>

@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, Col, Row, Statistic, Typography } from 'antd';
 import { CheckCircleOutlined, TeamOutlined } from '@ant-design/icons';
 import StaticService from '../../services/StaticService';
+import { StyledCard } from './style';
 import { Pie } from '@ant-design/charts';
 const { Title } = Typography;
 const PatientStats = () => {
@@ -44,24 +44,24 @@ const PatientStats = () => {
             <Title level={3}>Thống kê tổng quan</Title>
             <Row gutter={16} style={{ marginBottom: '16px' }}>
                 <Col span={8}>
-                    <Card>
+                    <StyledCard>
                         <Statistic
                             title="Tổng số bệnh nhân"
                             value={overviewPatientStats?.data?.totalPatients || 0}
                             prefix={<TeamOutlined />}
                             suffix="người"
                         />
-                    </Card>
+                    </StyledCard>
                 </Col>
                 <Col span={8}>
-                    <Card>
+                    <StyledCard>
                         <Statistic
                             title="Bệnh nhân đã kích hoạt tài khoản"
                             value={overviewPatientStats?.data?.verifiedPatients || 0}
                             prefix={<CheckCircleOutlined />}
                             valueStyle={{ color: '#3f8600' }}
                         />
-                    </Card>
+                    </StyledCard>
                 </Col>
             </Row>
             <Row style={{ marginTop: '20px' }} gutter={16}>

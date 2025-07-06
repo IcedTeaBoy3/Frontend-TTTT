@@ -94,6 +94,8 @@ const ModalUpdateUser = ({ isModalOpen, isPendingUpdateProfile, patient, handleU
                 title="Cập nhật hồ sơ bệnh nhân"
                 open={isModalOpen}
                 onOk={handleOkUpdate}
+                okText="Cập nhật"
+                cancelText="Hủy"
                 onCancel={onCancel}
                 style={{ borderRadius: 0, width: '50%' }}
             >

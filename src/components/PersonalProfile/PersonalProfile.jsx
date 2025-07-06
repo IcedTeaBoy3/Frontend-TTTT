@@ -1,7 +1,7 @@
 import { formatDateToDDMMYYYY } from "../../utils/dateUtils";
 import { convertGender } from "../../utils/convertGender";
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
-import { UserOutlined, WarningOutlined, MailOutlined, PhoneOutlined, ManOutlined, IdcardOutlined, CreditCardOutlined, FlagOutlined, ToolOutlined, EnvironmentOutlined, CalendarOutlined } from "@ant-design/icons";
+import { WarningOutlined, UserOutlined, MailOutlined, PhoneOutlined, ManOutlined, IdcardOutlined, CreditCardOutlined, FlagOutlined, ToolOutlined, EnvironmentOutlined, CalendarOutlined, EditOutlined } from "@ant-design/icons";
 import { Typography, Divider, Flex, Row, Col } from "antd";
 import { StyleText } from "./style";
 const { Title, Text, Paragraph } = Typography;
@@ -33,7 +33,7 @@ const PersonalProfile = ({ user, onClick }) => {
                         style={{ marginTop: 24, width: "100%" }}
                         onClick={onClick}
                     >
-                        <UserOutlined style={{ marginRight: 8 }} />
+                        <EditOutlined style={{ marginRight: 8 }} />
                         Chỉnh sửa thông tin
                     </ButtonComponent>
                 </Col>
