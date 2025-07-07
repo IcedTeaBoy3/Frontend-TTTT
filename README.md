@@ -25,22 +25,39 @@ Hệ thống hỗ trợ quản lý trạng thái với **Redux Toolkit**, truy v
 
 .
 ├── public/ # Static files
+
 ├── src/
+
 │ ├── assets/ # Hình ảnh, biểu tượng
+
 │ ├── components/ # Reusable UI components
+
 │ ├── config/ # Cấu hình (axios, token...)
+
 │ ├── data/ # Dữ liệu mẫu / constants
+
 │ ├── hooks/ # Custom React hooks
+
 │ ├── pages/ # Các trang chính (Home, Login...)
+
 │ ├── redux/ # Global state (store, slices)
+
 │ ├── routes/ # Định nghĩa tuyến đường
+
 │ ├── services/ # API service (axios instance)
+
 │ ├── utils/ # Hàm tiện ích chung
+
 │ ├── App.jsx # Root component
+
 │ └── main.jsx # Entry point (ReactDOM)
+
 ├── .env # Biến môi trường
+
 ├── index.html
+
 ├── package.json
+
 └── README.md
 
 ---
@@ -65,7 +82,7 @@ VITE_GOOGLE_CLIENT_ID=your_google_client_id
 ```bash
 npm install
 ```
- ### 2. Chạy server
+ ### 2. Chạy development server
 
  ```bash
 npm run dev
