@@ -24,6 +24,7 @@ Hệ thống hỗ trợ quản lý trạng thái với **Redux Toolkit**, truy v
 ## 📁 Project Structure
 
 .
+
 ├── public/ # Static files
 
 ├── src/
@@ -36,7 +37,7 @@ Hệ thống hỗ trợ quản lý trạng thái với **Redux Toolkit**, truy v
 
 │ ├── data/ # Dữ liệu mẫu / constants
 
-│ ├── hooks/ # Custom React hooks
+│ ├── hooks/ # Custom React hooks 
 
 │ ├── pages/ # Các trang chính (Home, Login...)
 
